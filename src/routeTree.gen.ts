@@ -13,9 +13,20 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
+import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
+import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
 import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
+import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
+import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticated/contenus'
+import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authenticated/calendrier'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedParametresUtilisateursRouteImport } from './routes/_authenticated/parametres.utilisateurs'
 import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
 import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
@@ -40,15 +51,62 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
+  id: '/voyages',
+  path: '/voyages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPartenairesRoute =
+  AuthenticatedPartenairesRouteImport.update({
+    id: '/partenaires',
+    path: '/partenaires',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMediathequeRoute =
+  AuthenticatedMediathequeRouteImport.update({
+    id: '/mediatheque',
+    path: '/mediatheque',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedExperiencesRoute =
   AuthenticatedExperiencesRouteImport.update({
     id: '/experiences',
     path: '/experiences',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDevisRoute = AuthenticatedDevisRouteImport.update({
+  id: '/devis',
+  path: '/devis',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedContenusRoute = AuthenticatedContenusRouteImport.update({
+  id: '/contenus',
+  path: '/contenus',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCalendrierRoute = AuthenticatedCalendrierRouteImport.update({
+  id: '/calendrier',
+  path: '/calendrier',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
@@ -56,6 +114,17 @@ const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedParametresUtilisateursRoute =
+  AuthenticatedParametresUtilisateursRouteImport.update({
+    id: '/utilisateurs',
+    path: '/utilisateurs',
+    getParentRoute: () => AuthenticatedParametresRoute,
+  } as any)
 const AuthenticatedExperiencesNewRoute =
   AuthenticatedExperiencesNewRouteImport.update({
     id: '/new',
@@ -83,25 +152,47 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
+  '/calendrier': typeof AuthenticatedCalendrierRoute
+  '/clients': typeof AuthenticatedClientsRoute
+  '/contenus': typeof AuthenticatedContenusRoute
+  '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/devis': typeof AuthenticatedDevisRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/mediatheque': typeof AuthenticatedMediathequeRoute
+  '/parametres': typeof AuthenticatedParametresRouteWithChildren
+  '/partenaires': typeof AuthenticatedPartenairesRoute
+  '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
+  '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
+  '/calendrier': typeof AuthenticatedCalendrierRoute
+  '/clients': typeof AuthenticatedClientsRoute
+  '/contenus': typeof AuthenticatedContenusRoute
+  '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/devis': typeof AuthenticatedDevisRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/mediatheque': typeof AuthenticatedMediathequeRoute
+  '/parametres': typeof AuthenticatedParametresRouteWithChildren
+  '/partenaires': typeof AuthenticatedPartenairesRoute
+  '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
+  '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -109,13 +200,24 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
+  '/_authenticated/calendrier': typeof AuthenticatedCalendrierRoute
+  '/_authenticated/clients': typeof AuthenticatedClientsRoute
+  '/_authenticated/contenus': typeof AuthenticatedContenusRoute
+  '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/devis': typeof AuthenticatedDevisRoute
   '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/_authenticated/mediatheque': typeof AuthenticatedMediathequeRoute
+  '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
+  '/_authenticated/partenaires': typeof AuthenticatedPartenairesRoute
+  '/_authenticated/voyages': typeof AuthenticatedVoyagesRoute
   '/_authenticated/blog/$id': typeof AuthenticatedBlogIdRoute
   '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
   '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/_authenticated/experiences/new': typeof AuthenticatedExperiencesNewRoute
+  '/_authenticated/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,38 +225,71 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/analytics'
     | '/blog'
+    | '/calendrier'
+    | '/clients'
+    | '/contenus'
+    | '/crm'
     | '/dashboard'
+    | '/devis'
     | '/experiences'
+    | '/mediatheque'
+    | '/parametres'
+    | '/partenaires'
+    | '/voyages'
     | '/blog/$id'
     | '/blog/new'
     | '/experiences/$id'
     | '/experiences/new'
+    | '/parametres/utilisateurs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/analytics'
     | '/blog'
+    | '/calendrier'
+    | '/clients'
+    | '/contenus'
+    | '/crm'
     | '/dashboard'
+    | '/devis'
     | '/experiences'
+    | '/mediatheque'
+    | '/parametres'
+    | '/partenaires'
+    | '/voyages'
     | '/blog/$id'
     | '/blog/new'
     | '/experiences/$id'
     | '/experiences/new'
+    | '/parametres/utilisateurs'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/analytics'
     | '/_authenticated/blog'
+    | '/_authenticated/calendrier'
+    | '/_authenticated/clients'
+    | '/_authenticated/contenus'
+    | '/_authenticated/crm'
     | '/_authenticated/dashboard'
+    | '/_authenticated/devis'
     | '/_authenticated/experiences'
+    | '/_authenticated/mediatheque'
+    | '/_authenticated/parametres'
+    | '/_authenticated/partenaires'
+    | '/_authenticated/voyages'
     | '/_authenticated/blog/$id'
     | '/_authenticated/blog/new'
     | '/_authenticated/experiences/$id'
     | '/_authenticated/experiences/new'
+    | '/_authenticated/parametres/utilisateurs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -194,11 +329,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/voyages': {
+      id: '/_authenticated/voyages'
+      path: '/voyages'
+      fullPath: '/voyages'
+      preLoaderRoute: typeof AuthenticatedVoyagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/partenaires': {
+      id: '/_authenticated/partenaires'
+      path: '/partenaires'
+      fullPath: '/partenaires'
+      preLoaderRoute: typeof AuthenticatedPartenairesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/parametres': {
+      id: '/_authenticated/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mediatheque': {
+      id: '/_authenticated/mediatheque'
+      path: '/mediatheque'
+      fullPath: '/mediatheque'
+      preLoaderRoute: typeof AuthenticatedMediathequeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/experiences': {
       id: '/_authenticated/experiences'
       path: '/experiences'
       fullPath: '/experiences'
       preLoaderRoute: typeof AuthenticatedExperiencesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/devis': {
+      id: '/_authenticated/devis'
+      path: '/devis'
+      fullPath: '/devis'
+      preLoaderRoute: typeof AuthenticatedDevisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -208,12 +378,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/crm': {
+      id: '/_authenticated/crm'
+      path: '/crm'
+      fullPath: '/crm'
+      preLoaderRoute: typeof AuthenticatedCrmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contenus': {
+      id: '/_authenticated/contenus'
+      path: '/contenus'
+      fullPath: '/contenus'
+      preLoaderRoute: typeof AuthenticatedContenusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/clients': {
+      id: '/_authenticated/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AuthenticatedClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendrier': {
+      id: '/_authenticated/calendrier'
+      path: '/calendrier'
+      fullPath: '/calendrier'
+      preLoaderRoute: typeof AuthenticatedCalendrierRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/blog': {
       id: '/_authenticated/blog'
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof AuthenticatedBlogRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/parametres/utilisateurs': {
+      id: '/_authenticated/parametres/utilisateurs'
+      path: '/utilisateurs'
+      fullPath: '/parametres/utilisateurs'
+      preLoaderRoute: typeof AuthenticatedParametresUtilisateursRouteImport
+      parentRoute: typeof AuthenticatedParametresRoute
     }
     '/_authenticated/experiences/new': {
       id: '/_authenticated/experiences/new'
@@ -275,16 +487,51 @@ const AuthenticatedExperiencesRouteWithChildren =
     AuthenticatedExperiencesRouteChildren,
   )
 
+interface AuthenticatedParametresRouteChildren {
+  AuthenticatedParametresUtilisateursRoute: typeof AuthenticatedParametresUtilisateursRoute
+}
+
+const AuthenticatedParametresRouteChildren: AuthenticatedParametresRouteChildren =
+  {
+    AuthenticatedParametresUtilisateursRoute:
+      AuthenticatedParametresUtilisateursRoute,
+  }
+
+const AuthenticatedParametresRouteWithChildren =
+  AuthenticatedParametresRoute._addFileChildren(
+    AuthenticatedParametresRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
+  AuthenticatedCalendrierRoute: typeof AuthenticatedCalendrierRoute
+  AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
+  AuthenticatedContenusRoute: typeof AuthenticatedContenusRoute
+  AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDevisRoute: typeof AuthenticatedDevisRoute
   AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
+  AuthenticatedMediathequeRoute: typeof AuthenticatedMediathequeRoute
+  AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
+  AuthenticatedPartenairesRoute: typeof AuthenticatedPartenairesRoute
+  AuthenticatedVoyagesRoute: typeof AuthenticatedVoyagesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
+  AuthenticatedCalendrierRoute: AuthenticatedCalendrierRoute,
+  AuthenticatedClientsRoute: AuthenticatedClientsRoute,
+  AuthenticatedContenusRoute: AuthenticatedContenusRoute,
+  AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDevisRoute: AuthenticatedDevisRoute,
   AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
+  AuthenticatedMediathequeRoute: AuthenticatedMediathequeRoute,
+  AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,
+  AuthenticatedPartenairesRoute: AuthenticatedPartenairesRoute,
+  AuthenticatedVoyagesRoute: AuthenticatedVoyagesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
