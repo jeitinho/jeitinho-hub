@@ -36,7 +36,7 @@ export function ExperienceForm({
   onSubmit,
 }: {
   initial?: Partial<ExperienceValues>;
-  onSubmit: (v: ExperienceValues) => Promise<void>;
+  onSubmit: (v: ExperienceValues) => Promise<unknown>;
 }) {
   const [v, setV] = useState<ExperienceValues>({
     title: initial?.title ?? "",

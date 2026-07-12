@@ -13,7 +13,13 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
+import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
+import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
+import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
+import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -34,23 +40,68 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedExperiencesRoute =
+  AuthenticatedExperiencesRouteImport.update({
+    id: '/experiences',
+    path: '/experiences',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedExperiencesNewRoute =
+  AuthenticatedExperiencesNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedExperiencesRoute,
+  } as any)
+const AuthenticatedExperiencesIdRoute =
+  AuthenticatedExperiencesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedExperiencesRoute,
+  } as any)
+const AuthenticatedBlogNewRoute = AuthenticatedBlogNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedBlogRoute,
+} as any)
+const AuthenticatedBlogIdRoute = AuthenticatedBlogIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedBlogRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/blog/$id': typeof AuthenticatedBlogIdRoute
+  '/blog/new': typeof AuthenticatedBlogNewRoute
+  '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
+  '/experiences/new': typeof AuthenticatedExperiencesNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/blog/$id': typeof AuthenticatedBlogIdRoute
+  '/blog/new': typeof AuthenticatedBlogNewRoute
+  '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
+  '/experiences/new': typeof AuthenticatedExperiencesNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,20 +109,52 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/_authenticated/blog/$id': typeof AuthenticatedBlogIdRoute
+  '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
+  '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
+  '/_authenticated/experiences/new': typeof AuthenticatedExperiencesNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/blog'
+    | '/dashboard'
+    | '/experiences'
+    | '/blog/$id'
+    | '/blog/new'
+    | '/experiences/$id'
+    | '/experiences/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/blog'
+    | '/dashboard'
+    | '/experiences'
+    | '/blog/$id'
+    | '/blog/new'
+    | '/experiences/$id'
+    | '/experiences/new'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/blog'
     | '/_authenticated/dashboard'
+    | '/_authenticated/experiences'
+    | '/_authenticated/blog/$id'
+    | '/_authenticated/blog/new'
+    | '/_authenticated/experiences/$id'
+    | '/_authenticated/experiences/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -111,6 +194,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/experiences': {
+      id: '/_authenticated/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof AuthenticatedExperiencesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -118,15 +208,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/blog': {
+      id: '/_authenticated/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof AuthenticatedBlogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/experiences/new': {
+      id: '/_authenticated/experiences/new'
+      path: '/new'
+      fullPath: '/experiences/new'
+      preLoaderRoute: typeof AuthenticatedExperiencesNewRouteImport
+      parentRoute: typeof AuthenticatedExperiencesRoute
+    }
+    '/_authenticated/experiences/$id': {
+      id: '/_authenticated/experiences/$id'
+      path: '/$id'
+      fullPath: '/experiences/$id'
+      preLoaderRoute: typeof AuthenticatedExperiencesIdRouteImport
+      parentRoute: typeof AuthenticatedExperiencesRoute
+    }
+    '/_authenticated/blog/new': {
+      id: '/_authenticated/blog/new'
+      path: '/new'
+      fullPath: '/blog/new'
+      preLoaderRoute: typeof AuthenticatedBlogNewRouteImport
+      parentRoute: typeof AuthenticatedBlogRoute
+    }
+    '/_authenticated/blog/$id': {
+      id: '/_authenticated/blog/$id'
+      path: '/$id'
+      fullPath: '/blog/$id'
+      preLoaderRoute: typeof AuthenticatedBlogIdRouteImport
+      parentRoute: typeof AuthenticatedBlogRoute
+    }
   }
 }
 
+interface AuthenticatedBlogRouteChildren {
+  AuthenticatedBlogIdRoute: typeof AuthenticatedBlogIdRoute
+  AuthenticatedBlogNewRoute: typeof AuthenticatedBlogNewRoute
+}
+
+const AuthenticatedBlogRouteChildren: AuthenticatedBlogRouteChildren = {
+  AuthenticatedBlogIdRoute: AuthenticatedBlogIdRoute,
+  AuthenticatedBlogNewRoute: AuthenticatedBlogNewRoute,
+}
+
+const AuthenticatedBlogRouteWithChildren =
+  AuthenticatedBlogRoute._addFileChildren(AuthenticatedBlogRouteChildren)
+
+interface AuthenticatedExperiencesRouteChildren {
+  AuthenticatedExperiencesIdRoute: typeof AuthenticatedExperiencesIdRoute
+  AuthenticatedExperiencesNewRoute: typeof AuthenticatedExperiencesNewRoute
+}
+
+const AuthenticatedExperiencesRouteChildren: AuthenticatedExperiencesRouteChildren =
+  {
+    AuthenticatedExperiencesIdRoute: AuthenticatedExperiencesIdRoute,
+    AuthenticatedExperiencesNewRoute: AuthenticatedExperiencesNewRoute,
+  }
+
+const AuthenticatedExperiencesRouteWithChildren =
+  AuthenticatedExperiencesRoute._addFileChildren(
+    AuthenticatedExperiencesRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

@@ -29,7 +29,7 @@ export function ArticleForm({
   onSubmit,
 }: {
   initial?: Partial<ArticleValues>;
-  onSubmit: (v: ArticleValues) => Promise<void>;
+  onSubmit: (v: ArticleValues) => Promise<unknown>;
 }) {
   const [v, setV] = useState<ArticleValues>({
     title: initial?.title ?? "",
