@@ -15,7 +15,7 @@ function useCount(table: string, filter?: (q: any) => any) {
   return useQuery({
     queryKey: ["count", table, filter?.toString()],
     queryFn: async () => {
-      let q = supabase.from(table).select("*", { count: "exact", head: true });
+      let q: any = (supabase as any).from(table).select("*", { count: "exact", head: true });
       if (filter) q = filter(q);
       const { count } = await q;
       return count ?? 0;
