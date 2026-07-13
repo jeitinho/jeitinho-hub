@@ -684,7 +684,13 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "manager" | "redacteur" | "guide" | "prestataire"
+      app_role:
+        | "admin"
+        | "manager"
+        | "redacteur"
+        | "guide"
+        | "prestataire"
+        | "redacteur_chef"
       article_status:
         | "draft"
         | "review"
@@ -709,7 +715,14 @@ export type Database = {
         | "newsletter"
         | "pinterest"
         | "tiktok"
-      quote_status: "draft" | "sent" | "accepted" | "refused" | "paid"
+      quote_status:
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "refused"
+        | "paid"
+        | "ready"
+        | "expired"
       trip_status:
         | "draft"
         | "confirmed"
@@ -843,7 +856,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "manager", "redacteur", "guide", "prestataire"],
+      app_role: [
+        "admin",
+        "manager",
+        "redacteur",
+        "guide",
+        "prestataire",
+        "redacteur_chef",
+      ],
       article_status: ["draft", "review", "scheduled", "published", "archived"],
       content_status: [
         "idea",
@@ -865,7 +885,15 @@ export const Constants = {
         "pinterest",
         "tiktok",
       ],
-      quote_status: ["draft", "sent", "accepted", "refused", "paid"],
+      quote_status: [
+        "draft",
+        "sent",
+        "accepted",
+        "refused",
+        "paid",
+        "ready",
+        "expired",
+      ],
       trip_status: [
         "draft",
         "confirmed",
