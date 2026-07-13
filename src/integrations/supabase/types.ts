@@ -14,80 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
-      articles: {
+      authors: {
         Row: {
-          author_id: string | null
-          category_id: string | null
-          content: string | null
-          cover_image_url: string | null
+          bio: string | null
           created_at: string
-          excerpt: string | null
-          experience_id: string | null
           id: string
-          published_at: string | null
-          scheduled_at: string | null
-          seo_description: string | null
-          seo_title: string | null
+          is_active: boolean
+          language: string | null
+          location: string | null
+          long_bio: string | null
+          name: string
+          photo_url: string | null
+          role: string | null
           slug: string
-          status: Database["public"]["Enums"]["article_status"]
-          tags: string[]
-          title: string
+          social: Json
           updated_at: string
+          user_id: string | null
         }
         Insert: {
-          author_id?: string | null
-          category_id?: string | null
-          content?: string | null
-          cover_image_url?: string | null
+          bio?: string | null
           created_at?: string
-          excerpt?: string | null
-          experience_id?: string | null
           id?: string
-          published_at?: string | null
-          scheduled_at?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
+          is_active?: boolean
+          language?: string | null
+          location?: string | null
+          long_bio?: string | null
+          name: string
+          photo_url?: string | null
+          role?: string | null
           slug: string
-          status?: Database["public"]["Enums"]["article_status"]
-          tags?: string[]
-          title: string
+          social?: Json
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          author_id?: string | null
-          category_id?: string | null
-          content?: string | null
-          cover_image_url?: string | null
+          bio?: string | null
           created_at?: string
-          excerpt?: string | null
-          experience_id?: string | null
           id?: string
-          published_at?: string | null
-          scheduled_at?: string | null
-          seo_description?: string | null
-          seo_title?: string | null
+          is_active?: boolean
+          language?: string | null
+          location?: string | null
+          long_bio?: string | null
+          name?: string
+          photo_url?: string | null
+          role?: string | null
           slug?: string
-          status?: Database["public"]["Enums"]["article_status"]
-          tags?: string[]
-          title?: string
+          social?: Json
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "articles_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "articles_experience_id_fkey"
-            columns: ["experience_id"]
-            isOneToOne: false
-            referencedRelation: "experiences"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       calendar_events: {
         Row: {
@@ -137,13 +113,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "calendar_events_related_content_id_fkey"
-            columns: ["related_content_id"]
-            isOneToOne: false
-            referencedRelation: "content_items"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "calendar_events_related_trip_id_fkey"
             columns: ["related_trip_id"]
             isOneToOne: false
@@ -152,27 +121,39 @@ export type Database = {
           },
         ]
       }
-      categories: {
+      channels: {
         Row: {
+          config: Json
           created_at: string
           description: string | null
           id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["channel_kind"]
           name: string
           slug: string
+          updated_at: string
         }
         Insert: {
+          config?: Json
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean
+          kind: Database["public"]["Enums"]["channel_kind"]
           name: string
           slug: string
+          updated_at?: string
         }
         Update: {
+          config?: Json
           created_at?: string
           description?: string | null
           id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["channel_kind"]
           name?: string
           slug?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -224,83 +205,384 @@ export type Database = {
         }
         Relationships: []
       }
-      content_items: {
+      content_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          faq: Json
+          id: string
+          intro: string | null
+          name: string
+          parent_id: string | null
+          scope: string[]
+          slug: string
+          sort_order: number
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          faq?: Json
+          id?: string
+          intro?: string | null
+          name: string
+          parent_id?: string | null
+          scope?: string[]
+          slug: string
+          sort_order?: number
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          faq?: Json
+          id?: string
+          intro?: string | null
+          name?: string
+          parent_id?: string | null
+          scope?: string[]
+          slug?: string
+          sort_order?: number
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_comments: {
+        Row: {
+          author_id: string
+          body: string
+          content_id: string
+          created_at: string
+          id: string
+          mentions: string[]
+          parent_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          selection: Json | null
+          status: Database["public"]["Enums"]["comment_status"]
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          content_id: string
+          created_at?: string
+          id?: string
+          mentions?: string[]
+          parent_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          selection?: Json | null
+          status?: Database["public"]["Enums"]["comment_status"]
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          content_id?: string
+          created_at?: string
+          id?: string
+          mentions?: string[]
+          parent_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          selection?: Json | null
+          status?: Database["public"]["Enums"]["comment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_comments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "content_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_media: {
+        Row: {
+          alt: string | null
+          caption: string | null
+          content_id: string
+          created_at: string
+          id: string
+          media_id: string
+          metadata: Json
+          position: number
+          role: string
+        }
+        Insert: {
+          alt?: string | null
+          caption?: string | null
+          content_id: string
+          created_at?: string
+          id?: string
+          media_id: string
+          metadata?: Json
+          position?: number
+          role?: string
+        }
+        Update: {
+          alt?: string | null
+          caption?: string | null
+          content_id?: string
+          created_at?: string
+          id?: string
+          media_id?: string
+          metadata?: Json
+          position?: number
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_media_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_revisions: {
+        Row: {
+          content_id: string
+          created_at: string
+          editor_id: string | null
+          from_status:
+            | Database["public"]["Enums"]["content_workflow_status"]
+            | null
+          id: string
+          note: string | null
+          snapshot: Json | null
+          to_status:
+            | Database["public"]["Enums"]["content_workflow_status"]
+            | null
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          editor_id?: string | null
+          from_status?:
+            | Database["public"]["Enums"]["content_workflow_status"]
+            | null
+          id?: string
+          note?: string | null
+          snapshot?: Json | null
+          to_status?:
+            | Database["public"]["Enums"]["content_workflow_status"]
+            | null
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          editor_id?: string | null
+          from_status?:
+            | Database["public"]["Enums"]["content_workflow_status"]
+            | null
+          id?: string
+          note?: string | null
+          snapshot?: Json | null
+          to_status?:
+            | Database["public"]["Enums"]["content_workflow_status"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_revisions_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contents: {
         Row: {
           assignee_id: string | null
-          caption: string | null
+          author_id: string | null
+          body_json: Json
+          body_markdown: string | null
+          body_sections: Json
+          canonical_url: string | null
+          category_id: string | null
+          cover_media_id: string | null
           created_at: string
           created_by: string | null
-          description: string | null
+          excerpt: string | null
           experience_id: string | null
           hashtags: string[]
-          hook: string | null
           id: string
-          media_ids: string[]
+          language: string
+          metadata: Json
+          og_image_media_id: string | null
+          parent_content_id: string | null
           published_at: string | null
-          scheduled_for: string | null
-          status: Database["public"]["Enums"]["content_status"]
+          raw_caption: string | null
+          reading_time_min: number | null
+          scheduled_at: string | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string | null
+          status: Database["public"]["Enums"]["content_workflow_status"]
+          subtitle: string | null
+          tags: string[]
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at: string
         }
         Insert: {
           assignee_id?: string | null
-          caption?: string | null
+          author_id?: string | null
+          body_json?: Json
+          body_markdown?: string | null
+          body_sections?: Json
+          canonical_url?: string | null
+          category_id?: string | null
+          cover_media_id?: string | null
           created_at?: string
           created_by?: string | null
-          description?: string | null
+          excerpt?: string | null
           experience_id?: string | null
           hashtags?: string[]
-          hook?: string | null
           id?: string
-          media_ids?: string[]
+          language?: string
+          metadata?: Json
+          og_image_media_id?: string | null
+          parent_content_id?: string | null
           published_at?: string | null
-          scheduled_for?: string | null
-          status?: Database["public"]["Enums"]["content_status"]
+          raw_caption?: string | null
+          reading_time_min?: number | null
+          scheduled_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["content_workflow_status"]
+          subtitle?: string | null
+          tags?: string[]
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at?: string
         }
         Update: {
           assignee_id?: string | null
-          caption?: string | null
+          author_id?: string | null
+          body_json?: Json
+          body_markdown?: string | null
+          body_sections?: Json
+          canonical_url?: string | null
+          category_id?: string | null
+          cover_media_id?: string | null
           created_at?: string
           created_by?: string | null
-          description?: string | null
+          excerpt?: string | null
           experience_id?: string | null
           hashtags?: string[]
-          hook?: string | null
           id?: string
-          media_ids?: string[]
+          language?: string
+          metadata?: Json
+          og_image_media_id?: string | null
+          parent_content_id?: string | null
           published_at?: string | null
-          scheduled_for?: string | null
-          status?: Database["public"]["Enums"]["content_status"]
+          raw_caption?: string | null
+          reading_time_min?: number | null
+          scheduled_at?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["content_workflow_status"]
+          subtitle?: string | null
+          tags?: string[]
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "content_items_experience_id_fkey"
+            foreignKeyName: "contents_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_cover_media_id_fkey"
+            columns: ["cover_media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_experience_id_fkey"
             columns: ["experience_id"]
             isOneToOne: false
             referencedRelation: "experiences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_og_image_media_id_fkey"
+            columns: ["og_image_media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contents_parent_content_id_fkey"
+            columns: ["parent_content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
             referencedColumns: ["id"]
           },
         ]
       }
       experiences: {
         Row: {
+          city: string | null
           cover_image_url: string | null
           created_at: string
           created_by: string | null
           currency: string
           description: string | null
           duration: string | null
+          experience_type: string | null
           gallery: Json
           id: string
           is_published: boolean
+          level: string | null
           location: string | null
+          neighborhood: string | null
           partner_id: string | null
           price_from: number | null
           seo_description: string | null
@@ -313,16 +595,20 @@ export type Database = {
           videos: Json
         }
         Insert: {
+          city?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
           description?: string | null
           duration?: string | null
+          experience_type?: string | null
           gallery?: Json
           id?: string
           is_published?: boolean
+          level?: string | null
           location?: string | null
+          neighborhood?: string | null
           partner_id?: string | null
           price_from?: number | null
           seo_description?: string | null
@@ -335,16 +621,20 @@ export type Database = {
           videos?: Json
         }
         Update: {
+          city?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
           description?: string | null
           duration?: string | null
+          experience_type?: string | null
           gallery?: Json
           id?: string
           is_published?: boolean
+          level?: string | null
           location?: string | null
+          neighborhood?: string | null
           partner_id?: string | null
           price_from?: number | null
           seo_description?: string | null
@@ -366,53 +656,142 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          activities: string[]
+          created_at: string
+          email: string | null
+          external_ref: string | null
+          id: string
+          message: string | null
+          name: string | null
+          party_size: number | null
+          phone: string | null
+          processed_at: string | null
+          prospect_id: string | null
+          raw_payload: Json
+          received_at: string
+          source: string
+          status: Database["public"]["Enums"]["lead_status"]
+          travel_end: string | null
+          travel_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          activities?: string[]
+          created_at?: string
+          email?: string | null
+          external_ref?: string | null
+          id?: string
+          message?: string | null
+          name?: string | null
+          party_size?: number | null
+          phone?: string | null
+          processed_at?: string | null
+          prospect_id?: string | null
+          raw_payload?: Json
+          received_at?: string
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activities?: string[]
+          created_at?: string
+          email?: string | null
+          external_ref?: string | null
+          id?: string
+          message?: string | null
+          name?: string | null
+          party_size?: number | null
+          phone?: string | null
+          processed_at?: string | null
+          prospect_id?: string | null
+          raw_payload?: Json
+          received_at?: string
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media: {
         Row: {
           alt: string | null
           caption: string | null
+          copyright: string | null
           created_at: string
+          drive_url: string | null
           file_name: string
           height: number | null
           id: string
           kind: string
           mime_type: string | null
+          orientation: string | null
+          photographer: string | null
           size_bytes: number | null
           storage_path: string
           tags: string[] | null
+          updated_at: string
           uploaded_by: string | null
           url: string
+          used_count: number
           width: number | null
         }
         Insert: {
           alt?: string | null
           caption?: string | null
+          copyright?: string | null
           created_at?: string
+          drive_url?: string | null
           file_name: string
           height?: number | null
           id?: string
           kind?: string
           mime_type?: string | null
+          orientation?: string | null
+          photographer?: string | null
           size_bytes?: number | null
           storage_path: string
           tags?: string[] | null
+          updated_at?: string
           uploaded_by?: string | null
           url: string
+          used_count?: number
           width?: number | null
         }
         Update: {
           alt?: string | null
           caption?: string | null
+          copyright?: string | null
           created_at?: string
+          drive_url?: string | null
           file_name?: string
           height?: number | null
           id?: string
           kind?: string
           mime_type?: string | null
+          orientation?: string | null
+          photographer?: string | null
           size_bytes?: number | null
           storage_path?: string
           tags?: string[] | null
+          updated_at?: string
           uploaded_by?: string | null
           url?: string
+          used_count?: number
           width?: number | null
         }
         Relationships: []
@@ -495,6 +874,214 @@ export type Database = {
         }
         Relationships: []
       }
+      prospects: {
+        Row: {
+          activities: string[]
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          message: string | null
+          metadata: Json
+          name: string
+          notes: string | null
+          owner_id: string | null
+          party_size: number | null
+          phone: string | null
+          source: string
+          status: Database["public"]["Enums"]["prospect_status"]
+          travel_end: string | null
+          travel_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          activities?: string[]
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json
+          name: string
+          notes?: string | null
+          owner_id?: string | null
+          party_size?: number | null
+          phone?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["prospect_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activities?: string[]
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json
+          name?: string
+          notes?: string | null
+          owner_id?: string | null
+          party_size?: number | null
+          phone?: string | null
+          source?: string
+          status?: Database["public"]["Enums"]["prospect_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      publications: {
+        Row: {
+          channel_id: string
+          content_id: string
+          created_at: string
+          error: string | null
+          external_ref: string | null
+          external_url: string | null
+          id: string
+          payload: Json
+          published_at: string | null
+          published_by: string | null
+          scheduled_at: string | null
+          status: Database["public"]["Enums"]["publication_status"]
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          content_id: string
+          created_at?: string
+          error?: string | null
+          external_ref?: string | null
+          external_url?: string | null
+          id?: string
+          payload?: Json
+          published_at?: string | null
+          published_by?: string | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["publication_status"]
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          content_id?: string
+          created_at?: string
+          error?: string | null
+          external_ref?: string | null
+          external_url?: string | null
+          id?: string
+          payload?: Json
+          published_at?: string | null
+          published_by?: string | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["publication_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publications_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "publications_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_lines: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string
+          details: Json
+          icon: string | null
+          id: string
+          label: string
+          position: number
+          quantity: number
+          quote_id: string
+          unit: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string
+          details?: Json
+          icon?: string | null
+          id?: string
+          label: string
+          position?: number
+          quantity?: number
+          quote_id: string
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string
+          details?: Json
+          icon?: string | null
+          id?: string
+          label?: string
+          position?: number
+          quantity?: number
+          quote_id?: string
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_lines_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_number_sequences: {
+        Row: {
+          next_number: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          next_number?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          next_number?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       quotes: {
         Row: {
           accepted_at: string | null
@@ -502,10 +1089,19 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string
+          deposit_pct: number
+          equipment: Json
+          eyebrow: string | null
           id: string
           items: Json
+          location: string | null
           notes: string | null
+          number: string | null
           paid_at: string | null
+          period_end: string | null
+          period_start: string | null
+          project_label: string | null
+          prospect_id: string | null
           reference: string
           sent_at: string | null
           status: Database["public"]["Enums"]["quote_status"]
@@ -513,6 +1109,7 @@ export type Database = {
           total_amount: number
           updated_at: string
           valid_until: string | null
+          validity_days: number
         }
         Insert: {
           accepted_at?: string | null
@@ -520,10 +1117,19 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          deposit_pct?: number
+          equipment?: Json
+          eyebrow?: string | null
           id?: string
           items?: Json
+          location?: string | null
           notes?: string | null
+          number?: string | null
           paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          project_label?: string | null
+          prospect_id?: string | null
           reference: string
           sent_at?: string | null
           status?: Database["public"]["Enums"]["quote_status"]
@@ -531,6 +1137,7 @@ export type Database = {
           total_amount?: number
           updated_at?: string
           valid_until?: string | null
+          validity_days?: number
         }
         Update: {
           accepted_at?: string | null
@@ -538,10 +1145,19 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          deposit_pct?: number
+          equipment?: Json
+          eyebrow?: string | null
           id?: string
           items?: Json
+          location?: string | null
           notes?: string | null
+          number?: string | null
           paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          project_label?: string | null
+          prospect_id?: string | null
           reference?: string
           sent_at?: string | null
           status?: Database["public"]["Enums"]["quote_status"]
@@ -549,6 +1165,7 @@ export type Database = {
           total_amount?: number
           updated_at?: string
           valid_until?: string | null
+          validity_days?: number
         }
         Relationships: [
           {
@@ -556,6 +1173,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
             referencedColumns: ["id"]
           },
         ]
@@ -674,6 +1298,7 @@ export type Database = {
     Functions: {
       can_edit_content: { Args: { _user_id: string }; Returns: boolean }
       can_manage: { Args: { _user_id: string }; Returns: boolean }
+      can_review_content: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -682,6 +1307,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      next_quote_number: { Args: never; Returns: string }
     }
     Enums: {
       app_role:
@@ -691,30 +1317,53 @@ export type Database = {
         | "guide"
         | "prestataire"
         | "redacteur_chef"
-      article_status:
+      channel_kind:
+        | "blog_github"
+        | "website"
+        | "instagram"
+        | "tiktok"
+        | "pinterest"
+        | "newsletter"
+        | "whatsapp"
+        | "guide_pdf"
+        | "landing"
+      comment_status: "open" | "resolved"
+      content_type:
+        | "blog"
+        | "guide"
+        | "landing"
+        | "seo_hub"
+        | "instagram_reel"
+        | "instagram_carousel"
+        | "instagram_story"
+        | "tiktok"
+        | "pinterest"
+        | "newsletter"
+      content_workflow_status:
         | "draft"
-        | "review"
+        | "writing"
+        | "to_review"
+        | "changes_requested"
+        | "approved"
+        | "ready_to_publish"
         | "scheduled"
         | "published"
         | "archived"
-      content_status:
-        | "idea"
-        | "to_write"
-        | "to_design"
-        | "to_shoot"
-        | "to_edit"
-        | "to_review"
-        | "to_schedule"
-        | "published"
-        | "to_recycle"
-      content_type:
-        | "reel"
-        | "carousel"
-        | "story"
-        | "article"
-        | "newsletter"
-        | "pinterest"
-        | "tiktok"
+      lead_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "converted"
+        | "lost"
+        | "spam"
+      prospect_status:
+        | "new"
+        | "contacted"
+        | "quoted"
+        | "negotiating"
+        | "won"
+        | "lost"
+      publication_status: "pending" | "in_progress" | "success" | "failed"
       quote_status:
         | "draft"
         | "sent"
@@ -864,27 +1513,58 @@ export const Constants = {
         "prestataire",
         "redacteur_chef",
       ],
-      article_status: ["draft", "review", "scheduled", "published", "archived"],
-      content_status: [
-        "idea",
-        "to_write",
-        "to_design",
-        "to_shoot",
-        "to_edit",
-        "to_review",
-        "to_schedule",
-        "published",
-        "to_recycle",
-      ],
-      content_type: [
-        "reel",
-        "carousel",
-        "story",
-        "article",
-        "newsletter",
-        "pinterest",
+      channel_kind: [
+        "blog_github",
+        "website",
+        "instagram",
         "tiktok",
+        "pinterest",
+        "newsletter",
+        "whatsapp",
+        "guide_pdf",
+        "landing",
       ],
+      comment_status: ["open", "resolved"],
+      content_type: [
+        "blog",
+        "guide",
+        "landing",
+        "seo_hub",
+        "instagram_reel",
+        "instagram_carousel",
+        "instagram_story",
+        "tiktok",
+        "pinterest",
+        "newsletter",
+      ],
+      content_workflow_status: [
+        "draft",
+        "writing",
+        "to_review",
+        "changes_requested",
+        "approved",
+        "ready_to_publish",
+        "scheduled",
+        "published",
+        "archived",
+      ],
+      lead_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "converted",
+        "lost",
+        "spam",
+      ],
+      prospect_status: [
+        "new",
+        "contacted",
+        "quoted",
+        "negotiating",
+        "won",
+        "lost",
+      ],
+      publication_status: ["pending", "in_progress", "success", "failed"],
       quote_status: [
         "draft",
         "sent",
