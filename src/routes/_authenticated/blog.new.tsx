@@ -17,11 +17,26 @@ function NewArticle() {
         onSubmit={async (values) => {
           const { data: userData } = await supabase.auth.getUser();
           const { data, error } = await supabase
-            .from("articles")
-            .insert({ ...values, author_id: userData.user?.id })
+            .from("contents")
+            .insert({
+              type: "blog",
+              title: values.title,
+              slug: values.slug || null,
+              excerpt: values.excerpt,
+              body_markdown: values.content,
+              seo_title: values.seo_title,
+              seo_description: values.seo_description,
+              status: values.status,
+              tags: values.tags,
+              scheduled_at: values.scheduled_at,
+              published_at: values.published_at,
+              metadata: { cover_url: values.cover_image_url ?? null },
+              created_by: userData.user?.id,
+            })
             .select("id")
             .single();
           if (error) return toast.error(error.message);
+          if (!data) return toast.error("Erreur inconnue");
           toast.success("Article créé");
           navigate({ to: "/blog/$id", params: { id: data.id } });
         }}
