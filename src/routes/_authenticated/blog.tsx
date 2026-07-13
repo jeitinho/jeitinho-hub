@@ -12,7 +12,15 @@ export const Route = createFileRoute("/_authenticated/blog")({
 });
 
 const STATUS_LABEL: Record<string, string> = {
-  draft: "Brouillon", review: "À valider", scheduled: "Programmé", published: "Publié", archived: "Archivé",
+  draft: "Brouillon",
+  writing: "En rédaction",
+  to_review: "À relire",
+  changes_requested: "Corrections",
+  approved: "Validé",
+  ready_to_publish: "Prêt à publier",
+  scheduled: "Programmé",
+  published: "Publié",
+  archived: "Archivé",
 };
 
 function Layout() {
@@ -23,11 +31,12 @@ function Layout() {
 
 function BlogList() {
   const { data, isLoading } = useQuery({
-    queryKey: ["articles"],
+    queryKey: ["contents", "blog"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("articles")
-        .select("id,title,slug,status,excerpt,cover_image_url,published_at,updated_at")
+        .from("contents")
+        .select("id,title,slug,status,excerpt,metadata,published_at,updated_at")
+        .eq("type", "blog")
         .order("updated_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -56,22 +65,25 @@ function BlogList() {
         </Card>
       ) : (
         <div className="divide-y divide-border/60 rounded-lg border border-border/60 bg-card">
-          {data.map((a) => (
-            <Link key={a.id} to="/blog/$id" params={{ id: a.id }} className="flex items-center gap-4 p-4 transition-colors hover:bg-accent/40">
-              <div
-                className="h-14 w-20 flex-shrink-0 rounded-md bg-muted"
-                style={a.cover_image_url ? { backgroundImage: `url(${a.cover_image_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="pill">{STATUS_LABEL[a.status] ?? a.status}</span>
-                  <span className="truncate text-xs text-muted-foreground">/{a.slug}</span>
+          {data.map((a) => {
+            const cover = (a.metadata as { cover_url?: string } | null)?.cover_url;
+            return (
+              <Link key={a.id} to="/blog/$id" params={{ id: a.id }} className="flex items-center gap-4 p-4 transition-colors hover:bg-accent/40">
+                <div
+                  className="h-14 w-20 flex-shrink-0 rounded-md bg-muted"
+                  style={cover ? { backgroundImage: `url(${cover})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="pill">{STATUS_LABEL[a.status] ?? a.status}</span>
+                    <span className="truncate text-xs text-muted-foreground">/{a.slug}</span>
+                  </div>
+                  <h3 className="mt-1 truncate text-base" style={{ fontFamily: "Fraunces, serif" }}>{a.title}</h3>
+                  {a.excerpt && <p className="mt-0.5 truncate text-xs text-muted-foreground">{a.excerpt}</p>}
                 </div>
-                <h3 className="mt-1 truncate text-base" style={{ fontFamily: "Fraunces, serif" }}>{a.title}</h3>
-                {a.excerpt && <p className="mt-0.5 truncate text-xs text-muted-foreground">{a.excerpt}</p>}
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </PageShell>

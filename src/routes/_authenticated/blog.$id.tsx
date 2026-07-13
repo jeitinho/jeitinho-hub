@@ -16,15 +16,16 @@ function EditArticle() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["article", id],
+    queryKey: ["content", id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("articles").select("*").eq("id", id).single();
+      const { data, error } = await supabase.from("contents").select("*").eq("id", id).single();
       if (error) throw error;
       return data;
     },
   });
 
   if (isLoading || !data) return <PageShell title="Chargement…">{null}</PageShell>;
+  const meta = (data.metadata as { cover_url?: string } | null) ?? {};
 
   return (
     <PageShell
@@ -36,7 +37,7 @@ function EditArticle() {
           className="text-destructive hover:text-destructive"
           onClick={async () => {
             if (!confirm("Supprimer cet article ?")) return;
-            const { error } = await supabase.from("articles").delete().eq("id", id);
+            const { error } = await supabase.from("contents").delete().eq("id", id);
             if (error) return toast.error(error.message);
             toast.success("Supprimé");
             navigate({ to: "/blog" });
@@ -47,9 +48,36 @@ function EditArticle() {
       }
     >
       <ArticleForm
-        initial={data}
+        initial={{
+          title: data.title,
+          slug: data.slug ?? "",
+          excerpt: data.excerpt,
+          content: data.body_markdown,
+          cover_image_url: meta.cover_url ?? null,
+          seo_title: data.seo_title,
+          seo_description: data.seo_description,
+          status: data.status,
+          tags: data.tags ?? [],
+          scheduled_at: data.scheduled_at,
+          published_at: data.published_at,
+        }}
         onSubmit={async (values) => {
-          const { error } = await supabase.from("articles").update(values).eq("id", id);
+          const { error } = await supabase
+            .from("contents")
+            .update({
+              title: values.title,
+              slug: values.slug || null,
+              excerpt: values.excerpt,
+              body_markdown: values.content,
+              seo_title: values.seo_title,
+              seo_description: values.seo_description,
+              status: values.status,
+              tags: values.tags,
+              scheduled_at: values.scheduled_at,
+              published_at: values.published_at,
+              metadata: { ...meta, cover_url: values.cover_image_url ?? null },
+            })
+            .eq("id", id);
           if (error) return toast.error(error.message);
           toast.success("Enregistré");
           refetch();
