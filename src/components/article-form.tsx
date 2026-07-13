@@ -18,7 +18,16 @@ export type ArticleValues = {
   cover_image_url: string | null;
   seo_title: string | null;
   seo_description: string | null;
-  status: "draft" | "review" | "scheduled" | "published" | "archived";
+  status:
+    | "draft"
+    | "writing"
+    | "to_review"
+    | "changes_requested"
+    | "approved"
+    | "ready_to_publish"
+    | "scheduled"
+    | "published"
+    | "archived";
   tags: string[];
   scheduled_at: string | null;
   published_at: string | null;
@@ -92,7 +101,11 @@ export function ArticleForm({
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Brouillon</SelectItem>
-                <SelectItem value="review">À valider</SelectItem>
+                <SelectItem value="writing">En rédaction</SelectItem>
+                <SelectItem value="to_review">À relire</SelectItem>
+                <SelectItem value="changes_requested">Corrections demandées</SelectItem>
+                <SelectItem value="approved">Validé</SelectItem>
+                <SelectItem value="ready_to_publish">Prêt à publier</SelectItem>
                 <SelectItem value="scheduled">Programmé</SelectItem>
                 <SelectItem value="published">Publié</SelectItem>
                 <SelectItem value="archived">Archivé</SelectItem>
