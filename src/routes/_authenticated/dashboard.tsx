@@ -45,9 +45,9 @@ function DashboardPage() {
   const leads = useCount("clients", (q) => q.eq("status", "lead"));
   const quotesPending = useCount("quotes", (q) => q.eq("status", "sent"));
   const tripsActive = useCount("trips", (q) => q.eq("status", "in_progress"));
-  const articlesScheduled = useCount("articles", (q) => q.eq("status", "scheduled"));
+  const articlesScheduled = useCount("contents", (q) => q.eq("type", "blog").eq("status", "scheduled"));
   const experiences = useCount("experiences");
-  const contentToPublish = useCount("content_items", (q) => q.eq("status", "to_schedule"));
+  const contentToPublish = useCount("contents", (q) => q.eq("status", "ready_to_publish"));
   const upcomingEvents = useCount("calendar_events", (q) => q.gte("starts_at", new Date().toISOString()));
 
   const hour = new Date().getHours();
