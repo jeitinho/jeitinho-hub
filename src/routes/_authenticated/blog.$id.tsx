@@ -6,6 +6,10 @@ import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { WorkflowPanel, type ContentStatus } from "@/components/workflow/workflow-panel";
+import { CommentsPanel } from "@/components/workflow/comments-panel";
+import { RevisionsPanel } from "@/components/workflow/revisions-panel";
+import { PublishPanel } from "@/components/workflow/publish-panel";
 
 export const Route = createFileRoute("/_authenticated/blog/$id")({
   component: EditArticle,
@@ -47,12 +51,14 @@ function EditArticle() {
         </Button>
       }
     >
-      <ArticleForm
+      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+        <ArticleForm
         initial={{
           title: data.title,
           slug: data.slug ?? "",
           excerpt: data.excerpt,
           content: data.body_markdown,
+          body_json: data.body_json,
           cover_image_url: meta.cover_url ?? null,
           seo_title: data.seo_title,
           seo_description: data.seo_description,
@@ -69,6 +75,7 @@ function EditArticle() {
               slug: values.slug || null,
               excerpt: values.excerpt,
               body_markdown: values.content,
+              body_json: values.body_json as never,
               seo_title: values.seo_title,
               seo_description: values.seo_description,
               status: values.status,
@@ -82,7 +89,14 @@ function EditArticle() {
           toast.success("Enregistré");
           refetch();
         }}
-      />
+        />
+        <aside className="space-y-4">
+          <WorkflowPanel contentId={id} status={data.status as ContentStatus} onChanged={() => refetch()} />
+          <PublishPanel contentId={id} contentType={data.type} />
+          <CommentsPanel contentId={id} />
+          <RevisionsPanel contentId={id} />
+        </aside>
+      </div>
     </PageShell>
   );
 }

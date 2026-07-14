@@ -1,0 +1,50 @@
+.jt-editor {
+  min-height: 480px;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border) / 0.6);
+  background: hsl(var(--card));
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.jt-editor:focus { outline: none; }
+.jt-editor .ProseMirror { outline: none; min-height: 400px; }
+.jt-editor h1 { font-size: 2rem; font-weight: 600; margin: 1.5rem 0 0.75rem; letter-spacing: -0.01em; }
+.jt-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.5rem; letter-spacing: -0.01em; }
+.jt-editor h3 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+.jt-editor p { margin: 0.5rem 0; }
+.jt-editor ul, .jt-editor ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+.jt-editor blockquote { border-left: 3px solid hsl(var(--primary)); padding-left: 1rem; margin: 1rem 0; color: hsl(var(--muted-foreground)); font-style: italic; }
+.jt-editor a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
+.jt-editor img { max-width: 100%; border-radius: 0.5rem; margin: 1rem 0; }
+.jt-editor table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-family: system-ui, sans-serif; font-size: 0.9rem; }
+.jt-editor th, .jt-editor td { border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; }
+.jt-editor th { background: hsl(var(--muted)); font-weight: 600; text-align: left; }
+.jt-editor code { background: hsl(var(--muted)); padding: 0.1rem 0.35rem; border-radius: 0.25rem; font-size: 0.9em; }
+.jt-callout { border-radius: 0.75rem; padding: 1rem 1.25rem; margin: 1rem 0; border: 1px solid; font-family: system-ui, sans-serif; font-size: 0.95rem; }
+.jt-callout-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.7rem; font-weight: 600; margin-bottom: 0.5rem; opacity: 0.8; }
+.jt-callout-conseil { background: hsl(var(--primary) / 0.08); border-color: hsl(var(--primary) / 0.3); }
+.jt-callout-aeviter { background: hsl(var(--destructive) / 0.08); border-color: hsl(var(--destructive) / 0.3); }
+.jt-callout-bonasavoir { background: hsl(var(--accent) / 0.5); border-color: hsl(var(--border)); }
+.jt-callout p:first-child { margin-top: 0; }
+.jt-callout p:last-child { margin-bottom: 0; }
+.jt-faq-item { border: 1px solid hsl(var(--border) / 0.6); border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 0.5rem 0; }
+.jt-faq-question { font-weight: 600; }
+.jt-faq-answer { color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+.jt-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1rem 0; }
+.jt-gallery-item { margin: 0; }
+.jt-gallery-item img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1; border-radius: 0.5rem; }
+.jt-gallery-item figcaption { font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem; }
+.jt-btn { display: inline-block; padding: 0.65rem 1.25rem; border-radius: 999px; font-family: system-ui, sans-serif; font-size: 0.85rem; font-weight: 500; text-decoration: none !important; margin: 0.75rem 0; }
+.jt-btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.jt-btn-secondary { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); border: 1px solid hsl(var(--border)); }
+.jt-video { position: relative; aspect-ratio: 16/9; margin: 1rem 0; border-radius: 0.5rem; overflow: hidden; background: #000; }
+.jt-video iframe, .jt-video video { width: 100%; height: 100%; border: 0; }
+.jt-placeholder p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
