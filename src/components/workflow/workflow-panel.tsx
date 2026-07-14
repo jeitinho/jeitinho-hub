@@ -56,7 +56,7 @@ export function WorkflowPanel({
     if (!user) return;
     setBusy(to);
     const { data: current } = await supabase.from("contents").select("body_json,title").eq("id", contentId).single();
-    const patch: Record<string, unknown> = { status: to };
+    const patch: { status: ContentStatus; published_at?: string } = { status: to };
     if (to === "published") patch.published_at = new Date().toISOString();
     const { error } = await supabase.from("contents").update(patch).eq("id", contentId);
     if (error) { setBusy(null); return toast.error(error.message); }

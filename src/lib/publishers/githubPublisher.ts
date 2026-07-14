@@ -80,7 +80,7 @@ export const githubPublisher: Publisher = {
       await supabase.from("publications").insert({
         channel_id: channel.id,
         content_id: content.id,
-        status: ctx.dryRun ? "preview" : "queued",
+        status: ctx.dryRun ? "pending" : "in_progress",
         payload,
         published_by: ctx.triggeredBy,
         scheduled_at: null,
