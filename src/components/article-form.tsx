@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TiptapEditor } from "@/components/editor/tiptap-editor";
 
 function slugify(s: string) {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -15,6 +16,7 @@ export type ArticleValues = {
   slug: string;
   excerpt: string | null;
   content: string | null;
+  body_json: unknown;
   cover_image_url: string | null;
   seo_title: string | null;
   seo_description: string | null;
@@ -45,6 +47,7 @@ export function ArticleForm({
     slug: initial?.slug ?? "",
     excerpt: initial?.excerpt ?? "",
     content: initial?.content ?? "",
+    body_json: initial?.body_json ?? { type: "doc", content: [{ type: "paragraph" }] },
     cover_image_url: initial?.cover_image_url ?? "",
     seo_title: initial?.seo_title ?? "",
     seo_description: initial?.seo_description ?? "",
@@ -83,8 +86,8 @@ export function ArticleForm({
           <Textarea rows={2} value={v.excerpt ?? ""} onChange={(e) => set("excerpt", e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Contenu (Markdown supporté)</Label>
-          <Textarea rows={18} value={v.content ?? ""} onChange={(e) => set("content", e.target.value)} className="font-mono text-sm" />
+          <Label>Contenu</Label>
+          <TiptapEditor value={v.body_json} onChange={(json) => set("body_json", json)} />
         </div>
         <div className="space-y-2">
           <Label>Image de couverture (URL)</Label>
