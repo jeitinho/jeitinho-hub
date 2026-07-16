@@ -12,6 +12,7 @@ import { CommentsPanel } from "@/components/workflow/comments-panel";
 import { RevisionsPanel } from "@/components/workflow/revisions-panel";
 import { PublishPanel } from "@/components/workflow/publish-panel";
 import { DeleteArticleDialog } from "@/components/workflow/delete-article-dialog";
+import { RepublishPanel } from "@/components/workflow/republish-panel";
 
 export const Route = createFileRoute("/_authenticated/blog/$id")({
   component: EditArticle,
@@ -116,6 +117,9 @@ function EditArticle() {
         />
         <aside className="space-y-4">
           <WorkflowPanel contentId={id} status={data.status as ContentStatus} onChanged={() => refetch()} />
+          {data.status === "archived" && (
+            <RepublishPanel contentId={id} onDone={() => refetch()} />
+          )}
           <PublishPanel contentId={id} contentType={data.type} />
           <CommentsPanel contentId={id} />
           <RevisionsPanel contentId={id} />
