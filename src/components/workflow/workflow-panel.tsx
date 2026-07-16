@@ -9,7 +9,7 @@ import { ArrowRight } from "lucide-react";
 
 export type ContentStatus =
   | "draft" | "writing" | "to_review" | "changes_requested" | "approved"
-  | "ready_to_publish" | "scheduled" | "published" | "archived";
+  | "ready_to_publish" | "scheduled" | "published" | "archived" | "deleted";
 
 const STATUS_LABEL: Record<ContentStatus, string> = {
   draft: "Brouillon",
@@ -21,6 +21,7 @@ const STATUS_LABEL: Record<ContentStatus, string> = {
   scheduled: "Programmé",
   published: "Publié",
   archived: "Archivé",
+  deleted: "Supprimé",
 };
 
 function nextStates(current: ContentStatus, roles: string[]): ContentStatus[] {
@@ -38,6 +39,7 @@ function nextStates(current: ContentStatus, roles: string[]): ContentStatus[] {
     scheduled: canPublish ? ["published", "ready_to_publish"] : [],
     published: canPublish ? ["archived"] : [],
     archived: canPublish ? ["draft"] : [],
+    deleted: [],
   };
   return transitions[current] ?? [];
 }
