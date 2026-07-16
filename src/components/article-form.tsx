@@ -29,7 +29,8 @@ export type ArticleValues = {
     | "ready_to_publish"
     | "scheduled"
     | "published"
-    | "archived";
+    | "archived"
+    | "deleted";
   tags: string[];
   scheduled_at: string | null;
   published_at: string | null;
