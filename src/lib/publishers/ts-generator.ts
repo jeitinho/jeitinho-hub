@@ -156,7 +156,7 @@ export const article: Article = {
   sections: ${j(sections)},
 };
 
-// `published` is a JEITINHO Platform flag used to archive an article
+// "published" is a JEITINHO Platform flag used to archive an article
 // without removing its file from the repo. Consumers that don't know
 // about this field can safely ignore it.
 (article as unknown as { published: boolean }).published = ${JSON.stringify(published)};
