@@ -119,14 +119,14 @@ export const githubPublisher: Publisher = {
     const importVar = content.slug.replace(/[-.]/g, "_");
     const registryHint = `Ajouter dans src/content/articles/index.ts : import ${importVar} from './${content.slug}';`;
 
-    const payload: Record<string, unknown> = {
+    const payload = {
       target_path: targetPath,
       source,
       registry_hint: registryHint,
       sections_count: sections.length,
       generated_at: new Date().toISOString(),
       dry_run: ctx.dryRun,
-    };
+    } as const;
 
     const { data: channel } = await supabase
       .from("channels")
@@ -141,7 +141,7 @@ export const githubPublisher: Publisher = {
           channel_id: channel.id,
           content_id: content.id,
           status: "pending",
-          payload,
+          payload: payload as never,
           published_by: ctx.triggeredBy,
           scheduled_at: null,
         });
@@ -177,7 +177,7 @@ export const githubPublisher: Publisher = {
           channel_id: channel.id,
           content_id: content.id,
           status: "failed",
-          payload: { ...payload, error: msg },
+          payload: { ...payload, error: msg } as never,
           published_by: ctx.triggeredBy,
         });
       }
@@ -190,7 +190,7 @@ export const githubPublisher: Publisher = {
           channel_id: channel.id,
           content_id: content.id,
           status: "failed",
-          payload: { ...payload, error: pushRes.error, conflict: "conflict" in pushRes ? pushRes.conflict : false },
+          payload: { ...payload, error: pushRes.error, conflict: "conflict" in pushRes ? pushRes.conflict : false } as never,
           published_by: ctx.triggeredBy,
         });
       }
@@ -222,8 +222,8 @@ export const githubPublisher: Publisher = {
       await supabase.from("publications").insert({
         channel_id: channel.id,
         content_id: content.id,
-        status: "published",
-        payload: enriched,
+        status: "success",
+        payload: enriched as never,
         external_ref: pushRes.commitSha ?? targetPath,
         external_url: pushRes.commitUrl ?? null,
         published_by: ctx.triggeredBy,
