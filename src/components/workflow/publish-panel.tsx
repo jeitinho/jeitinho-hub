@@ -21,11 +21,17 @@ export function PublishPanel({ contentId, contentType }: { contentId: string; co
     const pub = publishers.find((p) => p.id === publisherId)!;
     const res = await pub.publish({ contentId, triggeredBy: user.id, dryRun });
     setBusy(null);
-    if (!res.ok) return toast.error(res.error ?? "Échec de la publication");
+    if (!res.ok) return toast.error(res.error ?? "Échec de la publication", { duration: 8000 });
     if (dryRun && res.preview) {
       setPreview({ label: pub.label, source: res.preview, target: res.externalRef ?? "" });
     } else {
-      toast.success(`${pub.label} : ${res.externalRef ?? "OK"}`);
+      toast.success(`${pub.label} publié`, {
+        description: res.externalRef ?? "OK",
+        action: res.externalUrl
+          ? { label: "Voir commit", onClick: () => window.open(res.externalUrl!, "_blank") }
+          : undefined,
+        duration: 8000,
+      });
     }
   };
 
