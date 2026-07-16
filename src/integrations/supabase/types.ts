@@ -1349,6 +1349,7 @@ export type Database = {
         | "scheduled"
         | "published"
         | "archived"
+        | "deleted"
       lead_status:
         | "new"
         | "contacted"
@@ -1547,6 +1548,7 @@ export const Constants = {
         "scheduled",
         "published",
         "archived",
+        "deleted",
       ],
       lead_status: [
         "new",

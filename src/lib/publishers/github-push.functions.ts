@@ -13,6 +13,14 @@ const InputSchema = z.object({
   allowUpdate: z.boolean().optional().default(false),
 });
 
+const DeleteSchema = z.object({
+  owner: z.string().min(1),
+  repo: z.string().min(1),
+  branch: z.string().min(1),
+  path: z.string().min(1),
+  message: z.string().min(1),
+});
+
 function b64(str: string): string {
   if (typeof Buffer !== "undefined") return Buffer.from(str, "utf-8").toString("base64");
   // Fallback (Worker)
@@ -91,5 +99,43 @@ export const pushArticleToGithub = createServerFn({ method: "POST" })
       commitSha: body.commit?.sha ?? null,
       fileUrl: body.content?.html_url ?? null,
       path: body.content?.path ?? path,
+    };
+  });
+
+export const deleteArticleFromGithub = createServerFn({ method: "POST" })
+  .inputValidator((input) => DeleteSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { owner, repo, branch, path, message } = data;
+
+    // 1) Get existing sha
+    const check = await gh(
+      `/repos/${owner}/${repo}/contents/${encodeURI(path)}?ref=${encodeURIComponent(branch)}`,
+      { method: "GET" },
+    );
+    if (check.status === 404) {
+      return { ok: true as const, alreadyGone: true as const, commitUrl: null, commitSha: null };
+    }
+    if (!check.ok) {
+      const text = await check.text();
+      return { ok: false as const, error: `GitHub lookup ${check.status}: ${text}` };
+    }
+    const info = (await check.json()) as { sha?: string };
+    if (!info.sha) return { ok: false as const, error: "sha introuvable" };
+
+    // 2) DELETE
+    const del = await gh(`/repos/${owner}/${repo}/contents/${encodeURI(path)}`, {
+      method: "DELETE",
+      body: JSON.stringify({ message, branch, sha: info.sha }),
+    });
+    if (!del.ok) {
+      const text = await del.text();
+      return { ok: false as const, error: `GitHub delete ${del.status}: ${text}` };
+    }
+    const body = (await del.json()) as { commit?: { sha?: string; html_url?: string } };
+    return {
+      ok: true as const,
+      alreadyGone: false as const,
+      commitUrl: body.commit?.html_url ?? null,
+      commitSha: body.commit?.sha ?? null,
     };
   });
