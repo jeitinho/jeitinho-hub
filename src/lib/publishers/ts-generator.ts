@@ -25,6 +25,7 @@ export type ArticleMeta = {
   seo_title?: string | null;
   seo_description?: string | null;
   language?: string;
+  published?: boolean;
 };
 
 function inlineText(node: TiptapNode): string {
