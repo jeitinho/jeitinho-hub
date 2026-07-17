@@ -850,6 +850,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_seen_at: string | null
+          status: Database["public"]["Enums"]["account_status"]
           updated_at: string
         }
         Insert: {
@@ -860,6 +861,7 @@ export type Database = {
           id: string
           is_active?: boolean
           last_seen_at?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
           updated_at?: string
         }
         Update: {
@@ -870,6 +872,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_seen_at?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
           updated_at?: string
         }
         Relationships: []
@@ -1184,6 +1187,36 @@ export type Database = {
           },
         ]
       }
+      roles: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          is_active: boolean
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -1306,10 +1339,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_account_active: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       next_quote_number: { Args: never; Returns: string }
     }
     Enums: {
+      account_status: "pending_validation" | "active" | "rejected"
       app_role:
         | "admin"
         | "manager"
@@ -1317,6 +1352,7 @@ export type Database = {
         | "guide"
         | "prestataire"
         | "redacteur_chef"
+        | "auteur"
       channel_kind:
         | "blog_github"
         | "website"
@@ -1506,6 +1542,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status: ["pending_validation", "active", "rejected"],
       app_role: [
         "admin",
         "manager",
@@ -1513,6 +1550,7 @@ export const Constants = {
         "guide",
         "prestataire",
         "redacteur_chef",
+        "auteur",
       ],
       channel_kind: [
         "blog_github",

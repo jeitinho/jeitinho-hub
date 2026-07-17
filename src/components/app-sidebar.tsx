@@ -63,7 +63,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { roles, user, isAdmin } = useAuth();
+  const { roles, user, isAdmin, canManage } = useAuth();
   const allowed = useAllowed(roles);
 
   const handleSignOut = async () => {
@@ -110,7 +110,7 @@ export function AppSidebar() {
         {renderGroup("Commercial", COMMERCIAL)}
         {renderGroup("Contenu", CONTENU)}
         {renderGroup("Réseau", RESEAU)}
-        {isAdmin && (
+        {canManage && (
           <SidebarGroup>
             {!collapsed && <SidebarGroupLabel className="tracked text-[10px] text-muted-foreground/70">Système</SidebarGroupLabel>}
             <SidebarGroupContent>
