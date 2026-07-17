@@ -24,6 +24,7 @@ function NewArticle() {
               slug: values.slug || null,
               excerpt: values.excerpt,
               body_markdown: values.content,
+              body_json: values.body_json as never,
               seo_title: values.seo_title,
               seo_description: values.seo_description,
               status: values.status,
@@ -31,6 +32,9 @@ function NewArticle() {
               scheduled_at: values.scheduled_at,
               published_at: values.published_at,
               metadata: { cover_url: values.cover_image_url ?? null },
+              category_id: values.category_id,
+              author_id: values.author_id,
+              reading_time_min: values.reading_time_min,
               created_by: userData.user?.id,
             })
             .select("id")

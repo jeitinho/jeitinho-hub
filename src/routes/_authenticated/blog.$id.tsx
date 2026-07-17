@@ -91,6 +91,9 @@ function EditArticle() {
           tags: data.tags ?? [],
           scheduled_at: data.scheduled_at,
           published_at: data.published_at,
+          category_id: data.category_id,
+          author_id: data.author_id,
+          reading_time_min: data.reading_time_min,
         }}
         onSubmit={async (values) => {
           const { error } = await supabase
@@ -108,6 +111,9 @@ function EditArticle() {
               scheduled_at: values.scheduled_at,
               published_at: values.published_at,
               metadata: { ...meta, cover_url: values.cover_image_url ?? null },
+              category_id: values.category_id,
+              author_id: values.author_id,
+              reading_time_min: values.reading_time_min,
             })
             .eq("id", id);
           if (error) return toast.error(error.message);
