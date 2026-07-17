@@ -2,6 +2,8 @@ import { createFileRoute, redirect, Outlet, useRouterState } from "@tanstack/rea
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { useAuth } from "@/hooks/use-auth";
+import { PendingValidationScreen } from "@/components/pending-validation-screen";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -16,6 +18,11 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = pathnameToTitle(pathname);
+  const { status, loading, isRejected } = useAuth();
+
+  if (!loading && status && status !== "active") {
+    return <PendingValidationScreen rejected={isRejected} />;
+  }
 
   return (
     <SidebarProvider>
