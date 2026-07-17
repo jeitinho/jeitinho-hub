@@ -90,7 +90,7 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   partenaires: ["admin", "manager", "prestataire"],
   calendrier: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide"],
   analytics: ["admin", "manager"],
-  parametres: ["admin"],
+  parametres: ["admin", "manager"],
 };
 
 export function canAccessModule(module: keyof typeof MODULE_ACCESS, roles: AppRole[]) {

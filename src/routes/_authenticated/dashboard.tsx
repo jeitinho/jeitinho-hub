@@ -5,6 +5,7 @@ import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Users, FileText, Plane, BookOpen, Palmtree, Library, Calendar as CalendarIcon, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -41,7 +42,18 @@ function StatCard({ icon: Icon, label, value, hint }: { icon: React.ComponentTyp
 }
 
 function DashboardPage() {
-  const { user } = useAuth();
+  const { user, canManage } = useAuth();
+  const pendingUsers = useQuery({
+    queryKey: ["pending-users-count"],
+    enabled: canManage,
+    queryFn: async () => {
+      const { count } = await (supabase as any)
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending_validation");
+      return count ?? 0;
+    },
+  });
   const leads = useCount("clients", (q) => q.eq("status", "lead"));
   const quotesPending = useCount("quotes", (q) => q.eq("status", "sent"));
   const tripsActive = useCount("trips", (q) => q.eq("status", "in_progress"));
@@ -59,6 +71,20 @@ function DashboardPage() {
       title={`${greet}.`}
       description={user?.email ? `Voici l'état de JEITINHO aujourd'hui.` : undefined}
     >
+      {canManage && (pendingUsers.data ?? 0) > 0 && (
+        <Link
+          to="/parametres/utilisateurs"
+          className="mb-6 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 p-4 transition-colors hover:bg-primary/10"
+        >
+          <div>
+            <p className="tracked text-[10px] text-primary">Action requise</p>
+            <p className="mt-1 text-sm">
+              {pendingUsers.data} compte{(pendingUsers.data ?? 0) > 1 ? "s" : ""} en attente de validation
+            </p>
+          </div>
+          <span className="pill bg-primary text-primary-foreground">{pendingUsers.data}</span>
+        </Link>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Users} label="Nouveaux leads" value={leads.data ?? "—"} />
         <StatCard icon={FileText} label="Devis en attente" value={quotesPending.data ?? "—"} />
