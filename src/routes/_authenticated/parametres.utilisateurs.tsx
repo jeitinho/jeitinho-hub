@@ -175,6 +175,20 @@ function PendingCard({ user, catalog }: { user: UserWithRoles; catalog: RoleCata
       const { error: rErr } = await (supabase as any).from("user_roles").insert(rows);
       if (rErr) throw rErr;
 
+      const writesContent = ["auteur", "redacteur", "redacteur_chef"].some((r) =>
+        selectedRoles.has(r)
+      );
+      if (writesContent) {
+        const slug = fullName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        const { error: aErr } = await (supabase as any)
+          .from("authors")
+          .upsert(
+            { name: fullName.trim(), slug, user_id: user.id, photo_url: avatarPath },
+            { onConflict: "slug", ignoreDuplicates: true }
+          );
+        if (aErr) console.error("Erreur création profil auteur:", aErr);
+      }
+
       toast.success("Compte validé.");
       qc.invalidateQueries({ queryKey: ["users-with-roles"] });
       qc.invalidateQueries({ queryKey: ["pending-users-count"] });
