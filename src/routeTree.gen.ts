@@ -30,6 +30,8 @@ import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedParametresUtilisateursRouteImport } from './routes/_authenticated/parametres.utilisateurs'
 import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
 import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
+import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
+import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
 import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
 
@@ -143,6 +145,16 @@ const AuthenticatedExperiencesIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedExperiencesRoute,
   } as any)
+const AuthenticatedDevisNewRoute = AuthenticatedDevisNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedDevisRoute,
+} as any)
+const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedDevisRoute,
+} as any)
 const AuthenticatedBlogNewRoute = AuthenticatedBlogNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -166,7 +178,7 @@ export interface FileRoutesByFullPath {
   '/contenus': typeof AuthenticatedContenusRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/devis': typeof AuthenticatedDevisRoute
+  '/devis': typeof AuthenticatedDevisRouteWithChildren
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -174,6 +186,8 @@ export interface FileRoutesByFullPath {
   '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
+  '/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/devis/new': typeof AuthenticatedDevisNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
@@ -190,7 +204,7 @@ export interface FileRoutesByTo {
   '/contenus': typeof AuthenticatedContenusRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/devis': typeof AuthenticatedDevisRoute
+  '/devis': typeof AuthenticatedDevisRouteWithChildren
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -198,6 +212,8 @@ export interface FileRoutesByTo {
   '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
+  '/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/devis/new': typeof AuthenticatedDevisNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
@@ -216,7 +232,7 @@ export interface FileRoutesById {
   '/_authenticated/contenus': typeof AuthenticatedContenusRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/devis': typeof AuthenticatedDevisRoute
+  '/_authenticated/devis': typeof AuthenticatedDevisRouteWithChildren
   '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/_authenticated/mediatheque': typeof AuthenticatedMediathequeRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -224,6 +240,8 @@ export interface FileRoutesById {
   '/_authenticated/voyages': typeof AuthenticatedVoyagesRoute
   '/_authenticated/blog/$id': typeof AuthenticatedBlogIdRoute
   '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
+  '/_authenticated/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/_authenticated/devis/new': typeof AuthenticatedDevisNewRoute
   '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/_authenticated/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/_authenticated/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
@@ -250,6 +268,8 @@ export interface FileRouteTypes {
     | '/voyages'
     | '/blog/$id'
     | '/blog/new'
+    | '/devis/$id'
+    | '/devis/new'
     | '/experiences/$id'
     | '/experiences/new'
     | '/parametres/utilisateurs'
@@ -274,6 +294,8 @@ export interface FileRouteTypes {
     | '/voyages'
     | '/blog/$id'
     | '/blog/new'
+    | '/devis/$id'
+    | '/devis/new'
     | '/experiences/$id'
     | '/experiences/new'
     | '/parametres/utilisateurs'
@@ -299,6 +321,8 @@ export interface FileRouteTypes {
     | '/_authenticated/voyages'
     | '/_authenticated/blog/$id'
     | '/_authenticated/blog/new'
+    | '/_authenticated/devis/$id'
+    | '/_authenticated/devis/new'
     | '/_authenticated/experiences/$id'
     | '/_authenticated/experiences/new'
     | '/_authenticated/parametres/utilisateurs'
@@ -461,6 +485,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExperiencesIdRouteImport
       parentRoute: typeof AuthenticatedExperiencesRoute
     }
+    '/_authenticated/devis/new': {
+      id: '/_authenticated/devis/new'
+      path: '/new'
+      fullPath: '/devis/new'
+      preLoaderRoute: typeof AuthenticatedDevisNewRouteImport
+      parentRoute: typeof AuthenticatedDevisRoute
+    }
+    '/_authenticated/devis/$id': {
+      id: '/_authenticated/devis/$id'
+      path: '/$id'
+      fullPath: '/devis/$id'
+      preLoaderRoute: typeof AuthenticatedDevisIdRouteImport
+      parentRoute: typeof AuthenticatedDevisRoute
+    }
     '/_authenticated/blog/new': {
       id: '/_authenticated/blog/new'
       path: '/new'
@@ -490,6 +528,19 @@ const AuthenticatedBlogRouteChildren: AuthenticatedBlogRouteChildren = {
 
 const AuthenticatedBlogRouteWithChildren =
   AuthenticatedBlogRoute._addFileChildren(AuthenticatedBlogRouteChildren)
+
+interface AuthenticatedDevisRouteChildren {
+  AuthenticatedDevisIdRoute: typeof AuthenticatedDevisIdRoute
+  AuthenticatedDevisNewRoute: typeof AuthenticatedDevisNewRoute
+}
+
+const AuthenticatedDevisRouteChildren: AuthenticatedDevisRouteChildren = {
+  AuthenticatedDevisIdRoute: AuthenticatedDevisIdRoute,
+  AuthenticatedDevisNewRoute: AuthenticatedDevisNewRoute,
+}
+
+const AuthenticatedDevisRouteWithChildren =
+  AuthenticatedDevisRoute._addFileChildren(AuthenticatedDevisRouteChildren)
 
 interface AuthenticatedExperiencesRouteChildren {
   AuthenticatedExperiencesIdRoute: typeof AuthenticatedExperiencesIdRoute
@@ -530,7 +581,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContenusRoute: typeof AuthenticatedContenusRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDevisRoute: typeof AuthenticatedDevisRoute
+  AuthenticatedDevisRoute: typeof AuthenticatedDevisRouteWithChildren
   AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
   AuthenticatedMediathequeRoute: typeof AuthenticatedMediathequeRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
@@ -546,7 +597,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContenusRoute: AuthenticatedContenusRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDevisRoute: AuthenticatedDevisRoute,
+  AuthenticatedDevisRoute: AuthenticatedDevisRouteWithChildren,
   AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
   AuthenticatedMediathequeRoute: AuthenticatedMediathequeRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,
