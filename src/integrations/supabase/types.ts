@@ -1093,9 +1093,12 @@ export type Database = {
           created_by: string | null
           currency: string
           deposit_pct: number
+          description: string | null
           equipment: Json
           eyebrow: string | null
+          highlights: Json
           id: string
+          itinerary: Json
           items: Json
           location: string | null
           notes: string | null
@@ -1122,9 +1125,12 @@ export type Database = {
           created_by?: string | null
           currency?: string
           deposit_pct?: number
+          description?: string | null
           equipment?: Json
           eyebrow?: string | null
+          highlights?: Json
           id?: string
+          itinerary?: Json
           items?: Json
           location?: string | null
           notes?: string | null
@@ -1151,9 +1157,12 @@ export type Database = {
           created_by?: string | null
           currency?: string
           deposit_pct?: number
+          description?: string | null
           equipment?: Json
           eyebrow?: string | null
+          highlights?: Json
           id?: string
+          itinerary?: Json
           items?: Json
           location?: string | null
           notes?: string | null

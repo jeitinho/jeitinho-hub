@@ -11,7 +11,16 @@ export async function downloadQuotePdf(quote: QuotePdfData) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `Devis-${quote.number}.pdf`;
+  a.download = quoteFileName(quote);
+  document.body.appendChild(a);
   a.click();
+  a.remove();
   URL.revokeObjectURL(url);
+}
+
+/** Devis_Jeitinho_{client}_{numero}.pdf */
+function quoteFileName(quote: QuotePdfData) {
+  const client = (quote.client.name || "client").normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[^\p{L}\p{N}]+/gu, "");
+  const num = quote.number.replace(/[^\p{L}\p{N}-]+/gu, "");
+  return `Devis_Jeitinho_${client}_${num}.pdf`;
 }

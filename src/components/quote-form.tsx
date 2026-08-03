@@ -18,10 +18,23 @@ import {
 import { Plus, Trash2, FileDown, Save } from "lucide-react";
 import { QUOTE_STATUSES, formatMoney, type QuoteStatus } from "@/lib/quotes/status";
 import { downloadQuotePdf } from "@/lib/quotes/download-quote-pdf";
+import type { QuotePdfData } from "@/components/quotes/quote-pdf";
 
 type LineDraft = { id?: string; label: string; unit: string; quantity: number; unit_price: number };
 
 const NEW_CLIENT = "__new__";
+const NO_PROSPECT = "__none__";
+
+/** Parse tolérant : renvoie null (et laisse le bloc PDF invisible) si le JSON est invalide ou vide. */
+function parseJsonOrNull(raw: string): unknown {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
 
 function emptyLine(): LineDraft {
   return { label: "", unit: "Forfait", quantity: 1, unit_price: 0 };
@@ -35,9 +48,14 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [prospectId, setProspectId] = useState<string>(NO_PROSPECT);
 
   const [title, setTitle] = useState("");
   const [eyebrow, setEyebrow] = useState("Proposition de séjour");
+  const [description, setDescription] = useState("");
+  const [equipmentRaw, setEquipmentRaw] = useState("");
+  const [highlightsRaw, setHighlightsRaw] = useState("");
+  const [itineraryRaw, setItineraryRaw] = useState("");
   const [projectLabel, setProjectLabel] = useState("");
   const [location, setLocation] = useState("Rio de Janeiro");
   const [periodStart, setPeriodStart] = useState("");
@@ -51,6 +69,7 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
   const [number, setNumber] = useState<string | null>(null);
   const [lines, setLines] = useState<LineDraft[]>([emptyLine()]);
   const [saving, setSaving] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const { data: clients } = useQuery({
     queryKey: ["clients", "options"],
@@ -59,6 +78,18 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
         .from("clients")
         .select("id,full_name,email,phone")
         .order("full_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: prospects } = useQuery({
+    queryKey: ["prospects", "options"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("prospects")
+        .select("id,name,email,phone,party_size,travel_start,travel_end")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -84,6 +115,7 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
     setNumber(q.number ?? q.reference);
     setTitle(q.title ?? "");
     setEyebrow(q.eyebrow ?? "");
+    setDescription(q.description ?? "");
     setProjectLabel(q.project_label ?? "");
     setLocation(q.location ?? "");
     setPeriodStart(q.period_start ?? "");
@@ -94,7 +126,15 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
     setValidityDays(String(q.validity_days ?? 30));
     setStatus(q.status);
     setNotes(q.notes ?? "");
+    setEquipmentRaw(q.equipment && (Array.isArray(q.equipment) ? q.equipment.length : Object.keys(q.equipment as object).length) ? JSON.stringify(q.equipment, null, 2) : "");
+    setHighlightsRaw(
+      q.highlights && ((q.highlights as { included?: unknown[] }).included?.length || (q.highlights as { excluded?: unknown[] }).excluded?.length)
+        ? JSON.stringify(q.highlights, null, 2)
+        : "",
+    );
+    setItineraryRaw(q.itinerary && Array.isArray(q.itinerary) && q.itinerary.length ? JSON.stringify(q.itinerary, null, 2) : "");
     if (q.client_id) setClientId(q.client_id);
+    if (q.prospect_id) setProspectId(q.prospect_id);
     setLines(
       existing.lineRows.length
         ? existing.lineRows.map((l) => ({
@@ -109,6 +149,23 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
   }, [existing]);
 
   const selectedClient = clients?.find((c) => c.id === clientId);
+
+  const applyProspect = (id: string) => {
+    setProspectId(id);
+    if (id === NO_PROSPECT) return;
+    const p = prospects?.find((x) => x.id === id);
+    if (!p) return;
+    // Pré-remplissage uniquement si aucun client existant n'est déjà sélectionné —
+    // le prospect nourrit un nouveau client plutôt que d'écraser une fiche existante.
+    if (clientId === NEW_CLIENT) {
+      setClientName((v) => v || p.name);
+      setClientEmail((v) => v || p.email || "");
+      setClientPhone((v) => v || p.phone || "");
+    }
+    setPartySize((v) => v || (p.party_size ? String(p.party_size) : ""));
+    setPeriodStart((v) => v || p.travel_start || "");
+    setPeriodEnd((v) => v || p.travel_end || "");
+  };
   const total = useMemo(
     () => lines.reduce((acc, l) => acc + (Number(l.quantity) || 0) * (Number(l.unit_price) || 0), 0),
     [lines],
@@ -117,10 +174,32 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
   const updateLine = (i: number, patch: Partial<LineDraft>) =>
     setLines((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
 
-  const pdfData = () => ({
+  /**
+   * Résout le client affiché sur le PDF par une requête fraîche sur
+   * clients/prospects (source de vérité en base), plutôt que de dépendre
+   * des listes déjà chargées dans le formulaire — évite un nom/contact
+   * périmé si la fiche a été modifiée ailleurs entre le chargement de la
+   * page et le clic sur "Générer le PDF".
+   */
+  const resolveClientForPdf = async (): Promise<QuotePdfData["client"]> => {
+    if (clientId !== NEW_CLIENT) {
+      const { data, error } = await supabase.from("clients").select("full_name,email,phone").eq("id", clientId).single();
+      if (error) throw error;
+      return { name: data.full_name, email: data.email, phone: data.phone };
+    }
+    if (prospectId !== NO_PROSPECT) {
+      const { data, error } = await supabase.from("prospects").select("name,email,phone").eq("id", prospectId).single();
+      if (error) throw error;
+      return { name: data.name, email: data.email, phone: data.phone };
+    }
+    return { name: clientName.trim() || "Client", email: clientEmail || null, phone: clientPhone || null };
+  };
+
+  const buildPdfData = async (): Promise<QuotePdfData> => ({
     number: number ?? "—",
     eyebrow,
     title: title || "Devis JEITINHO",
+    description: description.trim() || null,
     project_label: projectLabel,
     location,
     currency,
@@ -130,11 +209,7 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
     validity_days: Number(validityDays) || 30,
     deposit_pct: Number(depositPct) || 0,
     notes,
-    client: {
-      name: selectedClient?.full_name ?? clientName ?? "Client",
-      email: selectedClient?.email ?? clientEmail,
-      phone: selectedClient?.phone ?? clientPhone,
-    },
+    client: await resolveClientForPdf(),
     lines: lines
       .filter((l) => l.label.trim())
       .map((l) => ({
@@ -143,6 +218,9 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
         quantity: Number(l.quantity) || 0,
         unit_price: Number(l.unit_price) || 0,
       })),
+    equipment: parseJsonOrNull(equipmentRaw) as QuotePdfData["equipment"],
+    highlights: parseJsonOrNull(highlightsRaw) as QuotePdfData["highlights"],
+    itinerary: parseJsonOrNull(itineraryRaw) as QuotePdfData["itinerary"],
   });
 
   const save = async () => {
@@ -172,9 +250,14 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
       const payload = {
         title: title.trim(),
         eyebrow: eyebrow.trim() || null,
+        description: description.trim() || null,
         project_label: projectLabel.trim() || null,
         location: location.trim() || null,
         client_id: resolvedClientId,
+        prospect_id: prospectId === NO_PROSPECT ? null : prospectId,
+        equipment: parseJsonOrNull(equipmentRaw) ?? [],
+        highlights: parseJsonOrNull(highlightsRaw) ?? { included: [], excluded: [] },
+        itinerary: parseJsonOrNull(itineraryRaw) ?? [],
         period_start: periodStart || null,
         period_end: periodEnd || null,
         party_size: partySize ? Number(partySize) : null,
@@ -242,6 +325,21 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
           <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>Client</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
+              <Label>Prospect existant (optionnel)</Label>
+              <Select value={prospectId} onValueChange={applyProspect}>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_PROSPECT}>Aucun</SelectItem>
+                  {prospects?.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Pré-remplit nom/contact/dates/participants si le devis part d'un lead qualifié.
+              </p>
+            </div>
+            <div className="sm:col-span-2">
               <Label>Client existant</Label>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
@@ -282,6 +380,10 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
             <div className="sm:col-span-2">
               <Label>Titre du devis</Label>
               <Input className="mt-1.5" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Séjour sur mesure à Rio" maxLength={160} />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Description (1-2 paragraphes, affichée sous le titre dans le PDF)</Label>
+              <Textarea className="mt-1.5 min-h-20" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={800} />
             </div>
             <div>
               <Label>Sur-titre</Label>
@@ -357,6 +459,42 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
           <Label>Notes</Label>
           <Textarea className="mt-1.5 min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} />
         </Card>
+
+        <Card className="p-5">
+          <h2 className="mb-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>Contenu avancé du PDF</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Optionnel — chaque bloc n'apparaît dans le PDF que s'il contient du JSON valide. Laissez vide pour l'omettre.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <Label>Matériel &amp; prestations techniques</Label>
+              <Textarea
+                className="mt-1.5 min-h-20 font-mono text-xs"
+                value={equipmentRaw}
+                onChange={(e) => setEquipmentRaw(e.target.value)}
+                placeholder={'[{ "label": "Caméra", "items": ["Blackmagic 6K Pro"] }]'}
+              />
+            </div>
+            <div>
+              <Label>Ce qui est inclus / n'est pas inclus</Label>
+              <Textarea
+                className="mt-1.5 min-h-20 font-mono text-xs"
+                value={highlightsRaw}
+                onChange={(e) => setHighlightsRaw(e.target.value)}
+                placeholder={'{ "included": ["Transport privé"], "excluded": ["Déjeuner"] }'}
+              />
+            </div>
+            <div>
+              <Label>Roteiro (itinéraire numéroté)</Label>
+              <Textarea
+                className="mt-1.5 min-h-20 font-mono text-xs"
+                value={itineraryRaw}
+                onChange={(e) => setItineraryRaw(e.target.value)}
+                placeholder={'["Départ de Rio de Janeiro", "Navigation privée et observation des baleines"]'}
+              />
+            </div>
+          </div>
+        </Card>
       </div>
 
       <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
@@ -402,9 +540,19 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
           <Button
             variant="outline"
             className="mt-2 w-full"
-            onClick={() => downloadQuotePdf(pdfData()).catch(() => toast.error("Génération du PDF impossible."))}
+            disabled={downloadingPdf}
+            onClick={async () => {
+              setDownloadingPdf(true);
+              try {
+                await downloadQuotePdf(await buildPdfData());
+              } catch {
+                toast.error("Génération du PDF impossible.");
+              } finally {
+                setDownloadingPdf(false);
+              }
+            }}
           >
-            <FileDown className="mr-2 h-3.5 w-3.5" />Générer le PDF
+            <FileDown className="mr-2 h-3.5 w-3.5" />{downloadingPdf ? "Génération…" : "Générer le PDF"}
           </Button>
         </Card>
       </div>
