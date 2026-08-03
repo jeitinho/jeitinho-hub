@@ -1101,6 +1101,7 @@ export type Database = {
           notes: string | null
           number: string | null
           paid_at: string | null
+          party_size: number | null
           period_end: string | null
           period_start: string | null
           project_label: string | null
@@ -1129,6 +1130,7 @@ export type Database = {
           notes?: string | null
           number?: string | null
           paid_at?: string | null
+          party_size?: number | null
           period_end?: string | null
           period_start?: string | null
           project_label?: string | null
@@ -1157,6 +1159,7 @@ export type Database = {
           notes?: string | null
           number?: string | null
           paid_at?: string | null
+          party_size?: number | null
           period_end?: string | null
           period_start?: string | null
           project_label?: string | null
