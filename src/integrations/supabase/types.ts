@@ -1098,8 +1098,8 @@ export type Database = {
           eyebrow: string | null
           highlights: Json
           id: string
-          itinerary: Json
           items: Json
+          itinerary: Json
           location: string | null
           notes: string | null
           number: string | null
@@ -1130,8 +1130,8 @@ export type Database = {
           eyebrow?: string | null
           highlights?: Json
           id?: string
-          itinerary?: Json
           items?: Json
+          itinerary?: Json
           location?: string | null
           notes?: string | null
           number?: string | null
@@ -1162,8 +1162,8 @@ export type Database = {
           eyebrow?: string | null
           highlights?: Json
           id?: string
-          itinerary?: Json
           items?: Json
+          itinerary?: Json
           location?: string | null
           notes?: string | null
           number?: string | null

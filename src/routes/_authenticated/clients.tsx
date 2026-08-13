@@ -41,7 +41,7 @@ function ClientsList() {
         </Card>
       ) : (
         <Card className="divide-y divide-border/60 border-border/60">
-          {data.map((c) => (
+          {data.map((c: any) => (
             <Link key={c.id} to="/clients/$id" params={{ id: c.id }} className="flex items-center justify-between gap-4 p-4 hover:bg-muted/30">
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-medium">{c.full_name}</h3>

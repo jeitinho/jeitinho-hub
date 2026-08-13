@@ -128,7 +128,7 @@ function ClientDetail() {
               <p className="text-sm text-muted-foreground">Aucun devis pour ce client.</p>
             ) : (
               <div className="space-y-2">
-                {quotes.map((q) => (
+                {quotes.map((q: any) => (
                   <Link key={q.id} to="/devis/$id" params={{ id: q.id }} className="flex items-center justify-between gap-4 rounded-md border border-border/60 p-3 hover:bg-muted/30">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
