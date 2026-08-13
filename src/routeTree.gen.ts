@@ -27,15 +27,15 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authenticated/calendrier'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as AuthenticatedParametresUtilisateursRouteImport } from './routes/_authenticated/parametres.utilisateurs'
 import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
 import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
 import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
 import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
+import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
 import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
-import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
-import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -129,6 +129,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
+  id: '/api/public/leads',
+  path: '/api/public/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedParametresUtilisateursRoute =
   AuthenticatedParametresUtilisateursRouteImport.update({
     id: '/utilisateurs',
@@ -157,6 +162,11 @@ const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedDevisRoute,
 } as any)
+const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedClientsRoute,
+} as any)
 const AuthenticatedBlogNewRoute = AuthenticatedBlogNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -167,23 +177,12 @@ const AuthenticatedBlogIdRoute = AuthenticatedBlogIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedBlogRoute,
 } as any)
-const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
-  id: '/api/public/leads',
-  path: '/api/public/leads',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedClientsRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
-  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/calendrier': typeof AuthenticatedCalendrierRoute
@@ -205,13 +204,13 @@ export interface FileRoutesByFullPath {
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
-  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/calendrier': typeof AuthenticatedCalendrierRoute
@@ -233,6 +232,7 @@ export interface FileRoutesByTo {
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,7 +241,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
-  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
   '/_authenticated/calendrier': typeof AuthenticatedCalendrierRoute
@@ -263,6 +262,7 @@ export interface FileRoutesById {
   '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/_authenticated/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/_authenticated/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,7 +271,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
-    | '/api/public/leads'
     | '/analytics'
     | '/blog'
     | '/calendrier'
@@ -293,13 +292,13 @@ export interface FileRouteTypes {
     | '/experiences/$id'
     | '/experiences/new'
     | '/parametres/utilisateurs'
+    | '/api/public/leads'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
     | '/setup'
-    | '/api/public/leads'
     | '/analytics'
     | '/blog'
     | '/calendrier'
@@ -321,6 +320,7 @@ export interface FileRouteTypes {
     | '/experiences/$id'
     | '/experiences/new'
     | '/parametres/utilisateurs'
+    | '/api/public/leads'
   id:
     | '__root__'
     | '/'
@@ -328,7 +328,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
-    | '/api/public/leads'
     | '/_authenticated/analytics'
     | '/_authenticated/blog'
     | '/_authenticated/calendrier'
@@ -350,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/experiences/$id'
     | '/_authenticated/experiences/new'
     | '/_authenticated/parametres/utilisateurs'
+    | '/api/public/leads'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -368,13 +368,6 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/leads': {
-      id: '/api/public/leads'
-      path: '/api/public/leads'
-      fullPath: '/api/public/leads'
-      preLoaderRoute: typeof ApiPublicLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -496,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/leads': {
+      id: '/api/public/leads'
+      path: '/api/public/leads'
+      fullPath: '/api/public/leads'
+      preLoaderRoute: typeof ApiPublicLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/parametres/utilisateurs': {
       id: '/_authenticated/parametres/utilisateurs'
       path: '/utilisateurs'
@@ -517,13 +517,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExperiencesIdRouteImport
       parentRoute: typeof AuthenticatedExperiencesRoute
     }
-    '/_authenticated/clients/$id': {
-      id: '/_authenticated/clients/$id'
-      path: '/$id'
-      fullPath: '/clients/$id'
-      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
-      parentRoute: typeof AuthenticatedClientsRoute
-    }
     '/_authenticated/devis/new': {
       id: '/_authenticated/devis/new'
       path: '/new'
@@ -537,6 +530,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/devis/$id'
       preLoaderRoute: typeof AuthenticatedDevisIdRouteImport
       parentRoute: typeof AuthenticatedDevisRoute
+    }
+    '/_authenticated/clients/$id': {
+      id: '/_authenticated/clients/$id'
+      path: '/$id'
+      fullPath: '/clients/$id'
+      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
     }
     '/_authenticated/blog/new': {
       id: '/_authenticated/blog/new'
@@ -669,3 +669,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
