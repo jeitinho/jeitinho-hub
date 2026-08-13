@@ -1,11 +1,293 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PageShell, ComingSoon } from "@/components/page-shell";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { PageShell } from "@/components/page-shell";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { Inbox, Users, FileDown, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/crm")({
-  component: () => (
-    <PageShell eyebrow="Pipeline commercial" title="CRM" description="Prospects, historique, messages et documents.">
-      <ComingSoon label="Pipeline CRM" />
-    </PageShell>
-  ),
+  component: CrmPage,
   head: () => ({ meta: [{ title: "CRM — JEITINHO" }] }),
 });
+
+type Lead = {
+  id: string;
+  source: string;
+  status: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  party_size: number | null;
+  travel_start: string | null;
+  travel_end: string | null;
+  activities: string[];
+  message: string | null;
+  received_at: string;
+  prospect_id: string | null;
+};
+
+type Prospect = {
+  id: string;
+  status: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  party_size: number | null;
+  travel_start: string | null;
+  travel_end: string | null;
+  client_id: string | null;
+  created_at: string;
+};
+
+const LEAD_STATUS_LABEL: Record<string, string> = {
+  new: "Nouveau",
+  contacted: "Contacté",
+  qualified: "Qualifié",
+  converted: "Converti",
+  lost: "Perdu",
+  spam: "Spam",
+};
+
+const PROSPECT_STATUS_LABEL: Record<string, string> = {
+  new: "Nouveau",
+  contacted: "Contacté",
+  qualified: "Qualifié",
+  converted: "Converti",
+  lost: "Perdu",
+};
+
+function fmtRange(start: string | null, end: string | null) {
+  if (!start && !end) return null;
+  if (start && end && start !== end) return `${start} → ${end}`;
+  return start ?? end;
+}
+
+function CrmPage() {
+  return (
+    <PageShell eyebrow="Pipeline commercial" title="CRM" description="Les leads du site jeitinho.fr arrivent ici automatiquement — qualifiez-les en prospects, puis en clients.">
+      <Tabs defaultValue="leads">
+        <TabsList>
+          <TabsTrigger value="leads"><Inbox className="mr-1.5 h-3.5 w-3.5" />Leads</TabsTrigger>
+          <TabsTrigger value="prospects"><Users className="mr-1.5 h-3.5 w-3.5" />Prospects</TabsTrigger>
+        </TabsList>
+        <TabsContent value="leads" className="mt-6"><LeadsInbox /></TabsContent>
+        <TabsContent value="prospects" className="mt-6"><ProspectsPipeline /></TabsContent>
+      </Tabs>
+    </PageShell>
+  );
+}
+
+function LeadsInbox() {
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState("all");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["leads"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("leads")
+        .select("id,source,status,name,email,phone,party_size,travel_start,travel_end,activities,message,received_at,prospect_id")
+        .order("received_at", { ascending: false });
+      if (error) throw error;
+      return data as Lead[];
+    },
+  });
+
+  const rows = (data ?? []).filter((l) => filter === "all" || l.status === filter);
+
+  const setStatus = async (id: string, status: string) => {
+    const { error } = await (supabase as any).from("leads").update({ status, processed_at: new Date().toISOString() }).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["leads"] });
+  };
+
+  const qualify = async (lead: Lead) => {
+    const { data: prospect, error } = await (supabase as any)
+      .from("prospects")
+      .insert({
+        name: lead.name,
+        email: lead.email,
+        phone: lead.phone,
+        party_size: lead.party_size,
+        travel_start: lead.travel_start,
+        travel_end: lead.travel_end,
+        activities: lead.activities ?? [],
+        message: lead.message,
+        source: lead.source,
+      })
+      .select("id")
+      .single();
+    if (error) return toast.error(error.message);
+    const { error: leadErr } = await (supabase as any)
+      .from("leads")
+      .update({ status: "qualified", prospect_id: prospect.id, processed_at: new Date().toISOString() })
+      .eq("id", lead.id);
+    if (leadErr) return toast.error(leadErr.message);
+    toast.success("Lead qualifié en prospect.");
+    qc.invalidateQueries({ queryKey: ["leads"] });
+    qc.invalidateQueries({ queryKey: ["prospects"] });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {[{ value: "all", label: "Tous" }, ...Object.entries(LEAD_STATUS_LABEL).map(([value, label]) => ({ value, label }))].map((s) => (
+          <button
+            key={s.value}
+            onClick={() => setFilter(s.value)}
+            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+              filter === s.value ? "border-primary bg-primary text-primary-foreground" : "border-border/60 text-muted-foreground hover:border-primary/40"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="text-sm text-muted-foreground">Chargement…</div>
+      ) : !rows.length ? (
+        <Card className="border-dashed p-16 text-center">
+          <Inbox className="mx-auto mb-4 h-8 w-8 text-primary" />
+          <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>Aucun lead</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Les formulaires de jeitinho.fr (réservation, road-trip Nordeste, "trouver un Jeitinho") arrivent ici dès qu'un visiteur les soumet.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((l) => (
+            <Card key={l.id} className="p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <span className="pill">{LEAD_STATUS_LABEL[l.status] ?? l.status}</span>
+                    <span className="text-[10px] tracked text-muted-foreground">{l.source}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(l.received_at).toLocaleString("fr-FR")}</span>
+                  </div>
+                  <h3 className="text-base font-medium">{l.name}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {[l.email, l.phone].filter(Boolean).join(" · ") || "Pas de contact"}
+                    {l.party_size ? ` · ${l.party_size} pers.` : ""}
+                    {fmtRange(l.travel_start, l.travel_end) ? ` · ${fmtRange(l.travel_start, l.travel_end)}` : ""}
+                  </p>
+                  {l.activities?.length ? <p className="mt-1 text-xs text-muted-foreground">{l.activities.join(" · ")}</p> : null}
+                  {l.message && <p className="mt-2 max-w-2xl text-sm text-foreground/80">{l.message}</p>}
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  {l.status === "new" && (
+                    <Button variant="outline" size="sm" onClick={() => setStatus(l.id, "contacted")}>Marquer contacté</Button>
+                  )}
+                  {!l.prospect_id && l.status !== "spam" && l.status !== "lost" && (
+                    <Button size="sm" className="btn-primary" onClick={() => qualify(l)}>Qualifier en prospect</Button>
+                  )}
+                  {l.prospect_id && <span className="self-center text-xs text-muted-foreground">→ déjà un prospect</span>}
+                  {l.status !== "spam" && (
+                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setStatus(l.id, "spam")}>Spam</Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProspectsPipeline() {
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState("all");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["prospects"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("prospects")
+        .select("id,status,name,email,phone,party_size,travel_start,travel_end,client_id,created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Prospect[];
+    },
+  });
+
+  const rows = (data ?? []).filter((p) => filter === "all" || p.status === filter);
+
+  const convertToClient = async (p: Prospect) => {
+    const { data: client, error } = await (supabase as any)
+      .from("clients")
+      .insert({ full_name: p.name, email: p.email, phone: p.phone, source: "prospect", status: "client" })
+      .select("id")
+      .single();
+    if (error) return toast.error(error.message);
+    const { error: pErr } = await (supabase as any).from("prospects").update({ status: "converted", client_id: client.id }).eq("id", p.id);
+    if (pErr) return toast.error(pErr.message);
+    toast.success("Prospect converti en client.");
+    qc.invalidateQueries({ queryKey: ["prospects"] });
+    qc.invalidateQueries({ queryKey: ["clients"] });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {[{ value: "all", label: "Tous" }, ...Object.entries(PROSPECT_STATUS_LABEL).map(([value, label]) => ({ value, label }))].map((s) => (
+          <button
+            key={s.value}
+            onClick={() => setFilter(s.value)}
+            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+              filter === s.value ? "border-primary bg-primary text-primary-foreground" : "border-border/60 text-muted-foreground hover:border-primary/40"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="text-sm text-muted-foreground">Chargement…</div>
+      ) : !rows.length ? (
+        <Card className="border-dashed p-16 text-center">
+          <Users className="mx-auto mb-4 h-8 w-8 text-primary" />
+          <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>Aucun prospect</h3>
+          <p className="mt-2 text-sm text-muted-foreground">Qualifiez un lead dans l'onglet Leads pour le voir apparaître ici.</p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((p) => (
+            <Card key={p.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
+              <div className="min-w-0">
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="pill">{PROSPECT_STATUS_LABEL[p.status] ?? p.status}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("fr-FR")}</span>
+                </div>
+                <h3 className="text-base font-medium">{p.name}</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {[p.email, p.phone].filter(Boolean).join(" · ") || "Pas de contact"}
+                  {p.party_size ? ` · ${p.party_size} pers.` : ""}
+                  {fmtRange(p.travel_start, p.travel_end) ? ` · ${fmtRange(p.travel_start, p.travel_end)}` : ""}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <Link to="/devis/new" search={{ prospectId: p.id }}>
+                  <Button variant="outline" size="sm"><FileDown className="mr-1.5 h-3.5 w-3.5" />Créer un devis</Button>
+                </Link>
+                {!p.client_id && (
+                  <Button size="sm" className="btn-primary" onClick={() => convertToClient(p)}>Convertir en client</Button>
+                )}
+                {p.client_id && (
+                  <Link to="/clients/$id" params={{ id: p.client_id }}>
+                    <Button variant="ghost" size="sm"><ExternalLink className="mr-1.5 h-3.5 w-3.5" />Voir le client</Button>
+                  </Link>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

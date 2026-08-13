@@ -34,6 +34,8 @@ import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
 import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
+import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
+import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -165,16 +167,27 @@ const AuthenticatedBlogIdRoute = AuthenticatedBlogIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedBlogRoute,
 } as any)
+const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
+  id: '/api/public/leads',
+  path: '/api/public/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedClientsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/calendrier': typeof AuthenticatedCalendrierRoute
-  '/clients': typeof AuthenticatedClientsRoute
+  '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/contenus': typeof AuthenticatedContenusRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -186,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
+  '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/devis/$id': typeof AuthenticatedDevisIdRoute
   '/devis/new': typeof AuthenticatedDevisNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
@@ -197,10 +211,11 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/calendrier': typeof AuthenticatedCalendrierRoute
-  '/clients': typeof AuthenticatedClientsRoute
+  '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/contenus': typeof AuthenticatedContenusRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -212,6 +227,7 @@ export interface FileRoutesByTo {
   '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
+  '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/devis/$id': typeof AuthenticatedDevisIdRoute
   '/devis/new': typeof AuthenticatedDevisNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
@@ -225,10 +241,11 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
   '/_authenticated/calendrier': typeof AuthenticatedCalendrierRoute
-  '/_authenticated/clients': typeof AuthenticatedClientsRoute
+  '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/contenus': typeof AuthenticatedContenusRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -240,6 +257,7 @@ export interface FileRoutesById {
   '/_authenticated/voyages': typeof AuthenticatedVoyagesRoute
   '/_authenticated/blog/$id': typeof AuthenticatedBlogIdRoute
   '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
+  '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
   '/_authenticated/devis/$id': typeof AuthenticatedDevisIdRoute
   '/_authenticated/devis/new': typeof AuthenticatedDevisNewRoute
   '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
@@ -253,6 +271,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
+    | '/api/public/leads'
     | '/analytics'
     | '/blog'
     | '/calendrier'
@@ -268,6 +287,7 @@ export interface FileRouteTypes {
     | '/voyages'
     | '/blog/$id'
     | '/blog/new'
+    | '/clients/$id'
     | '/devis/$id'
     | '/devis/new'
     | '/experiences/$id'
@@ -279,6 +299,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
+    | '/api/public/leads'
     | '/analytics'
     | '/blog'
     | '/calendrier'
@@ -294,6 +315,7 @@ export interface FileRouteTypes {
     | '/voyages'
     | '/blog/$id'
     | '/blog/new'
+    | '/clients/$id'
     | '/devis/$id'
     | '/devis/new'
     | '/experiences/$id'
@@ -306,6 +328,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
+    | '/api/public/leads'
     | '/_authenticated/analytics'
     | '/_authenticated/blog'
     | '/_authenticated/calendrier'
@@ -321,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated/voyages'
     | '/_authenticated/blog/$id'
     | '/_authenticated/blog/new'
+    | '/_authenticated/clients/$id'
     | '/_authenticated/devis/$id'
     | '/_authenticated/devis/new'
     | '/_authenticated/experiences/$id'
@@ -334,6 +358,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -343,6 +368,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/leads': {
+      id: '/api/public/leads'
+      path: '/api/public/leads'
+      fullPath: '/api/public/leads'
+      preLoaderRoute: typeof ApiPublicLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -485,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExperiencesIdRouteImport
       parentRoute: typeof AuthenticatedExperiencesRoute
     }
+    '/_authenticated/clients/$id': {
+      id: '/_authenticated/clients/$id'
+      path: '/$id'
+      fullPath: '/clients/$id'
+      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
+    }
     '/_authenticated/devis/new': {
       id: '/_authenticated/devis/new'
       path: '/new'
@@ -528,6 +567,17 @@ const AuthenticatedBlogRouteChildren: AuthenticatedBlogRouteChildren = {
 
 const AuthenticatedBlogRouteWithChildren =
   AuthenticatedBlogRoute._addFileChildren(AuthenticatedBlogRouteChildren)
+
+interface AuthenticatedClientsRouteChildren {
+  AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRoute
+}
+
+const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
+  AuthenticatedClientsIdRoute: AuthenticatedClientsIdRoute,
+}
+
+const AuthenticatedClientsRouteWithChildren =
+  AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
 
 interface AuthenticatedDevisRouteChildren {
   AuthenticatedDevisIdRoute: typeof AuthenticatedDevisIdRoute
@@ -577,7 +627,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
   AuthenticatedCalendrierRoute: typeof AuthenticatedCalendrierRoute
-  AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
+  AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedContenusRoute: typeof AuthenticatedContenusRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -593,7 +643,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
   AuthenticatedCalendrierRoute: AuthenticatedCalendrierRoute,
-  AuthenticatedClientsRoute: AuthenticatedClientsRoute,
+  AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedContenusRoute: AuthenticatedContenusRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -614,6 +664,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiPublicLeadsRoute: ApiPublicLeadsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

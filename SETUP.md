@@ -37,6 +37,7 @@ Remplir avec les valeurs du projet Supabase Cloud :
 | `LOVABLE_API_KEY` | fourni par Lovable AI Gateway |
 | `SETUP_KEY` | secret initial pour créer le premier admin via `/setup` |
 | `GITHUB_API_KEY` | connecteur GitHub (publication blog) |
+| `LEADS_INGEST_SECRET` | secret partagé pour `/api/public/leads` (ingestion des leads jeitinho.fr et écosystème) — même valeur que `JEITINHO_HUB_LEADS_SECRET` côté jeitinho.fr |
 
 > Les variables `VITE_*` sont exposées au navigateur. Toutes les autres sont **serveur uniquement**.
 

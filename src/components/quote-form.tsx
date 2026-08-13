@@ -40,15 +40,24 @@ function emptyLine(): LineDraft {
   return { label: "", unit: "Forfait", quantity: 1, unit_price: 0 };
 }
 
-export function QuoteForm({ quoteId }: { quoteId?: string }) {
+export function QuoteForm({
+  quoteId,
+  initialProspectId,
+  initialClientId,
+}: {
+  quoteId?: string;
+  /** Pré-remplit le devis depuis une fiche prospect/client (ex. bouton "Créer un devis" du CRM). Ignoré en mode édition. */
+  initialProspectId?: string;
+  initialClientId?: string;
+}) {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [clientId, setClientId] = useState<string>(NEW_CLIENT);
+  const [clientId, setClientId] = useState<string>(initialClientId ?? NEW_CLIENT);
   const [clientName, setClientName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
-  const [prospectId, setProspectId] = useState<string>(NO_PROSPECT);
+  const [prospectId, setProspectId] = useState<string>(initialProspectId ?? NO_PROSPECT);
 
   const [title, setTitle] = useState("");
   const [eyebrow, setEyebrow] = useState("Proposition de séjour");
@@ -166,6 +175,17 @@ export function QuoteForm({ quoteId }: { quoteId?: string }) {
     setPeriodStart((v) => v || p.travel_start || "");
     setPeriodEnd((v) => v || p.travel_end || "");
   };
+
+  // Arrivée depuis "Créer un devis" sur une fiche prospect (CRM) : applique le
+  // même pré-remplissage que la sélection manuelle, dès que la liste des
+  // prospects est chargée. Ignoré en édition (un devis existant a déjà ses
+  // propres valeurs via le useEffect ci-dessus).
+  useEffect(() => {
+    if (quoteId || !initialProspectId || !prospects) return;
+    applyProspect(initialProspectId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prospects, quoteId, initialProspectId]);
+
   const total = useMemo(
     () => lines.reduce((acc, l) => acc + (Number(l.quantity) || 0) * (Number(l.unit_price) || 0), 0),
     [lines],
