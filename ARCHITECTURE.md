@@ -205,9 +205,9 @@ Toute nouvelle migration doit être créée via `supabase--migration` (outil Lov
 | **Content OS multi-canal** | 🟠 Amorcé | Schéma DB prêt, publishers stubs Instagram/Newsletter/Website à implémenter |
 | **Médiathèque** | 🟠 Amorcé | Table `media` + bucket `avatars` ; UI upload/browse à faire |
 | **Utilisateurs / paramètres** | ✅ Terminé | Validation comptes, assignation rôles, upload photo |
-| **Prospects (leads entrants)** | ⛔ Pas commencé | Endpoint public signé `/api/public/leads` + UI à créer |
+| **Prospects (leads entrants)** | 🟠 Amorcé | Endpoint public signé `/api/public/leads` fait (insère dans `leads`) ; UI de triage vers `prospects` encore à créer |
 | **CRM (pipeline clients)** | ⛔ Pas commencé | Schéma prêt, UI kanban à construire |
-| **Devis** | ⛔ Pas commencé | Schéma prêt (quotes/quote_lines/séquence), éditeur + PDF Carolina à faire |
+| **Devis** | ✅ Terminé | Éditeur lignes + export PDF (`@react-pdf/renderer`) fonctionnels |
 | **Expériences** | 🟠 Amorcé | Table + form créés, workflow catalogue à finaliser |
 | **Partenaires / Prestataires** | ⛔ Pas commencé | Schéma prêt |
 | **Calendrier** | ⛔ Pas commencé | Table `calendar_events` prête |
@@ -248,13 +248,14 @@ Travel OS transformera un devis accepté en **espace voyage interactif** pour le
 - ✅ `has_role` en `SECURITY DEFINER` avec `search_path=public`
 - ✅ Client admin (`client.server.ts`) importé uniquement dans handlers server-only
 - ✅ Google OAuth via broker Lovable (non activé pour l'instant)
-- ⚠️ Endpoints `/api/public/*` : à vérifier signature avant tout write (aucun existant pour l'instant)
+- ✅ `/api/public/leads` : signature vérifiée (secret partagé `JEITINHO_HUB_LEADS_SECRET`, comparaison à temps constant), écrit uniquement dans `leads` (jamais `prospects`/`clients` directement)
+- ⚠️ Tout futur endpoint `/api/public/*` : reprendre le même patron (secret dédié, comparaison à temps constant, écriture dans une table d'intake brute plutôt que directement dans le pipeline travaillé)
 
 ## 12. Points de reprise après pause
 
 Ordre suggéré à la reprise :
-1. Endpoint `/api/public/leads` signé + module **Prospects** UI
-2. Module **Devis** (éditeur lignes + PDF via `@react-pdf/renderer`)
+1. ~~Endpoint `/api/public/leads` signé~~ fait — reste le module **Prospects** UI (triage `leads` → `prospects`)
+2. ~~Module **Devis**~~ fait (éditeur lignes + PDF)
 3. **CRM** (kanban clients + pipeline)
 4. **Médiathèque** (upload storage, tags, cropper)
 5. Amorce **Travel OS** : schéma détaillé `trips` + itinéraire jour/jour
