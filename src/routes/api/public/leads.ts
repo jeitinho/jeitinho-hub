@@ -3,8 +3,12 @@ import { z } from "zod";
 
 // Point d'entrée unique pour les leads générés sur les sites JEITINHO
 // (jeitinho.fr, futurs sites de l'écosystème). Protégé par un secret
-// partagé (Bearer) — jamais de policy RLS publique, l'insert passe par
-// supabaseAdmin (service role) une fois le secret vérifié.
+// partagé (Bearer) — jamais de policy RLS publique.
+//
+// The actual Supabase insert is delegated to /api/internal/process-lead on
+// jeitinho-heartbeat.lovable.app, because this Cloudflare Worker
+// (manager.jeitinho.fr) does not have a working SUPABASE_SERVICE_ROLE_KEY
+// for this project — same class of fix applied on jeitinho.fr's side.
 //
 // Voir jeitinho/jeitinho: src/lib/forms.functions.ts (appelant) et
 // src/lib/notify.ts (le TODO "wire to /api/public/notify endpoint" —
@@ -25,6 +29,8 @@ const LeadPayloadSchema = z.object({
   message: z.string().trim().max(4000).nullish(),
   raw_payload: z.record(z.string(), z.unknown()).nullish(),
 });
+
+const PROCESS_LEAD_URL = "https://jeitinho-heartbeat.lovable.app/api/internal/process-lead";
 
 export const Route = createFileRoute("/api/public/leads")({
   server: {
@@ -52,33 +58,29 @@ export const Route = createFileRoute("/api/public/leads")({
         if (!parsed.success) {
           return Response.json({ ok: false, error: "Invalid payload", issues: parsed.error.issues }, { status: 422 });
         }
-        const lead = parsed.data;
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin
-          .from("leads")
-          .insert({
-            source: lead.source,
-            external_ref: lead.external_ref ?? null,
-            name: lead.name,
-            email: lead.email ?? null,
-            phone: lead.phone ?? null,
-            party_size: lead.party_size ?? null,
-            travel_start: lead.travel_start ?? null,
-            travel_end: lead.travel_end ?? null,
-            activities: lead.activities ?? [],
-            message: lead.message ?? null,
-            raw_payload: (lead.raw_payload ?? {}) as never,
-          })
-          .select("id")
-          .single();
-
-        if (error) {
-          console.error("[api/public/leads] insert failed:", error);
-          return Response.json({ ok: false, error: "Insert failed" }, { status: 500 });
+        const internalSecret = process.env.INTERNAL_PROCESS_SECRET;
+        if (!internalSecret) {
+          console.error("[api/public/leads] INTERNAL_PROCESS_SECRET is not configured");
+          return Response.json({ ok: false, error: "Leads ingestion disabled" }, { status: 503 });
         }
 
-        return Response.json({ ok: true, id: data.id }, { status: 201 });
+        try {
+          const res = await fetch(PROCESS_LEAD_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${internalSecret}` },
+            body: JSON.stringify(parsed.data),
+          });
+          const body = await res.json().catch(() => null);
+          if (!res.ok || !body?.ok) {
+            console.error("[api/public/leads] process-lead responded", res.status, body);
+            return Response.json({ ok: false, error: "Insert failed" }, { status: 500 });
+          }
+          return Response.json({ ok: true, id: body.id }, { status: 201 });
+        } catch (err) {
+          console.error("[api/public/leads] process-lead request failed:", err);
+          return Response.json({ ok: false, error: "Insert failed" }, { status: 500 });
+        }
       },
     },
   },
