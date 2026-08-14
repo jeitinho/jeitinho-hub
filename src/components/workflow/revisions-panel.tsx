@@ -10,7 +10,7 @@ type Revision = {
   to_status: string | null;
   note: string | null;
   created_at: string;
-  editor?: { full_name: string | null; email: string } | null;
+  editor?: { full_name: string | null } | null;
 };
 
 export function RevisionsPanel({ contentId }: { contentId: string }) {
@@ -27,7 +27,7 @@ export function RevisionsPanel({ contentId }: { contentId: string }) {
       const list = (data ?? []) as Revision[];
       const ids = Array.from(new Set(list.map((r) => r.editor_id).filter((x): x is string => !!x)));
       if (ids.length) {
-        const { data: profs } = await supabase.from("profiles").select("id,full_name,email").in("id", ids);
+        const { data: profs } = await supabase.from("staff_directory").select("id,full_name").in("id", ids);
         const map = new Map((profs ?? []).map((p) => [p.id, p]));
         list.forEach((r) => { r.editor = r.editor_id ? map.get(r.editor_id) ?? null : null; });
       }
@@ -49,7 +49,7 @@ export function RevisionsPanel({ contentId }: { contentId: string }) {
               <div className="text-muted-foreground">
                 {new Date(r.created_at).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                 {" — "}
-                {r.editor?.full_name ?? r.editor?.email ?? "système"}
+                {r.editor?.full_name ?? "système"}
               </div>
               <div>{r.from_status ?? "…"} → <strong>{r.to_status ?? "…"}</strong></div>
               {r.note && <div className="text-muted-foreground italic">« {r.note} »</div>}
