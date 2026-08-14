@@ -15,10 +15,10 @@ type Comment = {
   status: "open" | "resolved" | "hidden";
   created_at: string;
   parent_id: string | null;
-  author?: { full_name: string | null; email: string; avatar_url: string | null } | null;
+  author?: { full_name: string | null; avatar_url: string | null } | null;
 };
 
-type Profile = { id: string; full_name: string | null; email: string; avatar_url: string | null };
+type Profile = { id: string; full_name: string | null; avatar_url: string | null };
 
 export function CommentsPanel({ contentId }: { contentId: string }) {
   const { user } = useAuth();
@@ -37,7 +37,7 @@ export function CommentsPanel({ contentId }: { contentId: string }) {
     const list = (data ?? []) as Comment[];
     const ids = Array.from(new Set(list.map((c) => c.author_id)));
     if (ids.length) {
-      const { data: profs } = await supabase.from("profiles").select("id,full_name,email,avatar_url").in("id", ids);
+      const { data: profs } = await supabase.from("staff_directory").select("id,full_name,avatar_url").in("id", ids);
       const map = new Map((profs ?? []).map((p) => [p.id, p as Profile]));
       list.forEach((c) => { c.author = map.get(c.author_id) ?? null; });
     }
@@ -46,16 +46,16 @@ export function CommentsPanel({ contentId }: { contentId: string }) {
 
   useEffect(() => {
     load();
-    supabase.from("profiles").select("id,full_name,email,avatar_url").order("full_name")
+    supabase.from("staff_directory").select("id,full_name,avatar_url").order("full_name")
       .then(({ data }) => setProfiles((data ?? []) as Profile[]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentId]);
 
   const parseMentions = (text: string): string[] => {
     const matches = text.match(/@([\w.-]+)/g) ?? [];
-    const emails = matches.map((m) => m.slice(1).toLowerCase());
+    const handles = matches.map((m) => m.slice(1).toLowerCase());
     return profiles.filter((p) =>
-      emails.some((e) => (p.email ?? "").toLowerCase().startsWith(e) || (p.full_name ?? "").toLowerCase().replace(/\s+/g, ".").includes(e))
+      handles.some((h) => (p.full_name ?? "").toLowerCase().replace(/\s+/g, ".").includes(h))
     ).map((p) => p.id);
   };
 
@@ -89,7 +89,7 @@ export function CommentsPanel({ contentId }: { contentId: string }) {
   };
 
   const suggestions = mentionQuery !== null
-    ? profiles.filter((p) => (p.full_name ?? "").toLowerCase().includes(mentionQuery) || (p.email ?? "").toLowerCase().includes(mentionQuery)).slice(0, 5)
+    ? profiles.filter((p) => (p.full_name ?? "").toLowerCase().includes(mentionQuery)).slice(0, 5)
     : [];
 
   return (
@@ -100,7 +100,7 @@ export function CommentsPanel({ contentId }: { contentId: string }) {
         {comments.map((c) => (
           <div key={c.id} className={`rounded-md border border-border/60 p-2 text-sm ${c.status === "resolved" ? "opacity-50 line-through" : ""}`}>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{c.author?.full_name ?? c.author?.email ?? "—"}</span>
+              <span>{c.author?.full_name ?? "—"}</span>
               <div className="flex items-center gap-2">
                 <span>{new Date(c.created_at).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                 {c.status === "open" && (
@@ -125,12 +125,12 @@ export function CommentsPanel({ contentId }: { contentId: string }) {
                   type="button"
                   className="block w-full rounded px-2 py-1 text-left hover:bg-accent"
                   onClick={() => {
-                    const handle = (s.full_name ?? s.email).split("@")[0].replace(/\s+/g, ".").toLowerCase();
+                    const handle = (s.full_name ?? "membre").replace(/\s+/g, ".").toLowerCase();
                     setBody(body.replace(/@([\w.-]*)$/, `@${handle} `));
                     setMentionQuery(null);
                   }}
                 >
-                  {s.full_name ?? s.email} <span className="text-xs text-muted-foreground">{s.email}</span>
+                  {s.full_name ?? "Membre"}
                 </button>
               ))}
             </div>
