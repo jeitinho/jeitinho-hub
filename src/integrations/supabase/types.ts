@@ -1229,6 +1229,27 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_directory: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -1338,24 +1359,7 @@ export type Database = {
       }
     }
     Views: {
-      staff_directory: {
-        Row: {
-          avatar_url: string | null
-          full_name: string | null
-          id: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          full_name?: string | null
-          id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          full_name?: string | null
-          id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       can_edit_content: { Args: { _user_id: string }; Returns: boolean }
