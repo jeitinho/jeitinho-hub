@@ -1338,7 +1338,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      staff_directory: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_edit_content: { Args: { _user_id: string }; Returns: boolean }
