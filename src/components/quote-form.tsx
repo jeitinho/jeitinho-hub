@@ -287,7 +287,13 @@ export function QuoteForm({
         status,
         notes: notes.trim() || null,
         total_amount: total,
-        ...(status === "sent" ? { sent_at: new Date().toISOString() } : {}),
+        ...(status === "sent"
+          ? {
+              sent_at: new Date().toISOString(),
+              // Point de départ des relances J+1/J+3/J+7/J+14 (préparées, jamais envoyées auto).
+              followup_anchor_at: new Date().toISOString(),
+            }
+          : {}),
         ...(status === "accepted" ? { accepted_at: new Date().toISOString() } : {}),
       };
 
