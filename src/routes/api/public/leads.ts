@@ -27,6 +27,14 @@ const LeadPayloadSchema = z.object({
   travel_end: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).nullish(),
   activities: z.array(z.string().trim().max(200)).max(50).nullish(),
   message: z.string().trim().max(4000).nullish(),
+  // Champs d'attribution commerciale (optionnels — les appelants existants restent valides)
+  campaign: z.string().trim().max(200).nullish(),
+  utm_source: z.string().trim().max(200).nullish(),
+  utm_medium: z.string().trim().max(200).nullish(),
+  utm_campaign: z.string().trim().max(200).nullish(),
+  utm_content: z.string().trim().max(200).nullish(),
+  utm_term: z.string().trim().max(200).nullish(),
+  request_type: z.string().trim().max(80).nullish(),
   raw_payload: z.record(z.string(), z.unknown()).nullish(),
 });
 

@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { scoreLead, firstActionDelayHours } from "@/lib/crm/scoring";
+import { estimateValue } from "@/lib/crm/valuation";
 
 // Internal endpoint: performs the actual Supabase insert into `leads`.
 // Exists because the Cloudflare Worker deployment of this app
@@ -33,6 +35,40 @@ export const Route = createFileRoute("/api/internal/process-lead")({
 
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const raw = (lead.raw_payload ?? {}) as Record<string, unknown>;
+          const pick = (k: string) => {
+            const v = lead[k] ?? raw[k];
+            return typeof v === "string" && v.trim() ? v.trim() : null;
+          };
+          const receivedAt = new Date().toISOString();
+          const enrich = {
+            source: lead.source,
+            campaign: pick("campaign") ?? pick("utm_campaign"),
+            utm_source: pick("utm_source"),
+            utm_medium: pick("utm_medium"),
+            utm_campaign: pick("utm_campaign"),
+            utm_content: pick("utm_content"),
+            utm_term: pick("utm_term"),
+            request_type: pick("request_type"),
+          };
+          const scoreInput = {
+            received_at: receivedAt,
+            travel_start: lead.travel_start ?? null,
+            travel_end: lead.travel_end ?? null,
+            party_size: lead.party_size ?? null,
+            email: lead.email ?? null,
+            phone: lead.phone ?? null,
+            message: lead.message ?? null,
+            activities: lead.activities ?? [],
+            source: lead.source,
+            campaign: enrich.campaign,
+            request_type: enrich.request_type,
+          };
+          const scored = scoreLead(scoreInput);
+          const nextActionAt = new Date(
+            Date.now() + firstActionDelayHours(scored.priority) * 3_600_000,
+          ).toISOString();
+
           const { data, error } = await supabaseAdmin
             .from("leads")
             .insert({
@@ -47,6 +83,22 @@ export const Route = createFileRoute("/api/internal/process-lead")({
               activities: lead.activities ?? [],
               message: lead.message ?? null,
               raw_payload: (lead.raw_payload ?? {}) as never,
+              campaign: enrich.campaign,
+              utm_source: enrich.utm_source,
+              utm_medium: enrich.utm_medium,
+              utm_campaign: enrich.utm_campaign,
+              utm_content: enrich.utm_content,
+              utm_term: enrich.utm_term,
+              request_type: enrich.request_type,
+              score: scored.score,
+              priority: scored.priority,
+              score_breakdown: scored.breakdown as never,
+              estimated_value: estimateValue({
+                ...scoreInput,
+                highSeason: scored.breakdown.labels.some((l) => l.startsWith("Haute saison")),
+              }),
+              next_action: "Premier contact WhatsApp",
+              next_action_at: nextActionAt,
             })
             .select("id")
             .single();

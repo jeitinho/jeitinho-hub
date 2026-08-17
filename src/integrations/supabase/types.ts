@@ -567,6 +567,95 @@ export type Database = {
           },
         ]
       }
+      crm_tasks: {
+        Row: {
+          channel: string
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          due_at: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          kind: string
+          lead_id: string | null
+          message_draft: string | null
+          prospect_id: string | null
+          quote_id: string | null
+          stage: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          message_draft?: string | null
+          prospect_id?: string | null
+          quote_id?: string | null
+          stage?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          message_draft?: string | null
+          prospect_id?: string | null
+          quote_id?: string | null
+          stage?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       experiences: {
         Row: {
           city: string | null
@@ -659,63 +748,111 @@ export type Database = {
       leads: {
         Row: {
           activities: string[]
+          assigned_to: string | null
+          campaign: string | null
           created_at: string
           email: string | null
+          estimated_value: number | null
           external_ref: string | null
           id: string
+          last_contact_at: string | null
           message: string | null
           name: string | null
+          next_action: string | null
+          next_action_at: string | null
           party_size: number | null
           phone: string | null
+          pipeline_stage: string
+          priority: string
           processed_at: string | null
           prospect_id: string | null
           raw_payload: Json
           received_at: string
+          request_type: string | null
+          score: number
+          score_breakdown: Json
           source: string
           status: Database["public"]["Enums"]["lead_status"]
           travel_end: string | null
           travel_start: string | null
           updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
           activities?: string[]
+          assigned_to?: string | null
+          campaign?: string | null
           created_at?: string
           email?: string | null
+          estimated_value?: number | null
           external_ref?: string | null
           id?: string
+          last_contact_at?: string | null
           message?: string | null
           name?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
           party_size?: number | null
           phone?: string | null
+          pipeline_stage?: string
+          priority?: string
           processed_at?: string | null
           prospect_id?: string | null
           raw_payload?: Json
           received_at?: string
+          request_type?: string | null
+          score?: number
+          score_breakdown?: Json
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
           travel_end?: string | null
           travel_start?: string | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
           activities?: string[]
+          assigned_to?: string | null
+          campaign?: string | null
           created_at?: string
           email?: string | null
+          estimated_value?: number | null
           external_ref?: string | null
           id?: string
+          last_contact_at?: string | null
           message?: string | null
           name?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
           party_size?: number | null
           phone?: string | null
+          pipeline_stage?: string
+          priority?: string
           processed_at?: string | null
           prospect_id?: string | null
           raw_payload?: Json
           received_at?: string
+          request_type?: string | null
+          score?: number
+          score_breakdown?: Json
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
           travel_end?: string | null
           travel_start?: string | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: [
           {
@@ -884,14 +1021,21 @@ export type Database = {
           created_at: string
           created_by: string | null
           email: string | null
+          estimated_value: number | null
           id: string
+          last_contact_at: string | null
           message: string | null
           metadata: Json
           name: string
+          next_action: string | null
+          next_action_at: string | null
           notes: string | null
           owner_id: string | null
           party_size: number | null
           phone: string | null
+          pipeline_stage: string
+          priority: string
+          score: number
           source: string
           status: Database["public"]["Enums"]["prospect_status"]
           travel_end: string | null
@@ -904,14 +1048,21 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           email?: string | null
+          estimated_value?: number | null
           id?: string
+          last_contact_at?: string | null
           message?: string | null
           metadata?: Json
           name: string
+          next_action?: string | null
+          next_action_at?: string | null
           notes?: string | null
           owner_id?: string | null
           party_size?: number | null
           phone?: string | null
+          pipeline_stage?: string
+          priority?: string
+          score?: number
           source?: string
           status?: Database["public"]["Enums"]["prospect_status"]
           travel_end?: string | null
@@ -924,14 +1075,21 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           email?: string | null
+          estimated_value?: number | null
           id?: string
+          last_contact_at?: string | null
           message?: string | null
           metadata?: Json
           name?: string
+          next_action?: string | null
+          next_action_at?: string | null
           notes?: string | null
           owner_id?: string | null
           party_size?: number | null
           phone?: string | null
+          pipeline_stage?: string
+          priority?: string
+          score?: number
           source?: string
           status?: Database["public"]["Enums"]["prospect_status"]
           travel_end?: string | null
@@ -1096,11 +1254,17 @@ export type Database = {
           description: string | null
           equipment: Json
           eyebrow: string | null
+          followup_anchor_at: string | null
+          followup_paused: boolean
+          followup_stage: number
           highlights: Json
           id: string
           items: Json
           itinerary: Json
+          last_contact_at: string | null
           location: string | null
+          next_action: string | null
+          next_action_at: string | null
           notes: string | null
           number: string | null
           paid_at: string | null
@@ -1128,11 +1292,17 @@ export type Database = {
           description?: string | null
           equipment?: Json
           eyebrow?: string | null
+          followup_anchor_at?: string | null
+          followup_paused?: boolean
+          followup_stage?: number
           highlights?: Json
           id?: string
           items?: Json
           itinerary?: Json
+          last_contact_at?: string | null
           location?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
           notes?: string | null
           number?: string | null
           paid_at?: string | null
@@ -1160,11 +1330,17 @@ export type Database = {
           description?: string | null
           equipment?: Json
           eyebrow?: string | null
+          followup_anchor_at?: string | null
+          followup_paused?: boolean
+          followup_stage?: number
           highlights?: Json
           id?: string
           items?: Json
           itinerary?: Json
+          last_contact_at?: string | null
           location?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
           notes?: string | null
           number?: string | null
           paid_at?: string | null

@@ -7,7 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Inbox, Users, FileDown, ExternalLink } from "lucide-react";
+import { Inbox, Users, FileDown, ExternalLink, Flame, BellRing } from "lucide-react";
+import { PriorityBoard } from "@/components/crm/priority-board";
+import { FollowupsPanel } from "@/components/crm/followups-panel";
 
 export const Route = createFileRoute("/_authenticated/crm")({
   component: CrmPage,
@@ -69,11 +71,15 @@ function fmtRange(start: string | null, end: string | null) {
 function CrmPage() {
   return (
     <PageShell eyebrow="Pipeline commercial" title="CRM" description="Les leads du site jeitinho.fr arrivent ici automatiquement — qualifiez-les en prospects, puis en clients.">
-      <Tabs defaultValue="leads">
+      <Tabs defaultValue="priorites">
         <TabsList>
+          <TabsTrigger value="priorites"><Flame className="mr-1.5 h-3.5 w-3.5" />Priorités</TabsTrigger>
+          <TabsTrigger value="relances"><BellRing className="mr-1.5 h-3.5 w-3.5" />Relances</TabsTrigger>
           <TabsTrigger value="leads"><Inbox className="mr-1.5 h-3.5 w-3.5" />Leads</TabsTrigger>
           <TabsTrigger value="prospects"><Users className="mr-1.5 h-3.5 w-3.5" />Prospects</TabsTrigger>
         </TabsList>
+        <TabsContent value="priorites" className="mt-6"><PriorityBoard /></TabsContent>
+        <TabsContent value="relances" className="mt-6"><FollowupsPanel /></TabsContent>
         <TabsContent value="leads" className="mt-6"><LeadsInbox /></TabsContent>
         <TabsContent value="prospects" className="mt-6"><ProspectsPipeline /></TabsContent>
       </Tabs>
