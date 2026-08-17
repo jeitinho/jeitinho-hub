@@ -28,6 +28,7 @@ import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authentic
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
+import { Route as ApiInternalProcessLeadRouteImport } from './routes/api/internal/process-lead'
 import { Route as AuthenticatedParametresUtilisateursRouteImport } from './routes/_authenticated/parametres.utilisateurs'
 import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
 import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
@@ -134,6 +135,11 @@ const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
   path: '/api/public/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalProcessLeadRoute = ApiInternalProcessLeadRouteImport.update({
+  id: '/api/internal/process-lead',
+  path: '/api/internal/process-lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedParametresUtilisateursRoute =
   AuthenticatedParametresUtilisateursRouteImport.update({
     id: '/utilisateurs',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
+  '/api/internal/process-lead': typeof ApiInternalProcessLeadRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
 }
 export interface FileRoutesByTo {
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
+  '/api/internal/process-lead': typeof ApiInternalProcessLeadRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
 }
 export interface FileRoutesById {
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/_authenticated/experiences/new': typeof AuthenticatedExperiencesNewRoute
   '/_authenticated/parametres/utilisateurs': typeof AuthenticatedParametresUtilisateursRoute
+  '/api/internal/process-lead': typeof ApiInternalProcessLeadRoute
   '/api/public/leads': typeof ApiPublicLeadsRoute
 }
 export interface FileRouteTypes {
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/experiences/$id'
     | '/experiences/new'
     | '/parametres/utilisateurs'
+    | '/api/internal/process-lead'
     | '/api/public/leads'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/experiences/$id'
     | '/experiences/new'
     | '/parametres/utilisateurs'
+    | '/api/internal/process-lead'
     | '/api/public/leads'
   id:
     | '__root__'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/_authenticated/experiences/$id'
     | '/_authenticated/experiences/new'
     | '/_authenticated/parametres/utilisateurs'
+    | '/api/internal/process-lead'
     | '/api/public/leads'
   fileRoutesById: FileRoutesById
 }
@@ -358,6 +370,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiInternalProcessLeadRoute: typeof ApiInternalProcessLeadRoute
   ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
 }
 
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/leads'
       fullPath: '/api/public/leads'
       preLoaderRoute: typeof ApiPublicLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/process-lead': {
+      id: '/api/internal/process-lead'
+      path: '/api/internal/process-lead'
+      fullPath: '/api/internal/process-lead'
+      preLoaderRoute: typeof ApiInternalProcessLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/parametres/utilisateurs': {
@@ -664,6 +684,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiInternalProcessLeadRoute: ApiInternalProcessLeadRoute,
   ApiPublicLeadsRoute: ApiPublicLeadsRoute,
 }
 export const routeTree = rootRouteImport
