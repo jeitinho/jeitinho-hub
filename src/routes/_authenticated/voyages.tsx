@@ -15,19 +15,47 @@ function Voyages() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["trips"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Keep this query aligned with the canonical trips table. Financial totals
+      // live on trip_activities rather than on trips itself.
+      const { data: trips, error: tripsError } = await supabase
         .from("trips")
-        .select("id,reference,title,status,start_date,end_date,currency,quoted_amount,margin_amount,client_id")
+        .select("id,reference,title,status,start_date,end_date,client_id,currency,created_at")
         .order("start_date", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
-      if (error) throw error;
-      const rows = data ?? [];
+      if (tripsError) throw tripsError;
+
+      const rows = trips ?? [];
       const clientIds = [...new Set(rows.map((row) => row.client_id).filter(Boolean))];
-      if (!clientIds.length) return rows.map((row) => ({ ...row, client_name: null }));
-      const { data: clients, error: clientError } = await supabase.from("clients").select("id,full_name").in("id", clientIds);
-      if (clientError) throw clientError;
-      const names = new Map((clients ?? []).map((client) => [client.id, client.full_name]));
-      return rows.map((row) => ({ ...row, client_name: row.client_id ? names.get(row.client_id) ?? null : null }));
+      const tripIds = rows.map((row) => row.id);
+
+      const [clientsResult, activitiesResult] = await Promise.all([
+        clientIds.length
+          ? supabase.from("clients").select("id,full_name").in("id", clientIds)
+          : Promise.resolve({ data: [], error: null }),
+        tripIds.length
+          ? supabase.from("trip_activities").select("trip_id,sale_price,supplier_cost,commission_amount,margin_amount").in("trip_id", tripIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+
+      if (clientsResult.error) throw clientsResult.error;
+      if (activitiesResult.error) throw activitiesResult.error;
+
+      const names = new Map((clientsResult.data ?? []).map((client) => [client.id, client.full_name]));
+      const financials = new Map<string, { sale: number; margin: number }>();
+
+      for (const activity of activitiesResult.data ?? []) {
+        const current = financials.get(activity.trip_id) ?? { sale: 0, margin: 0 };
+        current.sale += Number(activity.sale_price ?? 0);
+        current.margin += Number(activity.margin_amount ?? (Number(activity.sale_price ?? 0) - Number(activity.supplier_cost ?? 0) - Number(activity.commission_amount ?? 0)));
+        financials.set(activity.trip_id, current);
+      }
+
+      return rows.map((row) => ({
+        ...row,
+        client_name: row.client_id ? names.get(row.client_id) ?? null : null,
+        quoted_amount: financials.get(row.id)?.sale ?? 0,
+        margin_amount: financials.get(row.id)?.margin ?? 0,
+      }));
     },
   });
 
@@ -47,7 +75,7 @@ function Voyages() {
                 <div className="flex items-start justify-between gap-3"><div><p className="text-xs text-muted-foreground">{trip.reference}</p><h3 className="mt-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>{trip.title}</h3></div><Badge variant="secondary">{trip.status}</Badge></div>
                 <p className="mt-3 text-sm font-medium">{trip.client_name ?? "Client non renseigné"}</p>
                 <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{trip.start_date ?? "Date à définir"}{trip.end_date ? ` → ${trip.end_date}` : ""}</div>
-                <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Vente</p><p className="font-semibold">{trip.quoted_amount != null ? `${trip.quoted_amount} ${trip.currency}` : "—"}</p></div><div><p className="text-xs text-muted-foreground">Marge</p><p className="font-semibold">{trip.margin_amount != null ? `${trip.margin_amount} ${trip.currency}` : "—"}</p></div></div>
+                <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Vente activités</p><p className="font-semibold">{trip.quoted_amount.toFixed(2)} {trip.currency}</p></div><div><p className="text-xs text-muted-foreground">Marge</p><p className="font-semibold">{trip.margin_amount.toFixed(2)} {trip.currency}</p></div></div>
               </Card>
             </Link>
           ))}
