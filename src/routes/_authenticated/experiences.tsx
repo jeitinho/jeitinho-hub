@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, Palmtree, MapPinned, Compass, CarFront, TrendingUp, Search, RefreshCw, Sparkles, Route, Map, Euro } from "lucide-react";
+import { Plus, Palmtree, MapPinned, Compass, CarFront, TrendingUp, Search, RefreshCw, Sparkles, Route as RouteIcon, Map, Euro } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/experiences")({ component: Layout, head: () => ({ meta: [{ title: "Expériences — JEITINHO" }] }) });
@@ -26,7 +26,7 @@ function ExperiencesList() {
 
   return <PageShell eyebrow="Bibliothèque centrale" title="Expériences" description="Le catalogue commercial vivant : une expérience alimente le site, les devis, les voyages et le calcul de marge." actions={<Link to="/experiences/new"><Button className="btn-primary"><Plus className="mr-2 h-3.5 w-3.5" />Nouvelle expérience</Button></Link>}>
     <div className="mb-5 grid gap-3 sm:grid-cols-4">
-      {[{ label: "Catalogue", value: stats.total, icon: Sparkles }, { label: "Publiées", value: stats.published, icon: MapPinned }, { label: "Excursions", value: stats.excursions, icon: Route }, { label: "Chauffeur", value: stats.drivers, icon: CarFront }].map(({ label, value, icon: Icon }) => <Card key={label} className="border-border/60 p-4"><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">{label}</span><Icon className="h-4 w-4 text-primary" /></div><p className="mt-2 text-2xl font-semibold" style={{ fontFamily: "Fraunces, serif" }}>{value}</p></Card>)}
+      {[{ label: "Catalogue", value: stats.total, icon: Sparkles }, { label: "Publiées", value: stats.published, icon: MapPinned }, { label: "Excursions", value: stats.excursions, icon: RouteIcon }, { label: "Chauffeur", value: stats.drivers, icon: CarFront }].map(({ label, value, icon: Icon }) => <Card key={label} className="border-border/60 p-4"><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">{label}</span><Icon className="h-4 w-4 text-primary" /></div><p className="mt-2 text-2xl font-semibold" style={{ fontFamily: "Fraunces, serif" }}>{value}</p></Card>)}
     </div>
     <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="relative max-w-xl flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input className="pl-9" placeholder="Rechercher une expérience, ville, catégorie…" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
@@ -54,6 +54,6 @@ function ExperiencesList() {
           </div>
         </Card></Link>;
       })}</div>}
-    <div className="mt-5 grid gap-3 md:grid-cols-3"><Card className="border-primary/10 bg-primary/5 p-4"><Map className="h-4 w-4 text-primary" /><p className="mt-2 text-sm font-medium">Rio & activités locales</p><p className="mt-1 text-xs text-muted-foreground">Tours, visites, nature, culture et expériences vendues directement.</p></Card><Card className="border-primary/10 bg-primary/5 p-4"><Route className="h-4 w-4 text-primary" /><p className="mt-2 text-sm font-medium">Excursions / roadtrip</p><p className="mt-1 text-xs text-muted-foreground">Prestations hors Rio avec chauffeur ou logistique partenaire.</p></Card><Card className="border-primary/10 bg-primary/5 p-4"><Euro className="h-4 w-4 text-primary" /><p className="mt-2 text-sm font-medium">Économie réelle</p><p className="mt-1 text-xs text-muted-foreground">Prix client, coût fournisseur, commission et marge sont conservés dans la fiche.</p></Card></div>
+    <div className="mt-5 grid gap-3 md:grid-cols-3"><Card className="border-primary/10 bg-primary/5 p-4"><Map className="h-4 w-4 text-primary" /><p className="mt-2 text-sm font-medium">Rio & activités locales</p><p className="mt-1 text-xs text-muted-foreground">Tours, visites, nature, culture et expériences vendues directement.</p></Card><Card className="border-primary/10 bg-primary/5 p-4"><RouteIcon className="h-4 w-4 text-primary" /><p className="mt-2 text-sm font-medium">Excursions / roadtrip</p><p className="mt-1 text-xs text-muted-foreground">Prestations hors Rio avec chauffeur ou logistique partenaire.</p></Card><Card className="border-primary/10 bg-primary/5 p-4"><Euro className="h-4 w-4 text-primary" /><p className="mt-2 text-sm font-medium">Économie réelle</p><p className="mt-1 text-xs text-muted-foreground">Prix client, coût fournisseur, commission et marge sont conservés dans la fiche.</p></Card></div>
   </PageShell>;
 }
