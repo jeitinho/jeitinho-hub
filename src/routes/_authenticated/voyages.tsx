@@ -35,7 +35,7 @@ function Voyages() {
     queryFn: async () => {
       const { data: trips, error: tripsError } = await supabase
         .from("trips")
-        .select("id,reference,title,status,start_date,end_date,client_id,currency,created_at")
+        .select("id,reference,title,status,start_date,end_date,client_id,created_at")
         .order("start_date", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
       if (tripsError) throw new SupabaseQueryError("trips", tripsError);
@@ -104,7 +104,7 @@ function Voyages() {
                 <div className="flex items-start justify-between gap-3"><div><p className="text-xs text-muted-foreground">{trip.reference}</p><h3 className="mt-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>{trip.title}</h3></div><Badge variant="secondary">{trip.status}</Badge></div>
                 <p className="mt-3 text-sm font-medium">{trip.client_name ?? "Client non renseigné"}</p>
                 <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{trip.start_date ?? "Date à définir"}{trip.end_date ? ` → ${trip.end_date}` : ""}</div>
-                <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Vente activités</p><p className="font-semibold">{trip.quoted_amount.toFixed(2)} {trip.currency}</p></div><div><p className="text-xs text-muted-foreground">Marge</p><p className="font-semibold">{trip.margin_amount.toFixed(2)} {trip.currency}</p></div></div>
+                <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Vente activités</p><p className="font-semibold">{trip.quoted_amount.toFixed(2)} R$</p></div><div><p className="text-xs text-muted-foreground">Marge</p><p className="font-semibold">{trip.margin_amount.toFixed(2)} R$</p></div></div>
               </Card>
             </Link>
           ))}
