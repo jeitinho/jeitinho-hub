@@ -1,15 +1,152 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { useState } from "react";
+
+function commissionAmount(sale: number, supplier: number, pct: number, basis: string) {
+  const rate = Math.max(0, pct) / 100;
+  if (!rate) return 0;
+  if (basis === "supplier_net") return supplier * rate;
+  if (basis === "gross_margin") return Math.max(0, sale - supplier) * rate;
+  return sale * rate;
+}
 
 export function TripExperiencePicker({ tripId, onAdded }: { tripId: string; onAdded?: () => void }) {
-  const [experienceId, setExperienceId] = useState(""); const [partnerId, setPartnerId] = useState(""); const [scheduledAt, setScheduledAt] = useState(""); const [clientPrice, setClientPrice] = useState(""); const [partnerCost, setPartnerCost] = useState("");
-  const { data: experiences = [] } = useQuery({ queryKey: ["trip-picker-experiences"], queryFn: async () => { const { data, error } = await (supabase as any).from("experiences").select("id,title").order("title"); if (error) throw error; return data ?? []; } });
-  const { data: partners = [] } = useQuery({ queryKey: ["trip-picker-partners"], queryFn: async () => { const { data, error } = await (supabase as any).from("partners").select("id,name").order("name"); if (error) throw error; return data ?? []; } });
-  const add = async () => { if (!experienceId) return toast.error("Choisis une expérience."); const { error } = await (supabase as any).from("trip_activities").insert({ trip_id: tripId, experience_id: experienceId, partner_id: partnerId || null, scheduled_at: scheduledAt || null, client_price: clientPrice ? Number(clientPrice) : null, partner_cost: partnerCost ? Number(partnerCost) : null, status: partnerId ? "request_sent" : "to_plan" }); if (error) return toast.error(error.message); toast.success("Prestation ajoutée"); onAdded?.(); };
-  return <div className="space-y-3 rounded-lg border p-4"><Select value={experienceId} onValueChange={setExperienceId}><SelectTrigger><SelectValue placeholder="Choisir une expérience" /></SelectTrigger><SelectContent>{experiences.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>)}</SelectContent></Select><Select value={partnerId} onValueChange={setPartnerId}><SelectTrigger><SelectValue placeholder="Choisir un prestataire (optionnel)" /></SelectTrigger><SelectContent>{partners.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select><div className="grid gap-3 sm:grid-cols-3"><Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} /><Input type="number" placeholder="Prix vendu" value={clientPrice} onChange={e => setClientPrice(e.target.value)} /><Input type="number" placeholder="Coût prestataire" value={partnerCost} onChange={e => setPartnerCost(e.target.value)} /></div><Button onClick={add}>Ajouter la prestation</Button></div>;
+  const [experienceId, setExperienceId] = useState("");
+  const [partnerId, setPartnerId] = useState("");
+  const [scheduledStart, setScheduledStart] = useState("");
+  const [salePrice, setSalePrice] = useState("");
+  const [supplierCost, setSupplierCost] = useState("");
+  const [quantity, setQuantity] = useState("1");
+
+  const { data: experiences = [] } = useQuery({
+    queryKey: ["trip-picker-experiences"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("experiences")
+        .select("id,title,price_from,currency,supplier_cost,supplier_net,commission_pct,commission_basis,partner_id")
+        .order("title");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: partners = [] } = useQuery({
+    queryKey: ["trip-picker-partners"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("partners").select("id,name").eq("is_active", true).order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const selected = experiences.find((e) => e.id === experienceId);
+  const qty = Math.max(1, Number(quantity) || 1);
+  const saleUnit = Number(salePrice) || 0;
+  const supplierUnit = Number(supplierCost) || 0;
+  const pct = Number(selected?.commission_pct) || 0;
+  const basis = selected?.commission_basis ?? "sale_price";
+  const commission = useMemo(() => commissionAmount(saleUnit * qty, supplierUnit * qty, pct, basis), [saleUnit, supplierUnit, qty, pct, basis]);
+  const margin = saleUnit * qty - supplierUnit * qty - commission;
+
+  const chooseExperience = (id: string) => {
+    setExperienceId(id);
+    const experience = experiences.find((e) => e.id === id);
+    if (!experience) return;
+    setSalePrice(experience.price_from != null ? String(experience.price_from) : "");
+    setSupplierCost(experience.supplier_cost != null ? String(experience.supplier_cost) : experience.supplier_net != null ? String(experience.supplier_net) : "");
+    if (!partnerId && experience.partner_id) setPartnerId(experience.partner_id);
+  };
+
+  const add = async () => {
+    if (!selected) return toast.error("Choisis une expérience.");
+    if (!salePrice || Number(salePrice) <= 0) return toast.error("Renseigne le prix vendu.");
+    if (!supplierCost || Number(supplierCost) < 0) return toast.error("Renseigne le coût fournisseur.");
+
+    const saleTotal = saleUnit * qty;
+    const supplierTotal = supplierUnit * qty;
+    const { error } = await supabase.from("trip_activities").insert({
+      trip_id: tripId,
+      experience_id: selected.id,
+      partner_id: partnerId || selected.partner_id || null,
+      title: selected.title,
+      activity_type: "experience",
+      status: "confirmed",
+      scheduled_start: scheduledStart ? new Date(scheduledStart).toISOString() : null,
+      quantity: qty,
+      sale_price: saleTotal,
+      supplier_cost: supplierTotal,
+      commission_amount: commission,
+      margin_amount: margin,
+      currency: selected.currency ?? "EUR",
+      metadata: {
+        commission_pct: pct,
+        commission_basis: basis,
+        source: "trip-experience-picker",
+      },
+    });
+
+    if (error) return toast.error(error.message);
+    toast.success("Prestation ajoutée au voyage");
+    setExperienceId("");
+    setPartnerId("");
+    setScheduledStart("");
+    setSalePrice("");
+    setSupplierCost("");
+    setQuantity("1");
+    onAdded?.();
+  };
+
+  return (
+    <div className="space-y-4 rounded-lg border p-4">
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-2 md:col-span-2">
+          <Label>Expérience</Label>
+          <Select value={experienceId} onValueChange={chooseExperience}>
+            <SelectTrigger><SelectValue placeholder="Choisir une expérience" /></SelectTrigger>
+            <SelectContent>{experiences.map((e) => <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Prestataire</Label>
+          <Select value={partnerId} onValueChange={setPartnerId}>
+            <SelectTrigger><SelectValue placeholder="Choisir un prestataire" /></SelectTrigger>
+            <SelectContent>{partners.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Date / heure</Label>
+          <Input type="datetime-local" value={scheduledStart} onChange={(e) => setScheduledStart(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Quantité</Label>
+          <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Prix vendu / unité</Label>
+          <Input type="number" min="0" step="0.01" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Coût fournisseur / unité</Label>
+          <Input type="number" min="0" step="0.01" value={supplierCost} onChange={(e) => setSupplierCost(e.target.value)} />
+        </div>
+      </div>
+
+      {selected && (
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <Badge variant="secondary">Commission {pct}%</Badge>
+          <Badge variant="outline">Base : {basis}</Badge>
+          <span>Commission : {commission.toFixed(2)} {selected.currency ?? "EUR"}</span>
+          <span>• Marge : {margin.toFixed(2)} {selected.currency ?? "EUR"}</span>
+        </div>
+      )}
+
+      <Button onClick={add}>Ajouter la prestation</Button>
+    </div>
+  );
 }
