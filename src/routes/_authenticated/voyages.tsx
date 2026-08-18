@@ -11,18 +11,34 @@ export const Route = createFileRoute("/_authenticated/voyages")({
   head: () => ({ meta: [{ title: "Voyages — JEITINHO" }] }),
 });
 
+type QueryStage = "trips" | "clients" | "trip_activities";
+
+class SupabaseQueryError extends Error {
+  stage: QueryStage;
+  details: string | null;
+  hint: string | null;
+  code: string | null;
+
+  constructor(stage: QueryStage, error: { message: string; details?: string | null; hint?: string | null; code?: string | null }) {
+    super(error.message);
+    this.name = "SupabaseQueryError";
+    this.stage = stage;
+    this.details = error.details ?? null;
+    this.hint = error.hint ?? null;
+    this.code = error.code ?? null;
+  }
+}
+
 function Voyages() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["trips"],
     queryFn: async () => {
-      // Keep this query aligned with the canonical trips table. Financial totals
-      // live on trip_activities rather than on trips itself.
       const { data: trips, error: tripsError } = await supabase
         .from("trips")
         .select("id,reference,title,status,start_date,end_date,client_id,currency,created_at")
         .order("start_date", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
-      if (tripsError) throw tripsError;
+      if (tripsError) throw new SupabaseQueryError("trips", tripsError);
 
       const rows = trips ?? [];
       const clientIds = [...new Set(rows.map((row) => row.client_id).filter(Boolean))];
@@ -37,8 +53,8 @@ function Voyages() {
           : Promise.resolve({ data: [], error: null }),
       ]);
 
-      if (clientsResult.error) throw clientsResult.error;
-      if (activitiesResult.error) throw activitiesResult.error;
+      if (clientsResult.error) throw new SupabaseQueryError("clients", clientsResult.error);
+      if (activitiesResult.error) throw new SupabaseQueryError("trip_activities", activitiesResult.error);
 
       const names = new Map((clientsResult.data ?? []).map((client) => [client.id, client.full_name]));
       const financials = new Map<string, { sale: number; margin: number }>();
@@ -59,12 +75,25 @@ function Voyages() {
     },
   });
 
+  const queryError = error instanceof SupabaseQueryError ? error : null;
+
   return (
     <PageShell eyebrow="Conciergerie" title="Voyages" description="Le cockpit opérationnel des séjours clients : voyageurs, activités, prestataires, coûts et marge.">
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <Card key={i} className="h-44 animate-pulse bg-muted/50" />)}</div>
       ) : error ? (
-        <Card className="border-destructive/40 p-8"><h3 className="font-semibold">Impossible de charger les voyages</h3><p className="mt-2 text-sm text-muted-foreground">{error instanceof Error ? error.message : "Erreur Supabase"}</p></Card>
+        <Card className="border-destructive/40 p-8">
+          <h3 className="font-semibold">Impossible de charger les voyages</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{error instanceof Error ? error.message : "Erreur Supabase"}</p>
+          {queryError ? (
+            <div className="mt-4 rounded-md bg-muted/50 p-4 font-mono text-xs leading-6">
+              <div>étape: {queryError.stage}</div>
+              <div>code: {queryError.code ?? "—"}</div>
+              <div>détails: {queryError.details ?? "—"}</div>
+              <div>indice: {queryError.hint ?? "—"}</div>
+            </div>
+          ) : null}
+        </Card>
       ) : !data?.length ? (
         <Card className="border-dashed p-16 text-center"><Plane className="mx-auto mb-4 h-8 w-8 text-primary" /><h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>Aucun voyage</h3><p className="mt-2 text-sm text-muted-foreground">Un voyage apparaîtra ici dès qu'un devis accepté sera converti.</p></Card>
       ) : (
