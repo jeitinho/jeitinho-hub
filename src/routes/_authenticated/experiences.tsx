@@ -1,12 +1,12 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchCatalog } from "@/lib/catalog-gateway";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, Palmtree, MapPinned, Compass, CarFront, TrendingUp, Search, RefreshCw, Sparkles, Route as RouteIcon, Map, Euro } from "lucide-react";
+import { Plus, Palmtree, MapPinned, Route as RouteIcon, CarFront, TrendingUp, Search, RefreshCw, Sparkles, Map, Euro } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/experiences")({ component: Layout, head: () => ({ meta: [{ title: "Expériences — JEITINHO" }] }) });
@@ -15,7 +15,7 @@ function Layout() { const path = useRouterState({ select: (r) => r.location.path
 function ExperiencesList() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const { data, isLoading, error, refetch, isFetching } = useQuery({ queryKey: ["experiences"], queryFn: async () => { const { data, error } = await supabase.from("experiences").select("*").order("title", { ascending: true }); if (error) throw error; return data ?? []; } });
+  const { data, isLoading, error, refetch, isFetching } = useQuery({ queryKey: ["experiences"], queryFn: () => fetchCatalog<any>("experiences", { order: "title" }) });
   const visible = useMemo(() => (data ?? []).filter((x) => {
     const q = search.trim().toLowerCase();
     const matchesSearch = !q || [x.title, x.city, x.neighborhood, x.category, x.experience_type, x.location].filter(Boolean).join(" ").toLowerCase().includes(q);
