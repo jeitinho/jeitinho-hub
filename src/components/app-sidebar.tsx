@@ -14,6 +14,7 @@ import {
   BarChart3,
   Wrench,
   Ticket,
+  Bot,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -38,6 +39,7 @@ type Item = { title: string; url: string; icon: React.ComponentType<{ className?
 
 const PILOTAGE: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, module: "dashboard" },
+  { title: "Agents", url: "/agents", icon: Bot, module: "agents" },
   { title: "Calendrier", url: "/calendrier", icon: Calendar, module: "calendrier" },
   { title: "Analytics", url: "/analytics", icon: BarChart3, module: "analytics" },
 ];
@@ -76,7 +78,7 @@ export function AppSidebar() {
   };
 
   const renderGroup = (label: string, items: Item[]) => {
-    const visible = items.filter((i) => allowed(i.module));
+    const visible = items.filter((i) => i.module === "agents" ? canManage : allowed(i.module));
     if (!visible.length) return null;
     return (
       <SidebarGroup>
