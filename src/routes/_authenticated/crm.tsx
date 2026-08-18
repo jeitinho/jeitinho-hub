@@ -91,7 +91,7 @@ function LeadsInbox() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["leads"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -156,6 +156,11 @@ function LeadsInbox() {
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Chargement…</div>
+      ) : error ? (
+        <Card className="border-destructive/40 p-8">
+          <h3 className="font-semibold">Impossible de charger les leads</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
+        </Card>
       ) : !rows.length ? (
         <Card className="border-dashed p-16 text-center">
           <Inbox className="mx-auto mb-4 h-8 w-8 text-primary" />
@@ -209,7 +214,7 @@ function ProspectsPipeline() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["prospects"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -255,6 +260,11 @@ function ProspectsPipeline() {
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Chargement…</div>
+      ) : error ? (
+        <Card className="border-destructive/40 p-8">
+          <h3 className="font-semibold">Impossible de charger les prospects</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
+        </Card>
       ) : !rows.length ? (
         <Card className="border-dashed p-16 text-center">
           <Users className="mx-auto mb-4 h-8 w-8 text-primary" />
