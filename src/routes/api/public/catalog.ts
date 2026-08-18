@@ -7,7 +7,8 @@ const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
   ticket_offers: new Set(["event_date", "title", "created_at", "updated_at"]),
 };
 
-// Production backend: Supabase Edge Function. No Supabase private key is kept in Cloudflare.
+// Production backend: Supabase Edge Function holds the private Supabase credential.
+// Cloudflare/browser never receives the Supabase service-role key.
 const CATALOG_READ_URL = "https://ltrshfejyjzpokexgnmb.supabase.co/functions/v1/catalog-read";
 
 export const Route = createFileRoute("/api/public/catalog")({
@@ -26,20 +27,12 @@ export const Route = createFileRoute("/api/public/catalog")({
           return Response.json({ ok: false, error: "Invalid order column" }, { status: 400 });
         }
 
-        const internalSecret = process.env.INTERNAL_PROCESS_SECRET;
-        if (!internalSecret) {
-          return Response.json({ ok: false, error: "Catalog gateway disabled" }, { status: 503 });
-        }
-
         try {
           const params = new URLSearchParams({ table, ...(order ? { order } : {}) });
           if (!ascending) params.set("ascending", "false");
 
           const response = await fetch(`${CATALOG_READ_URL}?${params.toString()}`, {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${internalSecret}`,
-            },
+            headers: { Accept: "application/json" },
           });
           const body = await response.json().catch(() => null);
 
