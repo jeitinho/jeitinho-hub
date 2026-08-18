@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchCatalog } from "@/lib/catalog-gateway";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/services")({ component: Se
 
 function ServicesFactory() {
   const [search, setSearch] = useState("");
-  const { data, isLoading, error, refetch, isFetching } = useQuery({ queryKey: ["services"], queryFn: async () => { const { data, error } = await (supabase as any).from("services").select("*").order("group_slug", { ascending: true }).order("title", { ascending: true }); if (error) throw error; return (data ?? []) as any[]; } });
+  const { data, isLoading, error, refetch, isFetching } = useQuery({ queryKey: ["services"], queryFn: () => fetchCatalog<any>("services", { order: "group_slug" }) });
   const rows = data ?? [];
   const visible = useMemo(() => { const q = search.trim().toLowerCase(); return rows.filter((s) => !q || [s.title, s.description, s.group_slug, s.category].filter(Boolean).join(" ").toLowerCase().includes(q)); }, [rows, search]);
   const groups = useMemo(() => [...new Set(visible.map((s) => s.group_slug).filter(Boolean))], [visible]);
