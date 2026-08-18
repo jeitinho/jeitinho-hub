@@ -88,11 +88,14 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   blog: ["admin", "manager", "redacteur_chef", "redacteur", "auteur"],
   mediatheque: ["admin", "manager", "redacteur_chef", "redacteur"],
   partenaires: ["admin", "manager", "prestataire"],
+  services: ["admin", "manager"],
+  billetterie: ["admin", "manager"],
   calendrier: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide"],
   analytics: ["admin", "manager"],
   parametres: ["admin", "manager"],
 };
 
 export function canAccessModule(module: keyof typeof MODULE_ACCESS, roles: AppRole[]) {
-  return roles.some((r) => MODULE_ACCESS[module].includes(r));
+  const allowed = MODULE_ACCESS[module] ?? [];
+  return roles.some((r) => allowed.includes(r));
 }
