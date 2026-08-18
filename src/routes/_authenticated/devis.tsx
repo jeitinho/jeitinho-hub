@@ -20,14 +20,14 @@ export const Route = createFileRoute("/_authenticated/devis")({
 
 function Layout() {
   const path = useRouterState({ select: (r) => r.location.pathname });
-  if (path !== "/devis") return <Outlet />;
+  if (path.replace(/\/$/, "") !== "/devis") return <Outlet />;
   return <QuotesList />;
 }
 
 function QuotesList() {
   const [filter, setFilter] = useState<string>("all");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["quotes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -70,6 +70,11 @@ function QuotesList() {
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Chargement…</div>
+      ) : error ? (
+        <Card className="border-destructive/40 p-8">
+          <h2 className="font-semibold">Impossible de charger les devis</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
+        </Card>
       ) : !rows.length ? (
         <Card className="border-dashed p-16 text-center">
           <FileText className="mx-auto mb-4 h-8 w-8 text-primary" />
