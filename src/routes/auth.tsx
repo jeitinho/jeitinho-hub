@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { JeitinhoLogo } from "@/components/jeitinho-logo";
 
 export const Route = createFileRoute("/auth")({
-  ssr: false,
   component: AuthPage,
   head: () => ({ meta: [{ title: "Connexion — JEITINHO Platform" }] }),
 });
