@@ -1,21 +1,22 @@
 # JEITINHO Agent Execution
 
-The Hub now connects its Agent Operating System to the OpenAI Responses API.
+The Hub connects its Agent Operating System to the Google Gemini Developer API.
 
 ## Runtime
 
-- Provider: OpenAI Responses API
-- Default model: `gpt-5.6-luna`
-- Server-only secret: `OPENAI_API_KEY`
-- Optional override: `OPENAI_AGENT_MODEL`
+- Provider: Google Gemini API
+- Default model: `gemini-2.5-flash-lite`
+- Server-only secret: `GEMINI_API_KEY`
+- Optional override: `GEMINI_AGENT_MODEL`
+- Transport: Gemini `generateContent` REST API with native function calling
 
-GPT-5.6 Luna supports function calling through `v1/responses` and is intended for cost-sensitive, high-volume workloads.
+Gemini 2.5 Flash-Lite supports function calling and is the most cost-efficient Gemini model for high-frequency lightweight tasks. Google currently lists a free tier for Gemini API usage, subject to rate limits.
 
 ## Flow
 
-`/agents` → authenticated server function → agent registry → OpenAI Responses API → governed Hub tools → Supabase → `agent_runs` / `agent_actions` audit.
+`/agents` → authenticated server function → agent registry → Gemini API → governed Hub tools → Supabase → `agent_runs` / `agent_actions` audit.
 
-The browser never receives `OPENAI_API_KEY`.
+The browser never receives `GEMINI_API_KEY`.
 
 ## Autonomy
 
@@ -30,6 +31,15 @@ Current agents default to N1/N2. Sensitive tools such as follow-up preparation, 
 
 Apply `supabase/migrations/20260818032000_agent_execution.sql` before using `/agents` in an environment whose database does not already contain `agent_runs` and `agent_actions`.
 
-## Production secret
+## Gemini setup
 
-Set `OPENAI_API_KEY` in the server/runtime environment used by the Cloudflare deployment. Never prefix it with `VITE_` and never commit the value.
+1. Open Google AI Studio and create an API key for the project.
+2. Add `GEMINI_API_KEY` to the server/runtime environment.
+3. Optionally set `GEMINI_AGENT_MODEL` to another Gemini model available to the project.
+4. Never prefix the key with `VITE_` and never commit the value.
+
+For the current free-tier setup, keep `GEMINI_AGENT_MODEL=gemini-2.5-flash-lite`. If you need stronger reasoning later, `gemini-2.5-flash` is also a function-calling model and can be selected without changing the agent code.
+
+## Production
+
+Set `GEMINI_API_KEY` in the server/runtime environment used by the Cloudflare deployment. The agent runtime calls Gemini only from the server.
