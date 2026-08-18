@@ -1,16 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// Read-only public catalog gateway.
-// The browser never receives a Supabase key. The query runs server-side with
-// the existing Supabase service-role client, exactly like other trusted server
-// routes. This removes the dependency on the Lovable-hosted catalog-read
-// endpoint while keeping the public catalog endpoint authentication-free.
+// Read-only catalog gateway for manager.jeitinho.fr.
+// The Cloudflare deployment does not hold the private Supabase credential.
+// Reads are therefore delegated to the Lovable-hosted deployment, which has
+// the existing Supabase service-role credential. The browser never receives
+// that credential.
 const ALLOWED_TABLES = new Set(["experiences", "services", "ticket_offers"]);
 const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
   experiences: new Set(["title", "created_at", "updated_at"]),
   services: new Set(["group_slug", "title", "created_at", "updated_at"]),
   ticket_offers: new Set(["event_date", "title", "created_at", "updated_at"]),
 };
+
+const CATALOG_READ_URL = "https://jeitinho-heartbeat.lovable.app/api/internal/catalog";
 
 export const Route = createFileRoute("/api/public/catalog")({
   server: {
@@ -28,36 +30,37 @@ export const Route = createFileRoute("/api/public/catalog")({
           return Response.json({ ok: false, error: "Invalid order column" }, { status: 400 });
         }
 
+        const internalSecret = process.env.INTERNAL_PROCESS_SECRET;
+        if (!internalSecret) {
+          console.error("[api/public/catalog] INTERNAL_PROCESS_SECRET is not configured");
+          return Response.json({ ok: false, error: "Catalog gateway disabled" }, { status: 503 });
+        }
+
         try {
-          // Keep the service-role client out of the client bundle. The server
-          // helper itself explicitly recommends a dynamic import from route files.
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          let query = supabaseAdmin.from(table as any).select("*");
+          const params = new URLSearchParams({ table });
+          if (order) params.set("order", order);
+          if (!ascending) params.set("ascending", "false");
 
-          if (order) {
-            query = query.order(order, { ascending });
-          }
+          const res = await fetch(`${CATALOG_READ_URL}?${params.toString()}`, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${internalSecret}`,
+            },
+          });
+          const body = await res.json().catch(() => null);
 
-          const { data, error } = await query;
-
-          if (error) {
-            console.error("[api/public/catalog] Supabase read failed", {
-              table,
-              order,
-              ascending,
-              code: error.code,
-              message: error.message,
-            });
+          if (!res.ok || !body?.ok) {
+            console.error("[api/public/catalog] internal catalog responded", res.status, body);
             return Response.json({ ok: false, error: "Catalog read failed" }, { status: 502 });
           }
 
           return Response.json({
             ok: true,
             table,
-            data: Array.isArray(data) ? data : [],
+            data: Array.isArray(body.data) ? body.data : [],
           });
         } catch (err) {
-          console.error("[api/public/catalog] Supabase request failed:", err);
+          console.error("[api/public/catalog] internal catalog request failed:", err);
           return Response.json({ ok: false, error: "Catalog read failed" }, { status: 502 });
         }
       },
