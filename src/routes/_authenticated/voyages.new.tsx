@@ -1,0 +1,25 @@
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { PageShell } from "@/components/page-shell";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Save } from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/_authenticated/voyages/new")({ component: NewTrip, head: () => ({ meta: [{ title: "Nouveau voyage — JEITINHO" }] }) });
+
+function NewTrip() {
+  const navigate = useNavigate();
+  const [title,setTitle]=useState(""); const [clientId,setClientId]=useState("none"); const [start,setStart]=useState(""); const [end,setEnd]=useState(""); const [status,setStatus]=useState("draft"); const [notes,setNotes]=useState(""); const [saving,setSaving]=useState(false);
+  const {data:clients=[]}=useQuery({queryKey:["clients","trip-new"],queryFn:async()=>{const {data,error}=await supabase.from("clients").select("id,full_name").order("full_name");if(error)throw error;return data??[];}});
+  const save=async()=>{if(!title.trim())return toast.error("Le titre du voyage est obligatoire.");setSaving(true);try{const {data:user}=await supabase.auth.getUser();const reference=`VOY-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;const {data,error}=await supabase.from("trips").insert({reference,title:title.trim(),client_id:clientId==="none"?null:clientId,status,start_date:start||null,end_date:end||null,notes:notes.trim()||null,created_by:user.user?.id??null}).select("id").single();if(error)throw error;toast.success("Voyage créé.");navigate({to:"/voyages/$id",params:{id:data.id}})}catch(e){toast.error(e instanceof Error?e.message:"Impossible de créer le voyage.")}finally{setSaving(false)}};
+  return <PageShell eyebrow="Conciergerie" title="Nouveau voyage" description="Créez manuellement un voyage, même sans devis préalable." actions={<Link to="/voyages"><Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4"/>Retour aux voyages</Button></Link>}>
+    <div className="mx-auto max-w-3xl"><Card className="space-y-6 p-6"><div><Label>Titre du voyage</Label><Input className="mt-1.5" placeholder="Séjour de Rafael à Rio" value={title} onChange={e=>setTitle(e.target.value)}/></div><div><Label>Client</Label><Select value={clientId} onValueChange={setClientId}><SelectTrigger className="mt-1.5"><SelectValue placeholder="Choisir un client"/></SelectTrigger><SelectContent><SelectItem value="none">Aucun client pour le moment</SelectItem>{clients.map(c=><SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}</SelectContent></Select></div><div className="grid gap-4 sm:grid-cols-3"><div><Label>Début</Label><Input className="mt-1.5" type="date" value={start} onChange={e=>setStart(e.target.value)}/></div><div><Label>Fin</Label><Input className="mt-1.5" type="date" value={end} onChange={e=>setEnd(e.target.value)}/></div><div><Label>Statut</Label><Select value={status} onValueChange={setStatus}><SelectTrigger className="mt-1.5"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="draft">Brouillon</SelectItem><SelectItem value="confirmed">Confirmé</SelectItem><SelectItem value="in_progress">En cours</SelectItem></SelectContent></Select></div></div><div><Label>Notes internes</Label><Textarea className="mt-1.5 min-h-32" value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Contexte, demandes client, éléments à organiser…"/></div><div className="flex justify-end"><Button className="btn-primary" onClick={save} disabled={saving}><Save className="mr-2 h-4 w-4"/>{saving?"Création…":"Créer le voyage"}</Button></div></Card></div>
+  </PageShell>;
+}
