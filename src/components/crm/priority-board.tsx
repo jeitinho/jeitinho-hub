@@ -182,8 +182,8 @@ export function PriorityBoard() {
   const qc = useQueryClient();
   const [rescoring, setRescoring] = useState(false);
 
-  const { data: leads, isLoading } = useQuery({ queryKey: ["crm", "priority-leads"], queryFn: fetchPriorityLeads });
-  const { data: quotes } = useQuery({ queryKey: ["crm", "sent-quotes"], queryFn: fetchSentQuotes });
+  const { data: leads, isLoading, error } = useQuery({ queryKey: ["crm", "priority-leads"], queryFn: fetchPriorityLeads });
+  const { data: quotes, error: quotesError } = useQuery({ queryKey: ["crm", "sent-quotes"], queryFn: fetchSentQuotes });
 
   const groups = useMemo(() => {
     const rows = leads ?? [];
@@ -207,6 +207,14 @@ export function PriorityBoard() {
   }, [quotes]);
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Chargement…</div>;
+  const loadError = (error ?? quotesError) as Error | null;
+  if (loadError)
+    return (
+      <Card className="border-destructive/40 p-8">
+        <h3 className="font-semibold">Impossible de charger les priorités</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{loadError.message}</p>
+      </Card>
+    );
 
   return (
     <div className="space-y-8">

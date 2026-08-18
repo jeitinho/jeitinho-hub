@@ -12,12 +12,12 @@ export const Route = createFileRoute("/_authenticated/clients")({
 
 function Layout() {
   const path = useRouterState({ select: (r) => r.location.pathname });
-  if (path !== "/clients") return <Outlet />;
+  if (path.replace(/\/$/, "") !== "/clients") return <Outlet />;
   return <ClientsList />;
 }
 
 function ClientsList() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["clients"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -33,6 +33,11 @@ function ClientsList() {
     <PageShell eyebrow="Base clients" title="Clients" description="Fiches, historique de voyages et documents. Alimentée par les prospects convertis depuis le CRM.">
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Chargement…</div>
+      ) : error ? (
+        <Card className="border-destructive/40 p-8">
+          <h2 className="font-semibold">Impossible de charger les clients</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
+        </Card>
       ) : !data?.length ? (
         <Card className="border-dashed p-16 text-center">
           <UserRound className="mx-auto mb-4 h-8 w-8 text-primary" />
@@ -47,7 +52,7 @@ function ClientsList() {
                 <h3 className="truncate text-sm font-medium">{c.full_name}</h3>
                 <p className="mt-0.5 text-xs text-muted-foreground">{[c.email, c.phone].filter(Boolean).join(" · ") || "Pas de contact"}</p>
               </div>
-              <span className="pill shrink-0">{c.stage}</span>
+              <span className="pill shrink-0">{c.stage ?? c.status ?? "—"}</span>
             </Link>
           ))}
         </Card>
