@@ -12,6 +12,8 @@ import {
   Handshake,
   Calendar,
   BarChart3,
+  Wrench,
+  Ticket,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -44,6 +46,8 @@ const COMMERCIAL: Item[] = [
   { title: "Clients", url: "/clients", icon: UserRound, module: "clients" },
   { title: "Devis", url: "/devis", icon: FileText, module: "devis" },
   { title: "Voyages", url: "/voyages", icon: Plane, module: "voyages" },
+  { title: "Services", url: "/services", icon: Wrench, module: "services" },
+  { title: "Billetterie", url: "/billetterie", icon: Ticket, module: "billetterie" },
 ];
 const CONTENU: Item[] = [
   { title: "Expériences", url: "/experiences", icon: Palmtree, module: "experiences" },
