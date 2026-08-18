@@ -40,9 +40,31 @@ export const Route = createFileRoute("/api/internal/process-lead")({
             const v = lead[k] ?? raw[k];
             return typeof v === "string" && v.trim() ? v.trim() : null;
           };
+          const source = typeof lead.source === "string" ? lead.source.trim() : "";
+          const externalRef = typeof lead.external_ref === "string" ? lead.external_ref.trim() : "";
+
+          // Idempotency for callers that provide a stable external reference
+          // (currently bookings). The unique partial index in Supabase is the
+          // final race-safe guard; this lookup makes the common retry path cheap.
+          if (source && externalRef) {
+            const { data: existing, error: lookupError } = await supabaseAdmin
+              .from("leads")
+              .select("id")
+              .eq("source", source)
+              .eq("external_ref", externalRef)
+              .maybeSingle();
+            if (lookupError) {
+              console.error("[process-lead] idempotency lookup failed:", lookupError);
+              return Response.json({ ok: false, error: "Idempotency lookup failed" }, { status: 500 });
+            }
+            if (existing?.id) {
+              return Response.json({ ok: true, id: existing.id, deduplicated: true }, { status: 200 });
+            }
+          }
+
           const receivedAt = new Date().toISOString();
           const enrich = {
-            source: lead.source,
+            source: source || lead.source,
             campaign: pick("campaign") ?? pick("utm_campaign"),
             utm_source: pick("utm_source"),
             utm_medium: pick("utm_medium"),
@@ -60,7 +82,7 @@ export const Route = createFileRoute("/api/internal/process-lead")({
             phone: lead.phone ?? null,
             message: lead.message ?? null,
             activities: lead.activities ?? [],
-            source: lead.source,
+            source: enrich.source,
             campaign: enrich.campaign,
             request_type: enrich.request_type,
           };
@@ -72,8 +94,8 @@ export const Route = createFileRoute("/api/internal/process-lead")({
           const { data, error } = await supabaseAdmin
             .from("leads")
             .insert({
-              source: lead.source,
-              external_ref: lead.external_ref ?? null,
+              source: enrich.source,
+              external_ref: externalRef || null,
               name: lead.name,
               email: lead.email ?? null,
               phone: lead.phone ?? null,
@@ -104,10 +126,24 @@ export const Route = createFileRoute("/api/internal/process-lead")({
             .single();
 
           if (error) {
+            // A concurrent retry can lose the race to the unique index. In
+            // that case, return the already-created lead instead of creating a
+            // duplicate or reporting a false failure.
+            if (error.code === "23505" && source && externalRef) {
+              const { data: existing, error: lookupError } = await supabaseAdmin
+                .from("leads")
+                .select("id")
+                .eq("source", source)
+                .eq("external_ref", externalRef)
+                .maybeSingle();
+              if (!lookupError && existing?.id) {
+                return Response.json({ ok: true, id: existing.id, deduplicated: true }, { status: 200 });
+              }
+            }
             console.error("[process-lead] insert failed:", error);
             return Response.json({ ok: false, error: "Insert failed" }, { status: 500 });
           }
-          return Response.json({ ok: true, id: data.id }, { status: 201 });
+          return Response.json({ ok: true, id: data.id, deduplicated: false }, { status: 201 });
         } catch (err) {
           console.error("[process-lead] threw:", err);
           return Response.json({ ok: false, error: "Internal error" }, { status: 500 });
