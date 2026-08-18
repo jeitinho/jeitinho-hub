@@ -30,11 +30,7 @@ export function useAuth() {
       if (s?.user) {
         const [{ data: rolesRows }, { data: profile }] = await Promise.all([
           supabase.from("user_roles").select("role").eq("user_id", s.user.id),
-          supabase
-            .from("profiles")
-            .select("status")
-            .eq("id", s.user.id)
-            .maybeSingle(),
+          supabase.from("profiles").select("status").eq("id", s.user.id).maybeSingle(),
         ]);
         if (mounted) {
           setRoles((rolesRows ?? []).map((r) => r.role as AppRole));
@@ -62,23 +58,12 @@ export function useAuth() {
   const isPending = status === "pending_validation";
   const isRejected = status === "rejected";
 
-  return {
-    session,
-    user,
-    roles,
-    status,
-    loading,
-    hasRole,
-    isAdmin,
-    canManage,
-    canEditContent,
-    isPending,
-    isRejected,
-  };
+  return { session, user, roles, status, loading, hasRole, isAdmin, canManage, canEditContent, isPending, isRejected };
 }
 
 export const MODULE_ACCESS: Record<string, AppRole[]> = {
   dashboard: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide", "prestataire"],
+  agents: ["admin", "manager"],
   crm: ["admin", "manager"],
   clients: ["admin", "manager"],
   voyages: ["admin", "manager", "guide"],
