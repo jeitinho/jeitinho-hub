@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Plus, Plane, CalendarDays } from "lucide-react";
+import { Plane, CalendarDays } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/voyages")({
   component: Voyages,
@@ -33,12 +32,7 @@ function Voyages() {
   });
 
   return (
-    <PageShell
-      eyebrow="Conciergerie"
-      title="Voyages"
-      description="Le cockpit opérationnel des séjours clients : voyageurs, activités, prestataires, coûts et marge."
-      actions={<Link to="/voyages/new"><Button className="btn-primary"><Plus className="mr-2 h-4 w-4" />Nouveau voyage</Button></Link>}
-    >
+    <PageShell eyebrow="Conciergerie" title="Voyages" description="Le cockpit opérationnel des séjours clients : voyageurs, activités, prestataires, coûts et marge.">
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <Card key={i} className="h-44 animate-pulse bg-muted/50" />)}</div>
       ) : error ? (
@@ -50,10 +44,7 @@ function Voyages() {
           {data.map((trip) => (
             <Link key={trip.id} to="/voyages/$id" params={{ id: trip.id }}>
               <Card className="h-full border-border/60 p-5 transition-shadow hover:shadow-[var(--shadow-elevated)]">
-                <div className="flex items-start justify-between gap-3">
-                  <div><p className="text-xs text-muted-foreground">{trip.reference}</p><h3 className="mt-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>{trip.title}</h3></div>
-                  <Badge variant="secondary">{trip.status}</Badge>
-                </div>
+                <div className="flex items-start justify-between gap-3"><div><p className="text-xs text-muted-foreground">{trip.reference}</p><h3 className="mt-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>{trip.title}</h3></div><Badge variant="secondary">{trip.status}</Badge></div>
                 <p className="mt-3 text-sm font-medium">{trip.client_name ?? "Client non renseigné"}</p>
                 <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />{trip.start_date ?? "Date à définir"}{trip.end_date ? ` → ${trip.end_date}` : ""}</div>
                 <div className="mt-5 grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-muted-foreground">Vente</p><p className="font-semibold">{trip.quoted_amount != null ? `${trip.quoted_amount} ${trip.currency}` : "—"}</p></div><div><p className="text-xs text-muted-foreground">Marge</p><p className="font-semibold">{trip.margin_amount != null ? `${trip.margin_amount} ${trip.currency}` : "—"}</p></div></div>
