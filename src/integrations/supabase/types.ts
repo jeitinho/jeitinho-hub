@@ -1405,6 +1405,48 @@ export type Database = {
         }
         Relationships: []
       }
+      services: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          group_slug: string | null
+          id: string
+          is_active: boolean
+          price_from: number | null
+          price_label: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          group_slug?: string | null
+          id?: string
+          is_active?: boolean
+          price_from?: number | null
+          price_label?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          group_slug?: string | null
+          id?: string
+          is_active?: boolean
+          price_from?: number | null
+          price_label?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff_directory: {
         Row: {
           avatar_url: string | null
@@ -1444,6 +1486,54 @@ export type Database = {
           id?: string
           name?: string
           slug?: string
+        }
+        Relationships: []
+      }
+      ticket_offers: {
+        Row: {
+          commission_pct: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          event_date: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          public_price: number | null
+          supplier_net: number | null
+          title: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          commission_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          public_price?: number | null
+          supplier_net?: number | null
+          title: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          commission_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          public_price?: number | null
+          supplier_net?: number | null
+          title?: string
+          updated_at?: string
+          venue?: string | null
         }
         Relationships: []
       }
