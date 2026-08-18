@@ -2,11 +2,11 @@ import { AGENTS } from "./registry";
 import { AGENT_TOOL_DEFINITIONS, executeAgentTool, TOOL_REQUIRES_APPROVAL } from "./tools";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const MODEL = process.env.GEMINI_AGENT_MODEL || "gemini-2.5-flash-lite";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 function toolSchema(def: (typeof AGENT_TOOL_DEFINITIONS)[number]) {
-  return { name: def.name, description: def.description, parameters: def.parameters };
+  return { type: "function", function: { name: def.name, description: def.description, parameters: def.parameters } };
 }
 
 function systemPrompt(agent: (typeof AGENTS)[number]) {
@@ -20,14 +20,19 @@ function canUseTool(agent: (typeof AGENTS)[number], name: string) {
 export async function runAgent(params: { agentId: string; task: string; userId: string; supabase: SupabaseClient<any> }) {
   const agent = AGENTS.find((a) => a.id === params.agentId);
   if (!agent) throw new Error(`Agent inconnu: ${params.agentId}`);
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY est manquante. Crée une clé Gemini AI Studio et ajoute-la comme secret serveur.");
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY est manquante. Crée une clé sur OpenRouter et ajoute-la comme secret serveur.");
 
   const { data: run, error: runError } = await params.supabase.from("agent_runs").insert({ agent_id: agent.id, task: params.task, autonomy: agent.autonomy, status: "running", input_summary: params.task, approval_required: false }).select("*").single();
   if (runError) throw new Error(`Impossible de créer agent_run: ${runError.message}`);
 
-  const headers = { "Content-Type": "application/json", "x-goog-api-key": apiKey };
-  const contents: any[] = [{ role: "user", parts: [{ text: params.task }] }];
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${apiKey}`,
+    "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://jeitinho.fr",
+    "X-Title": process.env.OPENROUTER_APP_NAME || "JEITINHO Hub",
+  };
+  const messages: any[] = [{ role: "system", content: systemPrompt(agent) }, { role: "user", content: params.task }];
   const tools = AGENT_TOOL_DEFINITIONS.filter((t) => canUseTool(agent, t.name)).map(toolSchema);
   let finalText = "";
   let confidence: number | undefined;
@@ -35,28 +40,24 @@ export async function runAgent(params: { agentId: string; task: string; userId: 
 
   try {
     for (let turn = 0; turn < 8; turn++) {
-      const body = {
-        systemInstruction: { parts: [{ text: systemPrompt(agent) }] },
-        contents,
-        tools: tools.length ? [{ functionDeclarations: tools }] : undefined,
-        generationConfig: { temperature: 0.2 },
-      };
-      const response = await fetch(GEMINI_URL, { method: "POST", headers, body: JSON.stringify(body) });
-      if (!response.ok) throw new Error(`Gemini ${response.status}: ${await response.text()}`);
+      const response = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ model: MODEL, messages, tools: tools.length ? tools : undefined, tool_choice: "auto", temperature: 0.2 }),
+      });
+      if (!response.ok) throw new Error(`OpenRouter ${response.status}: ${await response.text()}`);
       const data = await response.json();
-      const parts = data?.candidates?.[0]?.content?.parts ?? [];
-      contents.push({ role: "model", parts });
-      const calls = parts.filter((part: any) => part.functionCall);
-      for (const part of parts) {
-        if (typeof part.text === "string") finalText += part.text;
-      }
+      const message = data?.choices?.[0]?.message;
+      if (!message) throw new Error("OpenRouter n'a retourné aucun message.");
+      messages.push(message);
+      if (typeof message.content === "string") finalText += message.content;
+      const calls = message.tool_calls ?? [];
       if (!calls.length) break;
 
-      const functionResponses: any[] = [];
-      for (const part of calls) {
-        const call = part.functionCall;
-        const name = String(call.name);
-        const args = (call.args ?? {}) as Record<string, any>;
+      for (const call of calls) {
+        const name = String(call.function?.name);
+        let args: Record<string, any> = {};
+        try { args = JSON.parse(call.function?.arguments || "{}"); } catch { throw new Error(`Arguments invalides pour ${name}`); }
         const requiresApproval = TOOL_REQUIRES_APPROVAL.has(name);
         if (requiresApproval) approvalRequired = true;
         const actionStatus = requiresApproval ? "proposed" : "executed";
@@ -70,9 +71,8 @@ export async function runAgent(params: { agentId: string; task: string; userId: 
           result = { error: message };
         }
         if (action?.id) await params.supabase.from("agent_actions").update({ output: result, executed_at: requiresApproval ? null : new Date().toISOString() }).eq("id", action.id);
-        functionResponses.push({ functionResponse: { name, response: result } });
+        messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result) });
       }
-      contents.push({ role: "user", parts: functionResponses });
     }
 
     const status = approvalRequired ? "needs_approval" : "completed";
