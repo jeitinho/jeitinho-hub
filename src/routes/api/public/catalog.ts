@@ -5,8 +5,6 @@ import { createFileRoute } from "@tanstack/react-router";
 // the existing Supabase service-role client, exactly like other trusted server
 // routes. This removes the dependency on the Lovable-hosted catalog-read
 // endpoint while keeping the public catalog endpoint authentication-free.
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
 const ALLOWED_TABLES = new Set(["experiences", "services", "ticket_offers"]);
 const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
   experiences: new Set(["title", "created_at", "updated_at"]),
@@ -31,6 +29,9 @@ export const Route = createFileRoute("/api/public/catalog")({
         }
 
         try {
+          // Keep the service-role client out of the client bundle. The server
+          // helper itself explicitly recommends a dynamic import from route files.
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           let query = supabaseAdmin.from(table as any).select("*");
 
           if (order) {
