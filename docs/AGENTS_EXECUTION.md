@@ -1,22 +1,22 @@
 # JEITINHO Agent Execution
 
-The Hub connects its Agent Operating System to the Google Gemini Developer API.
+The Hub connects its Agent Operating System to OpenRouter using an OpenAI-compatible chat-completions interface with governed JEITINHO tools.
 
 ## Runtime
 
-- Provider: Google Gemini API
-- Default model: `gemini-2.5-flash-lite`
-- Server-only secret: `GEMINI_API_KEY`
-- Optional override: `GEMINI_AGENT_MODEL`
-- Transport: Gemini `generateContent` REST API with native function calling
+- Provider: OpenRouter
+- Default model: `openrouter/free`
+- Server-only secret: `OPENROUTER_API_KEY`
+- Optional override: `OPENROUTER_MODEL`
+- Optional metadata: `OPENROUTER_SITE_URL`, `OPENROUTER_APP_NAME`
 
-Gemini 2.5 Flash-Lite supports function calling and is the most cost-efficient Gemini model for high-frequency lightweight tasks. Google currently lists a free tier for Gemini API usage, subject to rate limits.
+`openrouter/free` lets OpenRouter select an eligible free model. A specific compatible free model can be selected later without changing the agents or tools.
 
 ## Flow
 
-`/agents` → authenticated server function → agent registry → Gemini API → governed Hub tools → Supabase → `agent_runs` / `agent_actions` audit.
+`/agents` → authenticated server function → agent registry → OpenRouter → governed Hub tools → Supabase → `agent_runs` / `agent_actions` audit.
 
-The browser never receives `GEMINI_API_KEY`.
+The browser never receives `OPENROUTER_API_KEY`.
 
 ## Autonomy
 
@@ -25,21 +25,12 @@ The browser never receives `GEMINI_API_KEY`.
 - N2: prepare / propose
 - N3: execute explicitly authorized actions
 
-Current agents default to N1/N2. Sensitive tools such as follow-up preparation, brief creation and quote drafts are recorded as proposals and do not send messages or create external communications.
+Current agents default to N1/N2. Sensitive tools are recorded as proposals and do not send messages or create external communications unless an explicit approved execution path exists.
 
 ## Database
 
 Apply `supabase/migrations/20260818032000_agent_execution.sql` before using `/agents` in an environment whose database does not already contain `agent_runs` and `agent_actions`.
 
-## Gemini setup
+## Production secret
 
-1. Open Google AI Studio and create an API key for the project.
-2. Add `GEMINI_API_KEY` to the server/runtime environment.
-3. Optionally set `GEMINI_AGENT_MODEL` to another Gemini model available to the project.
-4. Never prefix the key with `VITE_` and never commit the value.
-
-For the current free-tier setup, keep `GEMINI_AGENT_MODEL=gemini-2.5-flash-lite`. If you need stronger reasoning later, `gemini-2.5-flash` is also a function-calling model and can be selected without changing the agent code.
-
-## Production
-
-Set `GEMINI_API_KEY` in the server/runtime environment used by the Cloudflare deployment. The agent runtime calls Gemini only from the server.
+Set `OPENROUTER_API_KEY` in the server/runtime environment used by the Cloudflare deployment. Never prefix it with `VITE_` and never commit the value.
