@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
+import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
@@ -26,6 +27,7 @@ import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authenticated/calendrier'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
+import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiInternalProcessLeadRouteImport } from './routes/api/internal/process-lead'
@@ -65,6 +67,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
   id: '/voyages',
   path: '/voyages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPartenairesRoute =
@@ -125,6 +132,12 @@ const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBilletterieRoute =
+  AuthenticatedBilletterieRouteImport.update({
+    id: '/billetterie',
+    path: '/billetterie',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -190,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/billetterie': typeof AuthenticatedBilletterieRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/calendrier': typeof AuthenticatedCalendrierRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
@@ -201,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/partenaires': typeof AuthenticatedPartenairesRoute
+  '/services': typeof AuthenticatedServicesRoute
   '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
@@ -219,6 +234,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/billetterie': typeof AuthenticatedBilletterieRoute
   '/blog': typeof AuthenticatedBlogRouteWithChildren
   '/calendrier': typeof AuthenticatedCalendrierRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
@@ -230,6 +246,7 @@ export interface FileRoutesByTo {
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/partenaires': typeof AuthenticatedPartenairesRoute
+  '/services': typeof AuthenticatedServicesRoute
   '/voyages': typeof AuthenticatedVoyagesRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
@@ -250,6 +267,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/billetterie': typeof AuthenticatedBilletterieRoute
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
   '/_authenticated/calendrier': typeof AuthenticatedCalendrierRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
@@ -261,6 +279,7 @@ export interface FileRoutesById {
   '/_authenticated/mediatheque': typeof AuthenticatedMediathequeRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/_authenticated/partenaires': typeof AuthenticatedPartenairesRoute
+  '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/voyages': typeof AuthenticatedVoyagesRoute
   '/_authenticated/blog/$id': typeof AuthenticatedBlogIdRoute
   '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
@@ -281,6 +300,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/analytics'
+    | '/billetterie'
     | '/blog'
     | '/calendrier'
     | '/clients'
@@ -292,6 +312,7 @@ export interface FileRouteTypes {
     | '/mediatheque'
     | '/parametres'
     | '/partenaires'
+    | '/services'
     | '/voyages'
     | '/blog/$id'
     | '/blog/new'
@@ -310,6 +331,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/analytics'
+    | '/billetterie'
     | '/blog'
     | '/calendrier'
     | '/clients'
@@ -321,6 +343,7 @@ export interface FileRouteTypes {
     | '/mediatheque'
     | '/parametres'
     | '/partenaires'
+    | '/services'
     | '/voyages'
     | '/blog/$id'
     | '/blog/new'
@@ -340,6 +363,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/_authenticated/analytics'
+    | '/_authenticated/billetterie'
     | '/_authenticated/blog'
     | '/_authenticated/calendrier'
     | '/_authenticated/clients'
@@ -351,6 +375,7 @@ export interface FileRouteTypes {
     | '/_authenticated/mediatheque'
     | '/_authenticated/parametres'
     | '/_authenticated/partenaires'
+    | '/_authenticated/services'
     | '/_authenticated/voyages'
     | '/_authenticated/blog/$id'
     | '/_authenticated/blog/new'
@@ -416,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/voyages'
       fullPath: '/voyages'
       preLoaderRoute: typeof AuthenticatedVoyagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/services': {
+      id: '/_authenticated/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof AuthenticatedServicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/partenaires': {
@@ -493,6 +525,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof AuthenticatedBlogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/billetterie': {
+      id: '/_authenticated/billetterie'
+      path: '/billetterie'
+      fullPath: '/billetterie'
+      preLoaderRoute: typeof AuthenticatedBilletterieRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/analytics': {
@@ -645,6 +684,7 @@ const AuthenticatedParametresRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedBilletterieRoute: typeof AuthenticatedBilletterieRoute
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
   AuthenticatedCalendrierRoute: typeof AuthenticatedCalendrierRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
@@ -656,11 +696,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMediathequeRoute: typeof AuthenticatedMediathequeRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
   AuthenticatedPartenairesRoute: typeof AuthenticatedPartenairesRoute
+  AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedVoyagesRoute: typeof AuthenticatedVoyagesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedBilletterieRoute: AuthenticatedBilletterieRoute,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
   AuthenticatedCalendrierRoute: AuthenticatedCalendrierRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
@@ -672,6 +714,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMediathequeRoute: AuthenticatedMediathequeRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,
   AuthenticatedPartenairesRoute: AuthenticatedPartenairesRoute,
+  AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedVoyagesRoute: AuthenticatedVoyagesRoute,
 }
 
