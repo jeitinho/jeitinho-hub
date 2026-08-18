@@ -20,7 +20,7 @@ export function FollowupsPanel() {
   const generated = useRef(false);
 
   const { data: quotes } = useQuery({ queryKey: ["crm", "sent-quotes"], queryFn: fetchSentQuotes });
-  const { data: tasks, isLoading } = useQuery({ queryKey: ["crm", "tasks"], queryFn: fetchOpenTasks });
+  const { data: tasks, isLoading, error } = useQuery({ queryKey: ["crm", "tasks"], queryFn: fetchOpenTasks });
 
   // Génération idempotente des relances échues à l'ouverture de la vue.
   useEffect(() => {
@@ -52,6 +52,13 @@ export function FollowupsPanel() {
   };
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Chargement…</div>;
+  if (error)
+    return (
+      <Card className="border-destructive/40 p-8">
+        <h3 className="font-semibold">Impossible de charger les relances</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message}</p>
+      </Card>
+    );
 
   const rows = (tasks ?? []).filter((t) => new Date(t.due_at).getTime() <= Date.now() + 86_400_000);
 
