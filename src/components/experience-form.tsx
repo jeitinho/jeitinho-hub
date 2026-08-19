@@ -35,7 +35,7 @@ export type ExperienceValues = {
   supplier_cost: number | null;
   fixed_cost: number | null;
   commission_pct: number | null;
-  commission_basis: string | null;
+  commission_basis: string;
   requires_driver: boolean;
   is_excursion: boolean;
   max_group_size: number | null;
@@ -86,7 +86,7 @@ export function ExperienceForm({ initial, onSubmit }: { initial?: Partial<Experi
         <p className="tracked text-[10px] text-muted-foreground">Économie de l'expérience</p>
         <div className="grid gap-4 sm:grid-cols-3"><div className="space-y-2"><Label>Prix public à partir de</Label><Input type="number" step="0.01" min="0" value={v.price_from ?? ""} onChange={(e) => set("price_from", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Devise</Label><Input value={v.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} /></div><div className="space-y-2"><Label>Modèle de prix</Label><Input placeholder="per_person / fixed…" value={v.price_model ?? ""} onChange={(e) => set("price_model", e.target.value)} /></div></div>
         <div className="grid gap-4 sm:grid-cols-3"><div className="space-y-2"><Label>Net fournisseur</Label><Input type="number" step="0.01" min="0" value={v.supplier_net ?? ""} onChange={(e) => set("supplier_net", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Coût fournisseur</Label><Input type="number" step="0.01" min="0" value={v.supplier_cost ?? ""} onChange={(e) => set("supplier_cost", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Coût fixe</Label><Input type="number" step="0.01" min="0" value={v.fixed_cost ?? ""} onChange={(e) => set("fixed_cost", e.target.value ? Number(e.target.value) : null)} /></div></div>
-        <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Commission (%)</Label><Input type="number" step="0.01" min="0" value={v.commission_pct ?? 0} onChange={(e) => set("commission_pct", e.target.value ? Number(e.target.value) : 0)} /></div><div className="space-y-2"><Label>Base de commission</Label><Input placeholder="sale_price / supplier_net…" value={v.commission_basis ?? ""} onChange={(e) => set("commission_basis", e.target.value)} /></div></div>
+        <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Commission (%)</Label><Input type="number" step="0.01" min="0" value={v.commission_pct ?? 0} onChange={(e) => set("commission_pct", e.target.value ? Number(e.target.value) : 0)} /></div><div className="space-y-2"><Label>Base de commission</Label><Input placeholder="sale_price / supplier_net…" value={v.commission_basis} onChange={(e) => set("commission_basis", e.target.value)} /></div></div>
         <Separator />
         <div className="grid gap-3 sm:grid-cols-3"><div><p className="text-xs text-muted-foreground">Coût retenu</p><p className="font-semibold">{effectiveCost.toFixed(2)} {v.currency}</p></div><div><p className="text-xs text-muted-foreground">Commission simulée</p><p className="font-semibold">{commission.toFixed(2)} {v.currency}</p></div><div><p className="text-xs text-muted-foreground">Marge estimée</p><p className={estimatedMargin < 0 ? "font-semibold text-destructive" : "font-semibold"}>{marginLabel}</p></div></div>
         <p className="text-xs text-muted-foreground">Simulation indicative : le calcul final devra respecter le modèle de commission du fournisseur.</p>
