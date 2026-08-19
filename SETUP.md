@@ -36,7 +36,8 @@ Remplir avec les valeurs du projet Supabase JEITINHO :
 | `SUPABASE_SERVICE_ROLE_KEY` | clé service-role du projet JEITINHO, serveur uniquement |
 | `SETUP_KEY` | secret initial pour créer le premier admin via `/setup` |
 | `GITHUB_API_KEY` | publication blog vers `rio-uncovered` |
-| `LEADS_INGEST_SECRET` | secret partagé pour `/api/public/leads` |
+
+Les formulaires publics de `jeitinho.fr` écrivent désormais directement dans le même Supabase via la RPC `capture_public_lead`. **Il n'existe plus de secret d'ingestion inter-app, ni d'endpoint HTTP de synchronisation des leads entre `jeitinho.fr` et le Manager.**
 
 > Les variables `VITE_*` sont exposées au navigateur. Toutes les autres sont **serveur uniquement**.
 >
@@ -65,6 +66,7 @@ Pour bootstrapper un admin sur une base pré-existante : aller sur `/setup`, sai
 - Le projet cible est **uniquement** `sxzdabtarlgozixcbzus`
 - Toute migration doit être appliquée et vérifiée sur ce projet Supabase
 - Ne jamais reconnecter le Hub à un projet Supabase Lovable ou à un ancien project ref
+- `capture_public_lead` est la frontière unique d'entrée des formulaires publics : elle crée/enrichit le lead, le prospect et la tâche CRM dans le même Supabase, avec scoring, priorité et valeur estimée.
 
 ## 7. Commandes utiles
 
