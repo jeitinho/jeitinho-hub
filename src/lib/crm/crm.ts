@@ -220,6 +220,7 @@ export async function cancelTask(id: string) {
     .from("crm_tasks")
     .update({ status: "annule", handled_at: new Date().toISOString() })
     .eq("id", id);
+  if (error) throw error;
 }
 
 export async function snoozeTask(id: string, days = 2) {
