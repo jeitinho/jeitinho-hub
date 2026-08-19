@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 
 const ALLOWED_TABLES = new Set(["experiences", "services", "ticket_offers"]);
 const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
@@ -11,10 +12,37 @@ const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
 // Cloudflare/browser never receives the Supabase service-role key.
 const CATALOG_READ_URL = "https://ltrshfejyjzpokexgnmb.supabase.co/functions/v1/catalog-read";
 
+// Despite the /api/public/ path (kept to avoid a broader route rename), this
+// endpoint returns supplier cost / commission / margin fields and unpublished
+// drafts for the internal catalog admin UI (src/routes/_authenticated/experiences.tsx
+// via src/lib/catalog-gateway.ts) — it is NOT consumed by jeitinho.fr. It must
+// require a real Supabase session, mirroring requireSupabaseAuth.
+async function requireCaller(request: Request): Promise<string | null> {
+  const authHeader = request.headers.get("authorization") ?? "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+  if (!token || token.split(".").length !== 3) return null;
+
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) return null;
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await supabase.auth.getClaims(token);
+  if (error || !data?.claims?.sub) return null;
+  return token;
+}
+
 export const Route = createFileRoute("/api/public/catalog")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        const token = await requireCaller(request);
+        if (!token) {
+          return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+        }
+
         const incoming = new URL(request.url);
         const table = incoming.searchParams.get("table") ?? "";
         const order = incoming.searchParams.get("order") ?? "";
@@ -32,7 +60,7 @@ export const Route = createFileRoute("/api/public/catalog")({
           if (!ascending) params.set("ascending", "false");
 
           const response = await fetch(`${CATALOG_READ_URL}?${params.toString()}`, {
-            headers: { Accept: "application/json" },
+            headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
           });
           const body = await response.json().catch(() => null);
 
