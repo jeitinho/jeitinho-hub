@@ -30,7 +30,7 @@ export type ExperienceValues = {
   experience_type: string | null;
   level: string | null;
   category: string | null;
-  price_model: string | null;
+  price_model: string;
   supplier_net: number | null;
   supplier_cost: number | null;
   fixed_cost: number | null;
@@ -84,7 +84,7 @@ export function ExperienceForm({ initial, onSubmit }: { initial?: Partial<Experi
 
       <Card className="border-border/60 space-y-5 p-6">
         <p className="tracked text-[10px] text-muted-foreground">Économie de l'expérience</p>
-        <div className="grid gap-4 sm:grid-cols-3"><div className="space-y-2"><Label>Prix public à partir de</Label><Input type="number" step="0.01" min="0" value={v.price_from ?? ""} onChange={(e) => set("price_from", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Devise</Label><Input value={v.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} /></div><div className="space-y-2"><Label>Modèle de prix</Label><Input placeholder="per_person / fixed…" value={v.price_model ?? ""} onChange={(e) => set("price_model", e.target.value)} /></div></div>
+        <div className="grid gap-4 sm:grid-cols-3"><div className="space-y-2"><Label>Prix public à partir de</Label><Input type="number" step="0.01" min="0" value={v.price_from ?? ""} onChange={(e) => set("price_from", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Devise</Label><Input value={v.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} /></div><div className="space-y-2"><Label>Modèle de prix</Label><Input placeholder="per_person / fixed…" value={v.price_model} onChange={(e) => set("price_model", e.target.value)} /></div></div>
         <div className="grid gap-4 sm:grid-cols-3"><div className="space-y-2"><Label>Net fournisseur</Label><Input type="number" step="0.01" min="0" value={v.supplier_net ?? ""} onChange={(e) => set("supplier_net", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Coût fournisseur</Label><Input type="number" step="0.01" min="0" value={v.supplier_cost ?? ""} onChange={(e) => set("supplier_cost", e.target.value ? Number(e.target.value) : null)} /></div><div className="space-y-2"><Label>Coût fixe</Label><Input type="number" step="0.01" min="0" value={v.fixed_cost ?? ""} onChange={(e) => set("fixed_cost", e.target.value ? Number(e.target.value) : null)} /></div></div>
         <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Commission (%)</Label><Input type="number" step="0.01" min="0" value={v.commission_pct ?? 0} onChange={(e) => set("commission_pct", e.target.value ? Number(e.target.value) : 0)} /></div><div className="space-y-2"><Label>Base de commission</Label><Input placeholder="sale_price / supplier_net…" value={v.commission_basis} onChange={(e) => set("commission_basis", e.target.value)} /></div></div>
         <Separator />
