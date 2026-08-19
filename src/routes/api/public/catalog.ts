@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/public-config";
 
 const ALLOWED_TABLES = new Set(["experiences", "services", "ticket_offers"]);
 const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
@@ -10,7 +11,7 @@ const ALLOWED_ORDER_COLUMNS: Record<string, Set<string>> = {
 
 // Production backend: Supabase Edge Function holds the private Supabase credential.
 // Cloudflare/browser never receives the Supabase service-role key.
-const CATALOG_READ_URL = "https://ltrshfejyjzpokexgnmb.supabase.co/functions/v1/catalog-read";
+const CATALOG_READ_URL = `${SUPABASE_URL}/functions/v1/catalog-read`;
 
 // Despite the /api/public/ path (kept to avoid a broader route rename), this
 // endpoint returns supplier cost / commission / margin fields and unpublished
@@ -21,10 +22,6 @@ async function requireCaller(request: Request): Promise<string | null> {
   const authHeader = request.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
   if (!token || token.split(".").length !== 3) return null;
-
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) return null;
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
