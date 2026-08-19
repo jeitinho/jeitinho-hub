@@ -1,22 +1,20 @@
 # SETUP — Développement local
 
-Ce projet est **JEITINHO Platform**, construit sur Lovable Cloud (Supabase managé) avec TanStack Start v1 + React 19 + Vite 7 + Tailwind v4.
+Ce projet est **JEITINHO Hub**, construit sur TanStack Start v1 + React 19 + Vite 7 + Tailwind v4, avec **le projet Supabase JEITINHO comme unique backend**.
 
 ## 1. Prérequis
 
 - **Bun** ≥ 1.1 (le lockfile est `bun.lock`, `bunfig.toml` présent)
 - Node ≥ 20 (pour compatibilité outillage)
-- Accès au projet Supabase existant (project ref `ltrshfejyjzpokexgnmb`, nom `Jeitinho OS`)
+- Accès au projet Supabase JEITINHO : `sxzdabtarlgozixcbzus` (`https://sxzdabtarlgozixcbzus.supabase.co`)
 
-> ⚠️ Ne PAS recréer le projet Supabase. La base et les migrations sont déjà déployées sur l'instance Cloud managée par Lovable.
->
-> ⚠️ Ne JAMAIS utiliser le project ref `emxwfwfbzksqnydgiybh` pour le Hub — c'est un ancien projet Supabase, non utilisé par JEITINHO Platform. La seule exception connue est le pipeline legacy `/api/public/leads` → `jeitinho-heartbeat.lovable.app`, qui reste sur son propre backend indépendant.
+> ⚠️ **Le Hub ne doit utiliser aucun projet Supabase Lovable.** Toute l'authentification, la base de données, les données CRM, le catalogue, le stockage et les opérations serveur doivent utiliser exclusivement le projet `sxzdabtarlgozixcbzus`.
 
 ## 2. Cloner et installer
 
 ```bash
-git clone <repo-url> jeitinho-platform
-cd jeitinho-platform
+git clone <repo-url> jeitinho-hub
+cd jeitinho-hub
 bun install
 ```
 
@@ -28,20 +26,21 @@ Copier le template :
 cp .env.example .env
 ```
 
-Remplir avec les valeurs du projet Supabase Cloud :
+Remplir avec les valeurs du projet Supabase JEITINHO :
 
-| Variable | Où la trouver |
+| Variable | Valeur / source |
 |---|---|
-| `VITE_SUPABASE_URL` / `SUPABASE_URL` | Lovable → Cloud → Settings |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | idem (clé `anon` / publishable) |
-| `VITE_SUPABASE_PROJECT_ID` | ref du projet (`ltrshfejyjzpokexgnmb`) |
-| `SUPABASE_SERVICE_ROLE_KEY` | ⚠️ **non disponible sur Lovable Cloud** — les server functions utilisent le client managé `client.server.ts` |
-| `LOVABLE_API_KEY` | fourni par Lovable AI Gateway |
+| `VITE_SUPABASE_URL` / `SUPABASE_URL` | `https://sxzdabtarlgozixcbzus.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | clé publishable du projet JEITINHO |
+| `VITE_SUPABASE_PROJECT_ID` / `SUPABASE_PROJECT_ID` | `sxzdabtarlgozixcbzus` |
+| `SUPABASE_SERVICE_ROLE_KEY` | clé service-role du projet JEITINHO, serveur uniquement |
 | `SETUP_KEY` | secret initial pour créer le premier admin via `/setup` |
-| `GITHUB_API_KEY` | connecteur GitHub (publication blog) |
-| `LEADS_INGEST_SECRET` | secret partagé pour `/api/public/leads` (ingestion des leads jeitinho.fr et écosystème) — même valeur que `JEITINHO_HUB_LEADS_SECRET` côté jeitinho.fr |
+| `GITHUB_API_KEY` | publication blog vers `rio-uncovered` |
+| `LEADS_INGEST_SECRET` | secret partagé pour `/api/public/leads` |
 
 > Les variables `VITE_*` sont exposées au navigateur. Toutes les autres sont **serveur uniquement**.
+>
+> **Aucune variable `LOVABLE_*`, aucun endpoint Lovable et aucun Supabase Lovable ne doit être nécessaire au runtime.**
 
 ## 4. Lancer le dev server
 
@@ -63,9 +62,9 @@ Pour bootstrapper un admin sur une base pré-existante : aller sur `/setup`, sai
 ## 6. Base de données
 
 - Les migrations vivent dans `supabase/migrations/`
-- **Ne PAS relancer les migrations en local** : elles sont déjà appliquées sur le projet Cloud
-- Toute nouvelle migration doit être créée via l'outil Lovable (`supabase--migration`), jamais à la main
-- Voir `ARCHITECTURE.md` §Migrations pour la liste exhaustive
+- Le projet cible est **uniquement** `sxzdabtarlgozixcbzus`
+- Toute migration doit être appliquée et vérifiée sur ce projet Supabase
+- Ne jamais reconnecter le Hub à un projet Supabase Lovable ou à un ancien project ref
 
 ## 7. Commandes utiles
 
@@ -84,4 +83,4 @@ bunx tsgo            # typecheck
 
 ## 9. Publication blog vers `rio-uncovered`
 
-Le module Articles pousse les fichiers `.ts` générés vers `jeitinho/rio-uncovered@main` via le connecteur GitHub (`GITHUB_API_KEY`). Le déploiement Cloudflare Pages est déclenché automatiquement par ce push. Voir `ARCHITECTURE.md` §Publishers.
+Le module Articles pousse les fichiers `.ts` générés vers `jeitinho/rio-uncovered@main` via le connecteur GitHub (`GITHUB_API_KEY`). Le déploiement Cloudflare Pages est déclenché automatiquement par ce push.
