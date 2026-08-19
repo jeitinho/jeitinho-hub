@@ -29,36 +29,86 @@ export type PriorityLead = {
   last_contact_at: string | null;
 };
 
+export type Prospect = {
+  id: string;
+  status: "new" | "contacted" | "quoted" | "negotiating" | "won" | "lost";
+  name: string;
+  email: string | null;
+  phone: string | null;
+  party_size: number | null;
+  travel_start: string | null;
+  travel_end: string | null;
+  client_id: string | null;
+  created_at: string;
+  activities: string[];
+  message: string | null;
+  source: string;
+  score: number;
+  priority: string;
+  estimated_value: number | null;
+  pipeline_stage: string;
+  next_action: string | null;
+  next_action_at: string | null;
+  last_contact_at: string | null;
+};
+
 export const LEAD_SELECT =
   "id,name,email,phone,source,campaign,request_type,status,party_size,travel_start,travel_end,activities,message,received_at,prospect_id,score,priority,score_breakdown,estimated_value,pipeline_stage,next_action,next_action_at,last_contact_at";
 
 const OPEN_STATUSES = ["new", "contacted", "qualified"];
 
+async function crmRequest<T>(query: string, init?: RequestInit): Promise<T> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) throw new Error("Session CRM introuvable. Reconnectez-vous.");
+
+  const response = await fetch(`/api/public/crm${query}`, {
+    ...init,
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(init?.headers ?? {}),
+    },
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body?.ok) throw new Error(body?.error ?? "Erreur CRM");
+  return body.data as T;
+}
+
 export async function fetchPriorityLeads() {
-  const { data, error } = await (supabase as any)
-    .from("leads")
-    .select(LEAD_SELECT)
-    .in("status", OPEN_STATUSES)
-    .order("score", { ascending: false })
-    .order("received_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as PriorityLead[];
+  const params = new URLSearchParams({ table: "leads", order: "score", ascending: "false" });
+  const data = await crmRequest<PriorityLead[]>(`?${params.toString()}`);
+  return data.filter((lead) => OPEN_STATUSES.includes(lead.status));
+}
+
+export async function fetchLeads() {
+  const params = new URLSearchParams({ table: "leads", order: "received_at", ascending: "false" });
+  return crmRequest<PriorityLead[]>(`?${params.toString()}`);
+}
+
+export async function fetchProspects() {
+  const params = new URLSearchParams({ table: "prospects", order: "created_at", ascending: "false" });
+  return crmRequest<Prospect[]>(`?${params.toString()}`);
+}
+
+async function updateLead(id: string, patch: Record<string, unknown>) {
+  return crmRequest<PriorityLead>("", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "update_lead", id, patch }),
+  });
 }
 
 /** Recalcule le score d'un lead (action explicite — aucun recalcul automatique du backlog). */
 export async function rescoreLead(lead: PriorityLead) {
   const scored = scoreLead(lead);
   const highSeason = scored.breakdown.labels.some((l) => l.startsWith("Haute saison"));
-  const { error } = await (supabase as any)
-    .from("leads")
-    .update({
-      score: scored.score,
-      priority: scored.priority,
-      score_breakdown: scored.breakdown,
-      estimated_value: lead.estimated_value ?? estimateValue({ ...lead, highSeason }),
-    })
-    .eq("id", lead.id);
-  if (error) throw error;
+  await updateLead(lead.id, {
+    score: scored.score,
+    priority: scored.priority,
+    score_breakdown: scored.breakdown,
+    estimated_value: lead.estimated_value ?? estimateValue({ ...lead, highSeason }),
+  });
   return scored;
 }
 
@@ -69,25 +119,37 @@ export async function rescoreAllLeads(leads: PriorityLead[]) {
 export async function markLeadContacted(lead: PriorityLead) {
   const now = new Date();
   const delay = firstActionDelayHours(lead.priority);
-  const { error } = await (supabase as any)
-    .from("leads")
-    .update({
-      status: lead.status === "new" ? "contacted" : lead.status,
-      pipeline_stage: "contacte",
-      last_contact_at: now.toISOString(),
-      next_action: "Envoyer la proposition",
-      next_action_at: new Date(now.getTime() + delay * 3_600_000).toISOString(),
-    })
-    .eq("id", lead.id);
-  if (error) throw error;
+  await updateLead(lead.id, {
+    status: lead.status === "new" ? "contacted" : lead.status,
+    pipeline_stage: "contacte",
+    last_contact_at: now.toISOString(),
+    next_action: "Envoyer la proposition",
+    next_action_at: new Date(now.getTime() + delay * 3_600_000).toISOString(),
+  });
 }
 
 export async function setLeadNextAction(id: string, action: string, atIso: string | null) {
-  const { error } = await (supabase as any)
-    .from("leads")
-    .update({ next_action: action || null, next_action_at: atIso })
-    .eq("id", id);
-  if (error) throw error;
+  await updateLead(id, { next_action: action || null, next_action_at: atIso });
+}
+
+export async function setLeadStatus(id: string, status: string) {
+  await updateLead(id, { status, processed_at: new Date().toISOString() });
+}
+
+export async function qualifyLead(leadId: string) {
+  return crmRequest<{ prospect_id: string; deduplicated: boolean }>("", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "qualify_lead", leadId }),
+  });
+}
+
+export async function convertProspectToClient(prospectId: string) {
+  return crmRequest<{ client_id: string; deduplicated: boolean }>("", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "convert_prospect", prospectId }),
+  });
 }
 
 /* ---------------------------------- Devis ---------------------------------- */
