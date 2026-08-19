@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_authenticated/experiences/$id")({
   head: () => ({ meta: [{ title: "Expérience — JEITINHO" }] }),
 });
 
+const toLines = (value: unknown): string[] => Array.isArray(value) ? value.map(String) : [];
+
 function EditExperience() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
@@ -47,7 +49,7 @@ function EditExperience() {
       }
     >
       <ExperienceForm
-        initial={data}
+        initial={{ ...data, inclusions: toLines(data.inclusions), exclusions: toLines(data.exclusions), conditions: toLines(data.conditions) }}
         onSubmit={async (values) => {
           const { error } = await supabase.from("experiences").update(values).eq("id", id);
           if (error) return toast.error(error.message);
