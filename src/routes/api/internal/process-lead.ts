@@ -3,14 +3,9 @@ import { scoreLead, firstActionDelayHours } from "@/lib/crm/scoring";
 import { estimateValue } from "@/lib/crm/valuation";
 
 // Internal endpoint: performs the actual Supabase insert into `leads`.
-// Exists because the Cloudflare Worker deployment of this app
-// (manager.jeitinho.fr) does not have a SUPABASE_SERVICE_ROLE_KEY for this
-// project, while this app's own Lovable-hosted deployment
-// (jeitinho-heartbeat.lovable.app) does. src/routes/api/public/leads.ts
-// (the external-facing endpoint jeitinho.fr calls) validates the external
-// secret + payload locally, then forwards to this endpoint on
-// jeitinho-heartbeat.lovable.app to do the actual Supabase write. Protected
-// by a separate internal secret.
+// It keeps the historical { formType, data } contract used by the public
+// jeitinho.fr forms, while also accepting the newer flat lead payload used by
+// /api/public/leads. The CRM itself remains on the Lovable Supabase backend.
 export const Route = createFileRoute("/api/internal/process-lead")({
   server: {
     handlers: {
@@ -26,11 +21,85 @@ export const Route = createFileRoute("/api/internal/process-lead")({
           return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        let lead: any;
+        let body: any;
         try {
-          lead = await request.json();
+          body = await request.json();
         } catch {
           return Response.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
+        }
+
+        // Historical form contract: { formType, data }.
+        // Normalize it to the current CRM lead shape instead of changing the
+        // caller or moving the CRM back to another database.
+        let lead = body;
+        if (body?.formType && body?.data) {
+          const data = body.data ?? {};
+          const formType = String(body.formType);
+          const parsePartySize = (value: unknown): number | null => {
+            const match = String(value ?? "").match(/\d+/);
+            return match ? Number(match[0]) : null;
+          };
+
+          if (formType === "reservations") {
+            lead = {
+              source: "jeitinho.fr/reservation",
+              name: `${data.prenom ?? ""} ${data.nom ?? ""}`.trim(),
+              email: data.email ?? null,
+              phone: data.telephone ?? null,
+              party_size: typeof data.nb_voyageurs === "number" ? data.nb_voyageurs : parsePartySize(data.nb_voyageurs),
+              travel_start: data.date_souhaitee ?? null,
+              activities: [data.experience, data.categorie].filter(Boolean),
+              message: data.message ?? null,
+              raw_payload: data,
+              request_type: "reservation",
+            };
+          } else if (formType === "devis_nordeste") {
+            lead = {
+              source: "jeitinho.fr/nordeste",
+              name: `${data.prenom ?? ""} ${data.nom ?? ""}`.trim(),
+              email: data.email ?? null,
+              phone: data.telephone ?? null,
+              party_size: parsePartySize(data.nb_voyageurs),
+              travel_start: data.date_depart ?? null,
+              activities: data.activites ?? [],
+              message: data.message ?? null,
+              raw_payload: data,
+              request_type: "devis_nordeste",
+            };
+          } else if (formType === "trouver_jeitinho") {
+            lead = {
+              source: "jeitinho.fr/trouver-jeitinho",
+              name: data.prenom ?? "",
+              email: data.email ?? null,
+              phone: data.telephone ?? null,
+              party_size: parsePartySize(data.nb_voyageurs),
+              travel_start: null,
+              activities: data.interets ?? [],
+              message: data.extras?.voyageIdeal ?? null,
+              raw_payload: data,
+              request_type: "trouver_jeitinho",
+            };
+          } else if (formType === "bookings") {
+            lead = {
+              source: "jeitinho.fr/mon-voyage",
+              external_ref: data.reference ?? null,
+              name: `${data.prenom ?? ""} ${data.nom ?? ""}`.trim(),
+              email: data.email ?? null,
+              phone: data.telephone ?? null,
+              party_size: parsePartySize(data.nb_travelers),
+              travel_start: null,
+              activities: (data.items ?? []).map((item: any) => item.title).filter(Boolean),
+              message: null,
+              raw_payload: data,
+              request_type: "booking",
+            };
+          } else {
+            return Response.json({ ok: false, error: "Unknown formType" }, { status: 400 });
+          }
+        }
+
+        if (!lead || typeof lead !== "object") {
+          return Response.json({ ok: false, error: "Invalid lead payload" }, { status: 400 });
         }
 
         try {
@@ -42,6 +111,10 @@ export const Route = createFileRoute("/api/internal/process-lead")({
           };
           const source = typeof lead.source === "string" ? lead.source.trim() : "";
           const externalRef = typeof lead.external_ref === "string" ? lead.external_ref.trim() : "";
+
+          if (!source || !lead.name) {
+            return Response.json({ ok: false, error: "Missing lead source/name" }, { status: 400 });
+          }
 
           // Idempotency for callers that provide a stable external reference
           // (currently bookings). The unique partial index in Supabase is the
@@ -64,7 +137,7 @@ export const Route = createFileRoute("/api/internal/process-lead")({
 
           const receivedAt = new Date().toISOString();
           const enrich = {
-            source: source || lead.source,
+            source,
             campaign: pick("campaign") ?? pick("utm_campaign"),
             utm_source: pick("utm_source"),
             utm_medium: pick("utm_medium"),
@@ -126,9 +199,6 @@ export const Route = createFileRoute("/api/internal/process-lead")({
             .single();
 
           if (error) {
-            // A concurrent retry can lose the race to the unique index. In
-            // that case, return the already-created lead instead of creating a
-            // duplicate or reporting a false failure.
             if (error.code === "23505" && source && externalRef) {
               const { data: existing, error: lookupError } = await supabaseAdmin
                 .from("leads")
