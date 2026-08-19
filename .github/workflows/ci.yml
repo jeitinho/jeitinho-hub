@@ -18,5 +18,5 @@ jobs:
       - run: bun run typecheck
       - run: bun run build
         env:
-          VITE_SUPABASE_URL: https://ltrshfejyjzpokexgnmb.supabase.co
+          VITE_SUPABASE_URL: https://sxzdabtarlgozixcbzus.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
