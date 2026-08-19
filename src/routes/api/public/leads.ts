@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { scoreLead } from "@/lib/crm/scoring";
+import { scoreLead, firstActionDelayHours } from "@/lib/crm/scoring";
 import { estimateValue } from "@/lib/crm/valuation";
 
 // Public ingestion endpoint for the JEITINHO ecosystem.
@@ -94,6 +94,7 @@ export const Route = createFileRoute("/api/public/leads")({
           };
           const scored = scoreLead(scoreInput);
           const highSeason = scored.breakdown.labels.some((label) => label.startsWith("Haute saison"));
+          const nextActionAt = new Date(Date.now() + firstActionDelayHours(scored.priority) * 3_600_000).toISOString();
 
           const { data, error } = await supabaseAdmin
             .from("leads")
@@ -121,6 +122,7 @@ export const Route = createFileRoute("/api/public/leads")({
               score_breakdown: scored.breakdown,
               estimated_value: estimateValue({ ...scoreInput, highSeason }),
               next_action: "Premier contact WhatsApp",
+              next_action_at: nextActionAt,
             })
             .select(LEAD_SELECT)
             .single();
