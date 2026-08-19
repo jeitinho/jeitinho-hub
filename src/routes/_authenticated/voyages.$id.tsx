@@ -18,6 +18,9 @@ import { TripActivityEditor } from "@/components/trips/activity-editor";
 
 export const Route = createFileRoute("/_authenticated/voyages/$id")({ component: TripDetail, head: () => ({ meta: [{ title: "Voyage — JEITINHO" }] }) });
 const ACTIVITY_STATUSES = ["to_plan", "confirmed", "client_informed", "completed", "cancelled"] as const;
+const TRIP_STATUSES = ["draft", "confirmed", "in_progress", "completed", "cancelled"] as const;
+type TripStatus = (typeof TRIP_STATUSES)[number];
+const isTripStatus = (value: string): value is TripStatus => TRIP_STATUSES.includes(value as TripStatus);
 const fmt = (v?: string | null) => v ? new Date(v).toLocaleString("fr-FR") : "Date à définir";
 
 function Money({ label, value, currency, highlight = false }: { label: string; value: number; currency: string; highlight?: boolean }) {
@@ -49,7 +52,7 @@ function TripDetail() {
       const travelers = travelersR.data ?? [];
       const activities = activitiesR.data ?? [];
       const client = trip.client_id ? (await supabase.from("clients").select("id,full_name,email,phone").eq("id", trip.client_id).maybeSingle()).data : null;
-      const partnerIds = [...new Set(activities.map((a) => a.partner_id).filter(Boolean))];
+      const partnerIds = [...new Set(activities.map((a) => a.partner_id).filter((partnerId): partnerId is string => partnerId !== null))];
       const partners = partnerIds.length ? (await supabase.from("partners").select("id,name,phone").in("id", partnerIds)).data ?? [] : [];
       const partnerMap = new Map(partners.map((p) => [p.id, p]));
       return { trip, travelers, activities: activities.map((a) => ({ ...a, partner: a.partner_id ? partnerMap.get(a.partner_id) ?? null : null })), client };
@@ -76,8 +79,8 @@ function TripDetail() {
     toast.success("Voyageur ajouté"); setTravelerName(""); setTravelerPhone(""); setTravelerNotes(""); refresh();
   };
 
-  const updateActivityStatus = async (activityId: string, status: string) => {
-    const payload: Record<string, unknown> = { status };
+  const updateActivityStatus = async (activityId: string, status: (typeof ACTIVITY_STATUSES)[number]) => {
+    const payload: { status: (typeof ACTIVITY_STATUSES)[number]; client_informed_at?: string; completed_at?: string } = { status };
     if (status === "client_informed") payload.client_informed_at = new Date().toISOString();
     if (status === "completed") payload.completed_at = new Date().toISOString();
     const { error: e } = await supabase.from("trip_activities").update(payload).eq("id", activityId);
@@ -93,9 +96,11 @@ function TripDetail() {
   const updateTrip = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); const fd = new FormData(event.currentTarget);
     const title = String(fd.get("title") ?? "").trim(); const start = String(fd.get("start_date") ?? "") || null; const end = String(fd.get("end_date") ?? "") || null;
+    const rawStatus = String(fd.get("status") ?? trip.status);
+    const status = isTripStatus(rawStatus) ? rawStatus : trip.status;
     if (!title) return void toast.error("Le titre est obligatoire.");
     if (start && end && end < start) return void toast.error("La date de fin doit être après le début.");
-    const { error: e } = await supabase.from("trips").update({ title, start_date: start, end_date: end, currency: String(fd.get("currency") ?? "EUR").toUpperCase(), party_size: fd.get("party_size") ? Number(fd.get("party_size")) : null, status: String(fd.get("status") ?? trip.status), notes: String(fd.get("notes") ?? "").trim() || null }).eq("id", id);
+    const { error: e } = await supabase.from("trips").update({ title, start_date: start, end_date: end, currency: String(fd.get("currency") ?? "EUR").toUpperCase(), party_size: fd.get("party_size") ? Number(fd.get("party_size")) : null, status, notes: String(fd.get("notes") ?? "").trim() || null }).eq("id", id);
     if (e) return void toast.error(e.message); toast.success("Voyage enregistré"); setEditingTrip(false); refresh();
   };
 
