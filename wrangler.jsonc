@@ -7,6 +7,11 @@
   "assets": {
     "directory": ".output/public"
   },
+  "vars": {
+    "SUPABASE_URL": "https://ltrshfejyjzpokexgnmb.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_lAujFjPLHy-Ta7p7xSL8Bg_2og4IpE_",
+    "SUPABASE_PROJECT_ID": "ltrshfejyjzpokexgnmb"
+  },
   "observability": {
     "enabled": true
   }
