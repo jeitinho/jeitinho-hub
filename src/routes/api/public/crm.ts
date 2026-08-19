@@ -25,11 +25,9 @@ async function requireManager(request: Request) {
 
   const { data: canManage, error: roleError } = await supabase.rpc("can_manage", { _user_id: data.claims.sub });
   if (roleError || !canManage) throw new Response("Forbidden", { status: 403 });
-
-  return token;
 }
 
-async function proxy(request: Request, token: string, method: "GET" | "POST", body?: unknown) {
+async function proxy(request: Request, method: "GET" | "POST", body?: unknown) {
   const internalSecret = process.env.INTERNAL_PROCESS_SECRET;
   if (!internalSecret) return Response.json({ ok: false, error: "CRM proxy disabled" }, { status: 503 });
 
@@ -63,8 +61,8 @@ export const Route = createFileRoute("/api/public/crm")({
     handlers: {
       GET: async ({ request }) => {
         try {
-          const token = await requireManager(request);
-          return proxy(request, token, "GET");
+          await requireManager(request);
+          return proxy(request, "GET");
         } catch (error) {
           if (error instanceof Response) return error;
           console.error("[api/public/crm] GET failed", error);
@@ -73,9 +71,9 @@ export const Route = createFileRoute("/api/public/crm")({
       },
       POST: async ({ request }) => {
         try {
-          const token = await requireManager(request);
+          await requireManager(request);
           const body = await request.json();
-          return proxy(request, token, "POST", body);
+          return proxy(request, "POST", body);
         } catch (error) {
           if (error instanceof Response) return error;
           console.error("[api/public/crm] POST failed", error);
