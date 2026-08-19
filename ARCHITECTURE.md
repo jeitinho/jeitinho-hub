@@ -140,7 +140,8 @@ Toutes les tables sont en schéma `public`, RLS activé, avec `GRANT` explicites
 ## 6. Conventions de code
 
 - **Routing** : fichiers plats dot-separated dans `src/routes/`. Ne jamais éditer `routeTree.gen.ts`.
-- **Server functions** : `createServerFn` depuis `@tanstack/react-start`, fichiers `*.functions.ts` importables côté client. Auth via `.middleware([requireSupabaseAuth])`. Jamais d'edge function Supabase.
+- **Server functions** : `createServerFn` depuis `@tanstack/react-start`, fichiers `*.functions.ts` importables côté client. Auth via `.middleware([requireSupabaseAuth])`.
+- **Edge Function Supabase** : `catalog-read` (projet `ltrshfejyjzpokexgnmb`, `verify_jwt=true`) sert de passerelle service-role pour la lecture des catalogues (`experiences`/`services`/`ticket_offers`) depuis le Worker Cloudflare, qui n'a pas de `SUPABASE_SERVICE_ROLE_KEY` fiable. Appelée uniquement via `src/routes/api/public/catalog.ts` (nom historique, en réalité réservé aux utilisateurs authentifiés du Hub — voir commentaire dans le fichier), jamais directement par le navigateur ni par jeitinho.fr.
 - **Client Supabase** :
   - Navigateur : `@/integrations/supabase/client`
   - Server fn user-scoped : `context.supabase` (via `requireSupabaseAuth`)

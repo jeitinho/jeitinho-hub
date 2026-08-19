@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export type CatalogTable = "experiences" | "services" | "ticket_offers";
 
 export async function fetchCatalog<T = Record<string, unknown>>(
@@ -8,8 +10,14 @@ export async function fetchCatalog<T = Record<string, unknown>>(
   if (options?.order) params.set("order", options.order);
   if (options?.ascending === false) params.set("ascending", "false");
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+
   const response = await fetch(`/api/public/catalog?${params.toString()}`, {
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   });
   const body = await response.json().catch(() => null);
   if (!response.ok || !body?.ok) {
