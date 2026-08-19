@@ -8,9 +8,9 @@
     "directory": ".output/public"
   },
   "vars": {
-    "SUPABASE_URL": "https://ltrshfejyjzpokexgnmb.supabase.co",
-    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_lAujFjPLHy-Ta7p7xSL8Bg_2og4IpE_",
-    "SUPABASE_PROJECT_ID": "ltrshfejyjzpokexgnmb"
+    "SUPABASE_URL": "https://sxzdabtarlgozixcbzus.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn",
+    "SUPABASE_PROJECT_ID": "sxzdabtarlgozixcbzus"
   },
   "observability": {
     "enabled": true
