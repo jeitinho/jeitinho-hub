@@ -6,9 +6,11 @@ Ce projet est **JEITINHO Platform**, construit sur Lovable Cloud (Supabase manag
 
 - **Bun** ≥ 1.1 (le lockfile est `bun.lock`, `bunfig.toml` présent)
 - Node ≥ 20 (pour compatibilité outillage)
-- Accès au projet Supabase existant (project ref `emxwfwfbzksqnydgiybh`)
+- Accès au projet Supabase existant (project ref `ltrshfejyjzpokexgnmb`, nom `Jeitinho OS`)
 
 > ⚠️ Ne PAS recréer le projet Supabase. La base et les migrations sont déjà déployées sur l'instance Cloud managée par Lovable.
+>
+> ⚠️ Ne JAMAIS utiliser le project ref `emxwfwfbzksqnydgiybh` pour le Hub — c'est un ancien projet Supabase, non utilisé par JEITINHO Platform. La seule exception connue est le pipeline legacy `/api/public/leads` → `jeitinho-heartbeat.lovable.app`, qui reste sur son propre backend indépendant.
 
 ## 2. Cloner et installer
 
@@ -32,7 +34,7 @@ Remplir avec les valeurs du projet Supabase Cloud :
 |---|---|
 | `VITE_SUPABASE_URL` / `SUPABASE_URL` | Lovable → Cloud → Settings |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | idem (clé `anon` / publishable) |
-| `VITE_SUPABASE_PROJECT_ID` | ref du projet (ex. `emxwfwfbzksqnydgiybh`) |
+| `VITE_SUPABASE_PROJECT_ID` | ref du projet (`ltrshfejyjzpokexgnmb`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | ⚠️ **non disponible sur Lovable Cloud** — les server functions utilisent le client managé `client.server.ts` |
 | `LOVABLE_API_KEY` | fourni par Lovable AI Gateway |
 | `SETUP_KEY` | secret initial pour créer le premier admin via `/setup` |
