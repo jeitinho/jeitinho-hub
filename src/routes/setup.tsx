@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { inviteInitialAdmin } from "@/lib/setup/setup-admin.functions";
+import { bootstrapInitialAdmin } from "@/lib/setup/setup-admin.functions";
 
 export const Route = createFileRoute("/setup")({
   ssr: false,
@@ -17,20 +17,27 @@ export const Route = createFileRoute("/setup")({
 });
 
 function SetupPage() {
-  const invite = useServerFn(inviteInitialAdmin);
+  const bootstrap = useServerFn(bootstrapInitialAdmin);
   const [email, setEmail] = useState("rafael@jeitinho.fr");
+  const [fullName, setFullName] = useState("Rafael");
   const [setupKey, setSetupKey] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const res = await invite({ data: { email, setupKey } });
-    setBusy(false);
-    if (!res.ok) return toast.error(res.error ?? "Échec");
-    setDone(res.email);
-    toast.success("Invitation envoyée");
+    try {
+      const res = await bootstrap({ data: { email, fullName, setupKey, password } });
+      if (!res.ok) return toast.error(res.error ?? "Échec");
+      setDone(res.email);
+      toast.success("Administrateur créé");
+    } catch {
+      toast.error("Impossible de terminer le setup.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -42,15 +49,14 @@ function SetupPage() {
             Créer le premier administrateur
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            À usage unique. Se verrouille automatiquement une fois qu'un administrateur existe.
-            Aucun mot de passe n'est généré : l'utilisateur reçoit un e-mail d'invitation pour
-            définir le sien.
+            À usage unique. Le setup se verrouille automatiquement dès qu'un administrateur existe.
+            Le compte est créé directement dans Cloudflare D1.
           </p>
         </div>
 
         {done ? (
           <div className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm">
-            Invitation envoyée à <strong>{done}</strong>.
+            Administrateur créé pour <strong>{done}</strong>.
             <div className="mt-4">
               <Link to="/auth" className="text-primary underline">Aller à la connexion</Link>
             </div>
@@ -58,8 +64,25 @@ function SetupPage() {
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="fullName">Nom complet</Label>
+              <Input id="fullName" type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">E-mail de l'administrateur</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                minLength={10}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                placeholder="10 caractères minimum"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="setupKey">Clé d'installation</Label>
@@ -73,11 +96,11 @@ function SetupPage() {
                 autoComplete="off"
               />
               <p className="text-xs text-muted-foreground">
-                Valeur du secret serveur <code>SETUP_KEY</code>.
+                Valeur du secret serveur <code>SETUP_KEY</code> configuré dans Cloudflare.
               </p>
             </div>
             <Button type="submit" disabled={busy} className="btn-primary w-full">
-              {busy ? "…" : "Envoyer l'invitation"}
+              {busy ? "Création…" : "Créer l'administrateur"}
             </Button>
           </form>
         )}
