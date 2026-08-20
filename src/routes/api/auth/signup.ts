@@ -22,30 +22,27 @@ export const Route = createFileRoute("/api/auth/signup")({
         if (existing) return Response.json({ ok: false, error: "Un compte existe déjà avec cet email." }, { status: 409 });
 
         const userId = crypto.randomUUID();
-        const now = Math.floor(Date.now() / 1000);
+        const now = new Date().toISOString();
         const firstUser = await DB.prepare("SELECT COUNT(*) AS count FROM users").first<{ count: number }>();
         const isFirstUser = Number(firstUser?.count ?? 0) === 0;
         const status = isFirstUser ? "active" : "pending_validation";
         const passwordHash = await hashPassword(parsed.data.password);
 
-        await DB.prepare(
-          "INSERT INTO users (id,email,password_hash,full_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)"
-        ).bind(userId, email, passwordHash, parsed.data.fullName, status, now, now).run();
-        await DB.prepare(
-          "INSERT INTO user_roles (user_id,role,is_active,created_at) VALUES (?,?,1,?)"
-        ).bind(userId, isFirstUser ? "admin" : "auteur", now).run();
+        await DB.batch([
+          DB.prepare("INSERT INTO users (id,email,password_hash,full_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)")
+            .bind(userId, email, passwordHash, parsed.data.fullName, status, now, now),
+          DB.prepare("INSERT INTO profiles (id,email,full_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?)")
+            .bind(userId, email, parsed.data.fullName, status, now, now),
+          DB.prepare("INSERT INTO user_roles (user_id,role,is_active,created_at) VALUES (?,?,1,?)")
+            .bind(userId, isFirstUser ? "admin" : "auteur", now),
+        ]);
 
-        if (!isFirstUser) {
-          return Response.json({ ok: true, active: false, message: "Compte créé. Un administrateur doit valider votre accès." });
-        }
+        if (!isFirstUser) return Response.json({ ok: true, active: false, message: "Compte créé. Un administrateur doit valider votre accès." });
 
         const token = await createSession(DB, userId);
         return new Response(JSON.stringify({ ok: true, active: true }), {
           status: 200,
-          headers: {
-            "content-type": "application/json",
-            "set-cookie": sessionCookie(token, new URL(request.url).protocol === "https:"),
-          },
+          headers: { "content-type": "application/json", "set-cookie": sessionCookie(token, new URL(request.url).protocol === "https:") },
         });
       },
     },
