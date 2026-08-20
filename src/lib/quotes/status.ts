@@ -1,8 +1,5 @@
-import type { Database } from "@/integrations/supabase/types";
+export type QuoteStatus = "draft" | "sent" | "accepted" | "refused" | "paid" | "ready" | "expired";
 
-export type QuoteStatus = Database["public"]["Enums"]["quote_status"];
-
-/** Statuts exposés dans le module Devis (le reste de l'enum est conservé en base). */
 export const QUOTE_STATUSES: { value: QuoteStatus; label: string }[] = [
   { value: "draft", label: "Brouillon" },
   { value: "sent", label: "Envoyé" },

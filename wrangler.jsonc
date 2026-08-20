@@ -1,16 +1,28 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "jeitinho-hub",
-  "compatibility_date": "2026-08-18",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2026-08-20",
+  "compatibility_flags": ["nodejs_compat_v2"],
   "main": ".output/server/index.mjs",
   "assets": {
     "directory": ".output/public"
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "jeitinho-hub",
+      "database_id": "00000000-0000-4000-8000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "jeitinho-hub-media"
+    }
+  ],
   "vars": {
-    "SUPABASE_URL": "https://sxzdabtarlgozixcbzus.supabase.co",
-    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn",
-    "SUPABASE_PROJECT_ID": "sxzdabtarlgozixcbzus"
+    "ENVIRONMENT": "production"
   },
   "observability": {
     "enabled": true

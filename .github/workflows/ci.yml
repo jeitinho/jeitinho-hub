@@ -14,9 +14,14 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - run: bun install --frozen-lockfile
+      - run: bun install --no-save --frozen-lockfile=false
+      - name: Reject legacy platform dependencies
+        run: |
+          set -e
+          if grep -RniE 'supabase|lovable\.dev|connector-gateway\.lovable\.dev|LOVABLE_API_KEY|SUPABASE_' src package.json bunfig.toml vite.config.ts wrangler.jsonc .env.example .github/workflows; then
+            echo 'Legacy Supabase/Lovable runtime/config reference detected.'
+            exit 1
+          fi
       - run: bun run typecheck
       - run: bun run build
-        env:
-          VITE_SUPABASE_URL: https://ltrshfejyjzpokexgnmb.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+      - run: npx wrangler check
