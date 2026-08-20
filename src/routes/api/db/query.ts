@@ -1,0 +1,184 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { getCurrentUser } from "@/lib/auth/cloudflare-auth";
+import { getBindings } from "@/lib/cloudflare-db";
+
+const TABLES = new Set([
+  "profiles","user_roles","tags","content_categories","partners","media","experiences","clients","quotes","trips",
+  "calendar_events","authors","contents","content_media","content_comments","content_revisions","channels","publications",
+  "prospects","leads","quote_lines","quote_number_sequences","roles","staff_directory","crm_tasks","services","ticket_offers",
+  "partner_offerings","payments","trip_travelers","trip_activities","factory_outputs","acquisition_events","trip_number_sequences",
+  "agent_runs","agent_actions","chapters","sections","media_assets","access_codes","manual_sessions","analytics_events",
+]);
+
+const MANAGER_TABLES = new Set([
+  "profiles","user_roles","tags","content_categories","partners","media","experiences","clients","quotes","trips","calendar_events",
+  "authors","contents","content_media","content_comments","content_revisions","channels","publications","prospects","leads","quote_lines",
+  "quote_number_sequences","roles","staff_directory","crm_tasks","services","ticket_offers","partner_offerings","payments","trip_travelers",
+  "trip_activities","factory_outputs","acquisition_events","trip_number_sequences","agent_runs","agent_actions",
+]);
+const EDITOR_TABLES = new Set(["tags","content_categories","media","experiences","authors","contents","content_media","content_comments","content_revisions","channels"]);
+const JSON_COLUMNS = new Set([
+  "gallery","videos","tags","inclusions","exclusions","conditions","faq","factory_data","metadata","body_json","body_sections","hashtags",
+  "equipment","highlights","itinerary","items","details","social","config","payload","activities","raw_payload","score_breakdown","blocks",
+  "crop","mobile_crop","input","output","source_snapshot","payments","hotels","transport","media_ids","mentions","selection",
+]);
+const BOOLEAN_COLUMNS = new Set([
+  "is_active","is_published","requires_driver","is_excursion","bookable","all_day","followup_paused","approval_required",
+]);
+
+function normalizeValue(column: string, value: unknown) {
+  if (value === undefined) return null;
+  if (BOOLEAN_COLUMNS.has(column)) return value ? 1 : 0;
+  if (JSON_COLUMNS.has(column) && value !== null && typeof value !== "string") return JSON.stringify(value);
+  return value;
+}
+
+function parseValue(column: string, value: unknown) {
+  if (value === null || value === undefined) return value;
+  if (BOOLEAN_COLUMNS.has(column)) return Boolean(value);
+  if (JSON_COLUMNS.has(column) && typeof value === "string") {
+    try { return JSON.parse(value); } catch { return value; }
+  }
+  return value;
+}
+
+async function getColumns(table: string, db: D1Database) {
+  const result = await db.prepare(`PRAGMA table_info(${table})`).all<{ name: string; pk: number }>();
+  return result.results ?? [];
+}
+
+function safeColumns(requested: string | undefined, known: Set<string>) {
+  if (!requested || requested.trim() === "*") return "*";
+  const cols = requested.split(",").map((x) => x.trim()).filter(Boolean);
+  if (cols.length === 0 || cols.some((c) => !known.has(c) || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(c))) throw new Error("Invalid columns");
+  return cols.join(", ");
+}
+
+function compileFilters(filters: Array<{ column: string; operator: string; value: unknown }>, known: Set<string>) {
+  const clauses: string[] = [];
+  const bindings: unknown[] = [];
+  for (const filter of filters ?? []) {
+    if (!known.has(filter.column) || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(filter.column)) throw new Error("Invalid filter column");
+    const op = filter.operator;
+    if (op === "in") {
+      const values = Array.isArray(filter.value) ? filter.value : [];
+      if (!values.length) clauses.push("1 = 0");
+      else { clauses.push(`${filter.column} IN (${values.map(() => "?").join(", ")})`); bindings.push(...values.map((v) => normalizeValue(filter.column, v))); }
+      continue;
+    }
+    if (op === "is" && filter.value === null) { clauses.push(`${filter.column} IS NULL`); continue; }
+    const allowed = new Set(["eq","neq","gt","gte","lt","lte","like","ilike","is"]);
+    if (!allowed.has(op)) throw new Error("Invalid filter operator");
+    const sqlOp = op === "eq" || op === "is" ? "=" : op === "neq" ? "<>" : op === "gt" ? ">" : op === "gte" ? ">=" : op === "lt" ? "<" : op === "lte" ? "<=" : op === "like" || op === "ilike" ? "LIKE" : "=";
+    clauses.push(`${filter.column} ${sqlOp} ?`);
+    const normalized = normalizeValue(filter.column, filter.value);
+    bindings.push(op === "ilike" && typeof normalized === "string" ? normalized.toLowerCase() : normalized);
+  }
+  return { sql: clauses.length ? ` WHERE ${clauses.join(" AND ")}` : "", bindings };
+}
+
+async function rows(db: D1Database, table: string, columns: string, filters: unknown[], orders: unknown[], limit?: number, offset?: number) {
+  const known = new Set((await getColumns(table, db)).map((c) => c.name));
+  const select = safeColumns(columns, known);
+  const compiled = compileFilters((filters ?? []) as Array<{ column: string; operator: string; value: unknown }>, known);
+  const orderSql = ((orders ?? []) as Array<{ column: string; ascending?: boolean }>).map((o) => {
+    if (!known.has(o.column)) throw new Error("Invalid order column");
+    return `${o.column} ${o.ascending === false ? "DESC" : "ASC"}`;
+  }).join(", ");
+  const sql = `SELECT ${select} FROM ${table}${compiled.sql}${orderSql ? ` ORDER BY ${orderSql}` : ""}${typeof limit === "number" ? ` LIMIT ${Math.max(0, Math.floor(limit))}` : ""}${typeof offset === "number" && offset > 0 ? ` OFFSET ${Math.max(0, Math.floor(offset))}` : ""}`;
+  const result = await db.prepare(sql).bind(...compiled.bindings.map((v) => normalizeValue("", v))).all<Record<string, unknown>>();
+  return result.results ?? [];
+}
+
+function shapeRow(row: Record<string, unknown>) {
+  return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, parseValue(key, value)]));
+}
+
+export const Route = createFileRoute("/api/db/query")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const db = getBindings().DB;
+        const user = await getCurrentUser(db, request);
+        if (!user) return Response.json({ data: null, error: { message: "Unauthorized" } }, { status: 401 });
+        const payload = await request.json().catch(() => null) as {
+          operation?: string; table?: string; columns?: string; filters?: Array<{ column: string; operator: string; value: unknown }>;
+          orders?: Array<{ column: string; ascending?: boolean }>; limit?: number; offset?: number; values?: Record<string, unknown> | Array<Record<string, unknown>>;
+          onConflict?: string; returning?: boolean; singleMode?: "single" | "maybeSingle" | null;
+        } | null;
+        if (!payload || !payload.table || !TABLES.has(payload.table)) return Response.json({ data: null, error: { message: "Invalid table" } }, { status: 400 });
+        const table = payload.table;
+        const operation = payload.operation ?? "select";
+        const isManager = user.roles.includes("admin") || user.roles.includes("manager");
+        const isEditor = isManager || user.roles.includes("redacteur_chef") || user.roles.includes("redacteur");
+        const isAuthor = isEditor || user.roles.includes("auteur");
+        const writeAllowed = isManager ? MANAGER_TABLES.has(table) : isAuthor ? EDITOR_TABLES.has(table) : false;
+        if (operation !== "select" && !writeAllowed) return Response.json({ data: null, error: { message: "Forbidden" } }, { status: 403 });
+        try {
+          const knownColumns = await getColumns(table, db);
+          const known = new Set(knownColumns.map((c) => c.name));
+          const pk = knownColumns.find((c) => c.pk === 1)?.name ?? "id";
+          const returning = payload.returning === true;
+
+          if (operation === "select") {
+            const result = await rows(db, table, payload.columns ?? "*", payload.filters ?? [], payload.orders ?? [], payload.limit, payload.offset);
+            const shaped = result.map(shapeRow);
+            if (payload.singleMode === "single") {
+              if (shaped.length !== 1) return Response.json({ data: null, error: { message: `Expected one row, received ${shaped.length}` } }, { status: 406 });
+              return Response.json({ data: shaped[0], error: null });
+            }
+            if (payload.singleMode === "maybeSingle") return Response.json({ data: shaped[0] ?? null, error: null });
+            return Response.json({ data: shaped, error: null, count: shaped.length });
+          }
+
+          const valuesArray = Array.isArray(payload.values) ? payload.values : [payload.values ?? {}];
+          const insertedIds: string[] = [];
+          for (const raw of valuesArray) {
+            const value = { ...raw } as Record<string, unknown>;
+            if ((operation === "insert" || operation === "upsert") && known.has("id") && value.id == null) value.id = crypto.randomUUID();
+            const entries = Object.entries(value).filter(([column]) => known.has(column));
+            if (!entries.length) throw new Error("No valid columns supplied");
+            const cols = entries.map(([column]) => column);
+            const params = entries.map(([column, value]) => normalizeValue(column, value));
+            const placeholders = cols.map(() => "?").join(", ");
+            if (operation === "insert") {
+              await db.prepare(`INSERT INTO ${table} (${cols.join(", ")}) VALUES (${placeholders})`).bind(...params).run();
+            } else if (operation === "update") {
+              const compiled = compileFilters(payload.filters ?? [], known);
+              if (!compiled.sql) throw new Error("Update requires at least one filter");
+              await db.prepare(`UPDATE ${table} SET ${cols.map((c) => `${c} = ?`).join(", ")}${compiled.sql}`).bind(...params, ...compiled.bindings.map((v) => normalizeValue("", v))).run();
+            } else if (operation === "delete") {
+              const compiled = compileFilters(payload.filters ?? [], known);
+              if (!compiled.sql) throw new Error("Delete requires at least one filter");
+              await db.prepare(`DELETE FROM ${table}${compiled.sql}`).bind(...compiled.bindings.map((v) => normalizeValue("", v))).run();
+            } else if (operation === "upsert") {
+              const conflictCols = (payload.onConflict ?? "id").split(",").map((x) => x.trim()).filter((x) => known.has(x));
+              if (!conflictCols.length) throw new Error("Invalid onConflict columns");
+              const updateCols = cols.filter((c) => !conflictCols.includes(c));
+              const updateSql = updateCols.length ? ` DO UPDATE SET ${updateCols.map((c) => `${c}=excluded.${c}`).join(", ")}` : " DO NOTHING";
+              await db.prepare(`INSERT INTO ${table} (${cols.join(",")}) VALUES (${placeholders}) ON CONFLICT (${conflictCols.join(",")})${updateSql}`).bind(...params).run();
+            }
+            if (value.id) insertedIds.push(String(value.id));
+          }
+
+          if (!returning) return Response.json({ data: null, error: null });
+          let returned: Record<string, unknown>[] = [];
+          if (insertedIds.length && known.has(pk)) {
+            const placeholders = insertedIds.map(() => "?").join(",");
+            const result = await db.prepare(`SELECT ${safeColumns(payload.columns ?? "*", known)} FROM ${table} WHERE ${pk} IN (${placeholders})`).bind(...insertedIds).all<Record<string, unknown>>();
+            returned = result.results ?? [];
+          } else {
+            returned = await rows(db, table, payload.columns ?? "*", payload.filters ?? [], payload.orders ?? [], payload.limit, payload.offset);
+          }
+          const shaped = returned.map(shapeRow);
+          if (payload.singleMode === "single") return Response.json({ data: shaped[0] ?? null, error: shaped.length === 1 ? null : { message: "Expected one row" } }, { status: shaped.length === 1 ? 200 : 406 });
+          if (payload.singleMode === "maybeSingle") return Response.json({ data: shaped[0] ?? null, error: null });
+          return Response.json({ data: shaped, error: null });
+        } catch (error) {
+          console.error("[db/query]", error);
+          return Response.json({ data: null, error: { message: error instanceof Error ? error.message : "Database operation failed" } }, { status: 400 });
+        }
+      },
+    },
+  },
+});
