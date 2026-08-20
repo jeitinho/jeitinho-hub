@@ -1,7 +1,8 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
 
 export type HubBindings = {
   DB: D1Database;
+  MEDIA?: R2Bucket;
   ENVIRONMENT?: string;
   SETUP_KEY?: string;
   GITHUB_API_KEY?: string;
