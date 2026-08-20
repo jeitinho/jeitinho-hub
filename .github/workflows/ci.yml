@@ -18,8 +18,8 @@ jobs:
       - name: Reject legacy platform dependencies
         run: |
           set -e
-          if grep -RniE 'supabase|lovable\.dev|connector-gateway\.lovable\.dev|LOVABLE_API_KEY|SUPABASE_' src package.json bunfig.toml vite.config.ts wrangler.jsonc .env.example AGENTS.md ARCHITECTURE.md SETUP.md; then
-            echo 'Legacy Supabase/Lovable reference detected.'
+          if grep -RniE 'supabase|lovable\.dev|connector-gateway\.lovable\.dev|LOVABLE_API_KEY|SUPABASE_' src package.json bunfig.toml vite.config.ts wrangler.jsonc .env.example .github/workflows; then
+            echo 'Legacy Supabase/Lovable runtime/config reference detected.'
             exit 1
           fi
       - run: bun run typecheck
