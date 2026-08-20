@@ -9,53 +9,62 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SetupRouteImport } from './routes/setup'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
-import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
-import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
-import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
-import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
-import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
-import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
-import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticated/contenus'
-import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
-import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authenticated/calendrier'
-import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
-import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
-import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
-import { Route as ApiPublicCatalogRouteImport } from './routes/api/public/catalog'
-import { Route as ApiInternalProcessLeadRouteImport } from './routes/api/internal/process-lead'
-import { Route as ApiInternalCatalogRouteImport } from './routes/api/internal/catalog'
-import { Route as AuthenticatedVoyagesNewRouteImport } from './routes/_authenticated/voyages.new'
-import { Route as AuthenticatedVoyagesIdRouteImport } from './routes/_authenticated/voyages.$id'
-import { Route as AuthenticatedServicesNewRouteImport } from './routes/_authenticated/services.new'
-import { Route as AuthenticatedServicesIdRouteImport } from './routes/_authenticated/services.$id'
-import { Route as AuthenticatedParametresUtilisateursRouteImport } from './routes/_authenticated/parametres.utilisateurs'
-import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
-import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
-import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
-import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
-import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
-import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
-import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
-import { Route as AuthenticatedBilletterieNewRouteImport } from './routes/_authenticated/billetterie.new'
+import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
+import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
+import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authenticated/calendrier'
+import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticated/contenus'
+import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
+import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
+import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
+import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
+import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
+import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
 import { Route as AuthenticatedBilletterieIdRouteImport } from './routes/_authenticated/billetterie.$id'
+import { Route as AuthenticatedBilletterieNewRouteImport } from './routes/_authenticated/billetterie.new'
+import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
+import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
+import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
+import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
+import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
+import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
+import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
+import { Route as AuthenticatedParametresUtilisateursRouteImport } from './routes/_authenticated/parametres.utilisateurs'
+import { Route as AuthenticatedServicesIdRouteImport } from './routes/_authenticated/services.$id'
+import { Route as AuthenticatedServicesNewRouteImport } from './routes/_authenticated/services.new'
+import { Route as AuthenticatedVoyagesIdRouteImport } from './routes/_authenticated/voyages.$id'
+import { Route as AuthenticatedVoyagesNewRouteImport } from './routes/_authenticated/voyages.new'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiAuthRequestResetRouteImport } from './routes/api/auth/request-reset'
+import { Route as ApiAuthResetPasswordRouteImport } from './routes/api/auth/reset-password'
+import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
+import { Route as ApiDbQueryRouteImport } from './routes/api/db/query'
+import { Route as ApiDbRpcRouteImport } from './routes/api/db/rpc'
+import { Route as ApiInternalCatalogRouteImport } from './routes/api/internal/catalog'
+import { Route as ApiInternalHealthRouteImport } from './routes/api/internal/health'
+import { Route as ApiStorageFileRouteImport } from './routes/api/storage/file'
+import { Route as ApiStorageSignedUrlRouteImport } from './routes/api/storage/signed-url'
+import { Route as ApiStorageUploadRouteImport } from './routes/api/storage/upload'
+import { Route as ApiContentContentIdWorkflowRouteImport } from './routes/api/content/$contentId/workflow'
 
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -63,81 +72,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
-  id: '/voyages',
-  path: '/voyages',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPartenairesRoute =
-  AuthenticatedPartenairesRouteImport.update({
-    id: '/partenaires',
-    path: '/partenaires',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
-  id: '/parametres',
-  path: '/parametres',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMediathequeRoute =
-  AuthenticatedMediathequeRouteImport.update({
-    id: '/mediatheque',
-    path: '/mediatheque',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedExperiencesRoute =
-  AuthenticatedExperiencesRouteImport.update({
-    id: '/experiences',
-    path: '/experiences',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDevisRoute = AuthenticatedDevisRouteImport.update({
-  id: '/devis',
-  path: '/devis',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
-  id: '/crm',
-  path: '/crm',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedContenusRoute = AuthenticatedContenusRouteImport.update({
-  id: '/contenus',
-  path: '/contenus',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
-  id: '/clients',
-  path: '/clients',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCalendrierRoute = AuthenticatedCalendrierRouteImport.update({
-  id: '/calendrier',
-  path: '/calendrier',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBilletterieRoute =
@@ -146,57 +93,116 @@ const AuthenticatedBilletterieRoute =
     path: '/billetterie',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
-  id: '/api/public/leads',
-  path: '/api/public/leads',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedCalendrierRoute = AuthenticatedCalendrierRouteImport.update({
+  id: '/calendrier',
+  path: '/calendrier',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicCatalogRoute = ApiPublicCatalogRouteImport.update({
-  id: '/api/public/catalog',
-  path: '/api/public/catalog',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiInternalProcessLeadRoute = ApiInternalProcessLeadRouteImport.update({
-  id: '/api/internal/process-lead',
-  path: '/api/internal/process-lead',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedContenusRoute = AuthenticatedContenusRouteImport.update({
+  id: '/contenus',
+  path: '/contenus',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiInternalCatalogRoute = ApiInternalCatalogRouteImport.update({
-  id: '/api/internal/catalog',
-  path: '/api/internal/catalog',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedVoyagesNewRoute = AuthenticatedVoyagesNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AuthenticatedVoyagesRoute,
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedVoyagesIdRoute = AuthenticatedVoyagesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedVoyagesRoute,
+const AuthenticatedDevisRoute = AuthenticatedDevisRouteImport.update({
+  id: '/devis',
+  path: '/devis',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedServicesNewRoute =
-  AuthenticatedServicesNewRouteImport.update({
+const AuthenticatedExperiencesRoute =
+  AuthenticatedExperiencesRouteImport.update({
+    id: '/experiences',
+    path: '/experiences',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMediathequeRoute =
+  AuthenticatedMediathequeRouteImport.update({
+    id: '/mediatheque',
+    path: '/mediatheque',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPartenairesRoute =
+  AuthenticatedPartenairesRouteImport.update({
+    id: '/partenaires',
+    path: '/partenaires',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
+  id: '/voyages',
+  path: '/voyages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBilletterieIdRoute =
+  AuthenticatedBilletterieIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedBilletterieRoute,
+  } as any)
+const AuthenticatedBilletterieNewRoute =
+  AuthenticatedBilletterieNewRouteImport.update({
     id: '/new',
     path: '/new',
-    getParentRoute: () => AuthenticatedServicesRoute,
+    getParentRoute: () => AuthenticatedBilletterieRoute,
   } as any)
-const AuthenticatedServicesIdRoute = AuthenticatedServicesIdRouteImport.update({
+const AuthenticatedBlogIdRoute = AuthenticatedBlogIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => AuthenticatedServicesRoute,
+  getParentRoute: () => AuthenticatedBlogRoute,
 } as any)
-const AuthenticatedParametresUtilisateursRoute =
-  AuthenticatedParametresUtilisateursRouteImport.update({
-    id: '/utilisateurs',
-    path: '/utilisateurs',
-    getParentRoute: () => AuthenticatedParametresRoute,
+const AuthenticatedBlogNewRoute = AuthenticatedBlogNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedBlogRoute,
+} as any)
+const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedClientsRoute,
+} as any)
+const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedDevisRoute,
+} as any)
+const AuthenticatedDevisNewRoute = AuthenticatedDevisNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedDevisRoute,
+} as any)
+const AuthenticatedExperiencesIdRoute =
+  AuthenticatedExperiencesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedExperiencesRoute,
   } as any)
 const AuthenticatedExperiencesNewRoute =
   AuthenticatedExperiencesNewRouteImport.update({
@@ -204,48 +210,103 @@ const AuthenticatedExperiencesNewRoute =
     path: '/new',
     getParentRoute: () => AuthenticatedExperiencesRoute,
   } as any)
-const AuthenticatedExperiencesIdRoute =
-  AuthenticatedExperiencesIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AuthenticatedExperiencesRoute,
+const AuthenticatedParametresUtilisateursRoute =
+  AuthenticatedParametresUtilisateursRouteImport.update({
+    id: '/utilisateurs',
+    path: '/utilisateurs',
+    getParentRoute: () => AuthenticatedParametresRoute,
   } as any)
-const AuthenticatedDevisNewRoute = AuthenticatedDevisNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AuthenticatedDevisRoute,
-} as any)
-const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
+const AuthenticatedServicesIdRoute = AuthenticatedServicesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => AuthenticatedDevisRoute,
+  getParentRoute: () => AuthenticatedServicesRoute,
 } as any)
-const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedClientsRoute,
-} as any)
-const AuthenticatedBlogNewRoute = AuthenticatedBlogNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AuthenticatedBlogRoute,
-} as any)
-const AuthenticatedBlogIdRoute = AuthenticatedBlogIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedBlogRoute,
-} as any)
-const AuthenticatedBilletterieNewRoute =
-  AuthenticatedBilletterieNewRouteImport.update({
+const AuthenticatedServicesNewRoute =
+  AuthenticatedServicesNewRouteImport.update({
     id: '/new',
     path: '/new',
-    getParentRoute: () => AuthenticatedBilletterieRoute,
+    getParentRoute: () => AuthenticatedServicesRoute,
   } as any)
-const AuthenticatedBilletterieIdRoute =
-  AuthenticatedBilletterieIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AuthenticatedBilletterieRoute,
+const AuthenticatedVoyagesIdRoute = AuthenticatedVoyagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedVoyagesRoute,
+} as any)
+const AuthenticatedVoyagesNewRoute = AuthenticatedVoyagesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedVoyagesRoute,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthRequestResetRoute = ApiAuthRequestResetRouteImport.update({
+  id: '/api/auth/request-reset',
+  path: '/api/auth/request-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthResetPasswordRoute = ApiAuthResetPasswordRouteImport.update({
+  id: '/api/auth/reset-password',
+  path: '/api/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignupRoute = ApiAuthSignupRouteImport.update({
+  id: '/api/auth/signup',
+  path: '/api/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDbQueryRoute = ApiDbQueryRouteImport.update({
+  id: '/api/db/query',
+  path: '/api/db/query',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDbRpcRoute = ApiDbRpcRouteImport.update({
+  id: '/api/db/rpc',
+  path: '/api/db/rpc',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalCatalogRoute = ApiInternalCatalogRouteImport.update({
+  id: '/api/internal/catalog',
+  path: '/api/internal/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalHealthRoute = ApiInternalHealthRouteImport.update({
+  id: '/api/internal/health',
+  path: '/api/internal/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorageFileRoute = ApiStorageFileRouteImport.update({
+  id: '/api/storage/file',
+  path: '/api/storage/file',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorageSignedUrlRoute = ApiStorageSignedUrlRouteImport.update({
+  id: '/api/storage/signed-url',
+  path: '/api/storage/signed-url',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStorageUploadRoute = ApiStorageUploadRouteImport.update({
+  id: '/api/storage/upload',
+  path: '/api/storage/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiContentContentIdWorkflowRoute =
+  ApiContentContentIdWorkflowRouteImport.update({
+    id: '/api/content/$contentId/workflow',
+    path: '/api/content/$contentId/workflow',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -282,10 +343,20 @@ export interface FileRoutesByFullPath {
   '/services/new': typeof AuthenticatedServicesNewRoute
   '/voyages/$id': typeof AuthenticatedVoyagesIdRoute
   '/voyages/new': typeof AuthenticatedVoyagesNewRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/request-reset': typeof ApiAuthRequestResetRoute
+  '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/db/query': typeof ApiDbQueryRoute
+  '/api/db/rpc': typeof ApiDbRpcRoute
   '/api/internal/catalog': typeof ApiInternalCatalogRoute
-  '/api/internal/process-lead': typeof ApiInternalProcessLeadRoute
-  '/api/public/catalog': typeof ApiPublicCatalogRoute
-  '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/internal/health': typeof ApiInternalHealthRoute
+  '/api/storage/file': typeof ApiStorageFileRoute
+  '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
+  '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -321,10 +392,20 @@ export interface FileRoutesByTo {
   '/services/new': typeof AuthenticatedServicesNewRoute
   '/voyages/$id': typeof AuthenticatedVoyagesIdRoute
   '/voyages/new': typeof AuthenticatedVoyagesNewRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/request-reset': typeof ApiAuthRequestResetRoute
+  '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/db/query': typeof ApiDbQueryRoute
+  '/api/db/rpc': typeof ApiDbRpcRoute
   '/api/internal/catalog': typeof ApiInternalCatalogRoute
-  '/api/internal/process-lead': typeof ApiInternalProcessLeadRoute
-  '/api/public/catalog': typeof ApiPublicCatalogRoute
-  '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/internal/health': typeof ApiInternalHealthRoute
+  '/api/storage/file': typeof ApiStorageFileRoute
+  '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
+  '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -362,10 +443,20 @@ export interface FileRoutesById {
   '/_authenticated/services/new': typeof AuthenticatedServicesNewRoute
   '/_authenticated/voyages/$id': typeof AuthenticatedVoyagesIdRoute
   '/_authenticated/voyages/new': typeof AuthenticatedVoyagesNewRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/request-reset': typeof ApiAuthRequestResetRoute
+  '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/db/query': typeof ApiDbQueryRoute
+  '/api/db/rpc': typeof ApiDbRpcRoute
   '/api/internal/catalog': typeof ApiInternalCatalogRoute
-  '/api/internal/process-lead': typeof ApiInternalProcessLeadRoute
-  '/api/public/catalog': typeof ApiPublicCatalogRoute
-  '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/internal/health': typeof ApiInternalHealthRoute
+  '/api/storage/file': typeof ApiStorageFileRoute
+  '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
+  '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -403,10 +494,20 @@ export interface FileRouteTypes {
     | '/services/new'
     | '/voyages/$id'
     | '/voyages/new'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/request-reset'
+    | '/api/auth/reset-password'
+    | '/api/auth/signup'
+    | '/api/db/query'
+    | '/api/db/rpc'
     | '/api/internal/catalog'
-    | '/api/internal/process-lead'
-    | '/api/public/catalog'
-    | '/api/public/leads'
+    | '/api/internal/health'
+    | '/api/storage/file'
+    | '/api/storage/signed-url'
+    | '/api/storage/upload'
+    | '/api/content/$contentId/workflow'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -442,10 +543,20 @@ export interface FileRouteTypes {
     | '/services/new'
     | '/voyages/$id'
     | '/voyages/new'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/request-reset'
+    | '/api/auth/reset-password'
+    | '/api/auth/signup'
+    | '/api/db/query'
+    | '/api/db/rpc'
     | '/api/internal/catalog'
-    | '/api/internal/process-lead'
-    | '/api/public/catalog'
-    | '/api/public/leads'
+    | '/api/internal/health'
+    | '/api/storage/file'
+    | '/api/storage/signed-url'
+    | '/api/storage/upload'
+    | '/api/content/$contentId/workflow'
   id:
     | '__root__'
     | '/'
@@ -482,10 +593,20 @@ export interface FileRouteTypes {
     | '/_authenticated/services/new'
     | '/_authenticated/voyages/$id'
     | '/_authenticated/voyages/new'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/request-reset'
+    | '/api/auth/reset-password'
+    | '/api/auth/signup'
+    | '/api/db/query'
+    | '/api/db/rpc'
     | '/api/internal/catalog'
-    | '/api/internal/process-lead'
-    | '/api/public/catalog'
-    | '/api/public/leads'
+    | '/api/internal/health'
+    | '/api/storage/file'
+    | '/api/storage/signed-url'
+    | '/api/storage/upload'
+    | '/api/content/$contentId/workflow'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -494,33 +615,29 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiAuthRequestResetRoute: typeof ApiAuthRequestResetRoute
+  ApiAuthResetPasswordRoute: typeof ApiAuthResetPasswordRoute
+  ApiAuthSignupRoute: typeof ApiAuthSignupRoute
+  ApiDbQueryRoute: typeof ApiDbQueryRoute
+  ApiDbRpcRoute: typeof ApiDbRpcRoute
   ApiInternalCatalogRoute: typeof ApiInternalCatalogRoute
-  ApiInternalProcessLeadRoute: typeof ApiInternalProcessLeadRoute
-  ApiPublicCatalogRoute: typeof ApiPublicCatalogRoute
-  ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
+  ApiInternalHealthRoute: typeof ApiInternalHealthRoute
+  ApiStorageFileRoute: typeof ApiStorageFileRoute
+  ApiStorageSignedUrlRoute: typeof ApiStorageSignedUrlRoute
+  ApiStorageUploadRoute: typeof ApiStorageUploadRoute
+  ApiContentContentIdWorkflowRoute: typeof ApiContentContentIdWorkflowRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -530,102 +647,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/voyages': {
-      id: '/_authenticated/voyages'
-      path: '/voyages'
-      fullPath: '/voyages'
-      preLoaderRoute: typeof AuthenticatedVoyagesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/services': {
-      id: '/_authenticated/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof AuthenticatedServicesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/partenaires': {
-      id: '/_authenticated/partenaires'
-      path: '/partenaires'
-      fullPath: '/partenaires'
-      preLoaderRoute: typeof AuthenticatedPartenairesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/parametres': {
-      id: '/_authenticated/parametres'
-      path: '/parametres'
-      fullPath: '/parametres'
-      preLoaderRoute: typeof AuthenticatedParametresRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/mediatheque': {
-      id: '/_authenticated/mediatheque'
-      path: '/mediatheque'
-      fullPath: '/mediatheque'
-      preLoaderRoute: typeof AuthenticatedMediathequeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/experiences': {
-      id: '/_authenticated/experiences'
-      path: '/experiences'
-      fullPath: '/experiences'
-      preLoaderRoute: typeof AuthenticatedExperiencesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/devis': {
-      id: '/_authenticated/devis'
-      path: '/devis'
-      fullPath: '/devis'
-      preLoaderRoute: typeof AuthenticatedDevisRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/crm': {
-      id: '/_authenticated/crm'
-      path: '/crm'
-      fullPath: '/crm'
-      preLoaderRoute: typeof AuthenticatedCrmRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/contenus': {
-      id: '/_authenticated/contenus'
-      path: '/contenus'
-      fullPath: '/contenus'
-      preLoaderRoute: typeof AuthenticatedContenusRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/clients': {
-      id: '/_authenticated/clients'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof AuthenticatedClientsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/calendrier': {
-      id: '/_authenticated/calendrier'
-      path: '/calendrier'
-      fullPath: '/calendrier'
-      preLoaderRoute: typeof AuthenticatedCalendrierRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/blog': {
-      id: '/_authenticated/blog'
-      path: '/blog'
-      fullPath: '/blog'
-      preLoaderRoute: typeof AuthenticatedBlogRouteImport
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/billetterie': {
@@ -635,32 +682,249 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBilletterieRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/analytics': {
-      id: '/_authenticated/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+    '/_authenticated/blog': {
+      id: '/_authenticated/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof AuthenticatedBlogRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/leads': {
-      id: '/api/public/leads'
-      path: '/api/public/leads'
-      fullPath: '/api/public/leads'
-      preLoaderRoute: typeof ApiPublicLeadsRouteImport
+    '/_authenticated/calendrier': {
+      id: '/_authenticated/calendrier'
+      path: '/calendrier'
+      fullPath: '/calendrier'
+      preLoaderRoute: typeof AuthenticatedCalendrierRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/clients': {
+      id: '/_authenticated/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof AuthenticatedClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contenus': {
+      id: '/_authenticated/contenus'
+      path: '/contenus'
+      fullPath: '/contenus'
+      preLoaderRoute: typeof AuthenticatedContenusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/crm': {
+      id: '/_authenticated/crm'
+      path: '/crm'
+      fullPath: '/crm'
+      preLoaderRoute: typeof AuthenticatedCrmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/devis': {
+      id: '/_authenticated/devis'
+      path: '/devis'
+      fullPath: '/devis'
+      preLoaderRoute: typeof AuthenticatedDevisRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/experiences': {
+      id: '/_authenticated/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof AuthenticatedExperiencesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mediatheque': {
+      id: '/_authenticated/mediatheque'
+      path: '/mediatheque'
+      fullPath: '/mediatheque'
+      preLoaderRoute: typeof AuthenticatedMediathequeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/parametres': {
+      id: '/_authenticated/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/partenaires': {
+      id: '/_authenticated/partenaires'
+      path: '/partenaires'
+      fullPath: '/partenaires'
+      preLoaderRoute: typeof AuthenticatedPartenairesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/services': {
+      id: '/_authenticated/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof AuthenticatedServicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/voyages': {
+      id: '/_authenticated/voyages'
+      path: '/voyages'
+      fullPath: '/voyages'
+      preLoaderRoute: typeof AuthenticatedVoyagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/billetterie/$id': {
+      id: '/_authenticated/billetterie/$id'
+      path: '/$id'
+      fullPath: '/billetterie/$id'
+      preLoaderRoute: typeof AuthenticatedBilletterieIdRouteImport
+      parentRoute: typeof AuthenticatedBilletterieRoute
+    }
+    '/_authenticated/billetterie/new': {
+      id: '/_authenticated/billetterie/new'
+      path: '/new'
+      fullPath: '/billetterie/new'
+      preLoaderRoute: typeof AuthenticatedBilletterieNewRouteImport
+      parentRoute: typeof AuthenticatedBilletterieRoute
+    }
+    '/_authenticated/blog/$id': {
+      id: '/_authenticated/blog/$id'
+      path: '/$id'
+      fullPath: '/blog/$id'
+      preLoaderRoute: typeof AuthenticatedBlogIdRouteImport
+      parentRoute: typeof AuthenticatedBlogRoute
+    }
+    '/_authenticated/blog/new': {
+      id: '/_authenticated/blog/new'
+      path: '/new'
+      fullPath: '/blog/new'
+      preLoaderRoute: typeof AuthenticatedBlogNewRouteImport
+      parentRoute: typeof AuthenticatedBlogRoute
+    }
+    '/_authenticated/clients/$id': {
+      id: '/_authenticated/clients/$id'
+      path: '/$id'
+      fullPath: '/clients/$id'
+      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
+    }
+    '/_authenticated/devis/$id': {
+      id: '/_authenticated/devis/$id'
+      path: '/$id'
+      fullPath: '/devis/$id'
+      preLoaderRoute: typeof AuthenticatedDevisIdRouteImport
+      parentRoute: typeof AuthenticatedDevisRoute
+    }
+    '/_authenticated/devis/new': {
+      id: '/_authenticated/devis/new'
+      path: '/new'
+      fullPath: '/devis/new'
+      preLoaderRoute: typeof AuthenticatedDevisNewRouteImport
+      parentRoute: typeof AuthenticatedDevisRoute
+    }
+    '/_authenticated/experiences/$id': {
+      id: '/_authenticated/experiences/$id'
+      path: '/$id'
+      fullPath: '/experiences/$id'
+      preLoaderRoute: typeof AuthenticatedExperiencesIdRouteImport
+      parentRoute: typeof AuthenticatedExperiencesRoute
+    }
+    '/_authenticated/experiences/new': {
+      id: '/_authenticated/experiences/new'
+      path: '/new'
+      fullPath: '/experiences/new'
+      preLoaderRoute: typeof AuthenticatedExperiencesNewRouteImport
+      parentRoute: typeof AuthenticatedExperiencesRoute
+    }
+    '/_authenticated/parametres/utilisateurs': {
+      id: '/_authenticated/parametres/utilisateurs'
+      path: '/utilisateurs'
+      fullPath: '/parametres/utilisateurs'
+      preLoaderRoute: typeof AuthenticatedParametresUtilisateursRouteImport
+      parentRoute: typeof AuthenticatedParametresRoute
+    }
+    '/_authenticated/services/$id': {
+      id: '/_authenticated/services/$id'
+      path: '/$id'
+      fullPath: '/services/$id'
+      preLoaderRoute: typeof AuthenticatedServicesIdRouteImport
+      parentRoute: typeof AuthenticatedServicesRoute
+    }
+    '/_authenticated/services/new': {
+      id: '/_authenticated/services/new'
+      path: '/new'
+      fullPath: '/services/new'
+      preLoaderRoute: typeof AuthenticatedServicesNewRouteImport
+      parentRoute: typeof AuthenticatedServicesRoute
+    }
+    '/_authenticated/voyages/$id': {
+      id: '/_authenticated/voyages/$id'
+      path: '/$id'
+      fullPath: '/voyages/$id'
+      preLoaderRoute: typeof AuthenticatedVoyagesIdRouteImport
+      parentRoute: typeof AuthenticatedVoyagesRoute
+    }
+    '/_authenticated/voyages/new': {
+      id: '/_authenticated/voyages/new'
+      path: '/new'
+      fullPath: '/voyages/new'
+      preLoaderRoute: typeof AuthenticatedVoyagesNewRouteImport
+      parentRoute: typeof AuthenticatedVoyagesRoute
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/catalog': {
-      id: '/api/public/catalog'
-      path: '/api/public/catalog'
-      fullPath: '/api/public/catalog'
-      preLoaderRoute: typeof ApiPublicCatalogRouteImport
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/internal/process-lead': {
-      id: '/api/internal/process-lead'
-      path: '/api/internal/process-lead'
-      fullPath: '/api/internal/process-lead'
-      preLoaderRoute: typeof ApiInternalProcessLeadRouteImport
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/request-reset': {
+      id: '/api/auth/request-reset'
+      path: '/api/auth/request-reset'
+      fullPath: '/api/auth/request-reset'
+      preLoaderRoute: typeof ApiAuthRequestResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/reset-password': {
+      id: '/api/auth/reset-password'
+      path: '/api/auth/reset-password'
+      fullPath: '/api/auth/reset-password'
+      preLoaderRoute: typeof ApiAuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/signup': {
+      id: '/api/auth/signup'
+      path: '/api/auth/signup'
+      fullPath: '/api/auth/signup'
+      preLoaderRoute: typeof ApiAuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/db/query': {
+      id: '/api/db/query'
+      path: '/api/db/query'
+      fullPath: '/api/db/query'
+      preLoaderRoute: typeof ApiDbQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/db/rpc': {
+      id: '/api/db/rpc'
+      path: '/api/db/rpc'
+      fullPath: '/api/db/rpc'
+      preLoaderRoute: typeof ApiDbRpcRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/internal/catalog': {
@@ -670,103 +934,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInternalCatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/voyages/new': {
-      id: '/_authenticated/voyages/new'
-      path: '/new'
-      fullPath: '/voyages/new'
-      preLoaderRoute: typeof AuthenticatedVoyagesNewRouteImport
-      parentRoute: typeof AuthenticatedVoyagesRoute
+    '/api/internal/health': {
+      id: '/api/internal/health'
+      path: '/api/internal/health'
+      fullPath: '/api/internal/health'
+      preLoaderRoute: typeof ApiInternalHealthRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/voyages/$id': {
-      id: '/_authenticated/voyages/$id'
-      path: '/$id'
-      fullPath: '/voyages/$id'
-      preLoaderRoute: typeof AuthenticatedVoyagesIdRouteImport
-      parentRoute: typeof AuthenticatedVoyagesRoute
+    '/api/storage/file': {
+      id: '/api/storage/file'
+      path: '/api/storage/file'
+      fullPath: '/api/storage/file'
+      preLoaderRoute: typeof ApiStorageFileRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/services/new': {
-      id: '/_authenticated/services/new'
-      path: '/new'
-      fullPath: '/services/new'
-      preLoaderRoute: typeof AuthenticatedServicesNewRouteImport
-      parentRoute: typeof AuthenticatedServicesRoute
+    '/api/storage/signed-url': {
+      id: '/api/storage/signed-url'
+      path: '/api/storage/signed-url'
+      fullPath: '/api/storage/signed-url'
+      preLoaderRoute: typeof ApiStorageSignedUrlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/services/$id': {
-      id: '/_authenticated/services/$id'
-      path: '/$id'
-      fullPath: '/services/$id'
-      preLoaderRoute: typeof AuthenticatedServicesIdRouteImport
-      parentRoute: typeof AuthenticatedServicesRoute
+    '/api/storage/upload': {
+      id: '/api/storage/upload'
+      path: '/api/storage/upload'
+      fullPath: '/api/storage/upload'
+      preLoaderRoute: typeof ApiStorageUploadRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/parametres/utilisateurs': {
-      id: '/_authenticated/parametres/utilisateurs'
-      path: '/utilisateurs'
-      fullPath: '/parametres/utilisateurs'
-      preLoaderRoute: typeof AuthenticatedParametresUtilisateursRouteImport
-      parentRoute: typeof AuthenticatedParametresRoute
-    }
-    '/_authenticated/experiences/new': {
-      id: '/_authenticated/experiences/new'
-      path: '/new'
-      fullPath: '/experiences/new'
-      preLoaderRoute: typeof AuthenticatedExperiencesNewRouteImport
-      parentRoute: typeof AuthenticatedExperiencesRoute
-    }
-    '/_authenticated/experiences/$id': {
-      id: '/_authenticated/experiences/$id'
-      path: '/$id'
-      fullPath: '/experiences/$id'
-      preLoaderRoute: typeof AuthenticatedExperiencesIdRouteImport
-      parentRoute: typeof AuthenticatedExperiencesRoute
-    }
-    '/_authenticated/devis/new': {
-      id: '/_authenticated/devis/new'
-      path: '/new'
-      fullPath: '/devis/new'
-      preLoaderRoute: typeof AuthenticatedDevisNewRouteImport
-      parentRoute: typeof AuthenticatedDevisRoute
-    }
-    '/_authenticated/devis/$id': {
-      id: '/_authenticated/devis/$id'
-      path: '/$id'
-      fullPath: '/devis/$id'
-      preLoaderRoute: typeof AuthenticatedDevisIdRouteImport
-      parentRoute: typeof AuthenticatedDevisRoute
-    }
-    '/_authenticated/clients/$id': {
-      id: '/_authenticated/clients/$id'
-      path: '/$id'
-      fullPath: '/clients/$id'
-      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
-      parentRoute: typeof AuthenticatedClientsRoute
-    }
-    '/_authenticated/blog/new': {
-      id: '/_authenticated/blog/new'
-      path: '/new'
-      fullPath: '/blog/new'
-      preLoaderRoute: typeof AuthenticatedBlogNewRouteImport
-      parentRoute: typeof AuthenticatedBlogRoute
-    }
-    '/_authenticated/blog/$id': {
-      id: '/_authenticated/blog/$id'
-      path: '/$id'
-      fullPath: '/blog/$id'
-      preLoaderRoute: typeof AuthenticatedBlogIdRouteImport
-      parentRoute: typeof AuthenticatedBlogRoute
-    }
-    '/_authenticated/billetterie/new': {
-      id: '/_authenticated/billetterie/new'
-      path: '/new'
-      fullPath: '/billetterie/new'
-      preLoaderRoute: typeof AuthenticatedBilletterieNewRouteImport
-      parentRoute: typeof AuthenticatedBilletterieRoute
-    }
-    '/_authenticated/billetterie/$id': {
-      id: '/_authenticated/billetterie/$id'
-      path: '/$id'
-      fullPath: '/billetterie/$id'
-      preLoaderRoute: typeof AuthenticatedBilletterieIdRouteImport
-      parentRoute: typeof AuthenticatedBilletterieRoute
+    '/api/content/$contentId/workflow': {
+      id: '/api/content/$contentId/workflow'
+      path: '/api/content/$contentId/workflow'
+      fullPath: '/api/content/$contentId/workflow'
+      preLoaderRoute: typeof ApiContentContentIdWorkflowRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -928,10 +1129,20 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiAuthRequestResetRoute: ApiAuthRequestResetRoute,
+  ApiAuthResetPasswordRoute: ApiAuthResetPasswordRoute,
+  ApiAuthSignupRoute: ApiAuthSignupRoute,
+  ApiDbQueryRoute: ApiDbQueryRoute,
+  ApiDbRpcRoute: ApiDbRpcRoute,
   ApiInternalCatalogRoute: ApiInternalCatalogRoute,
-  ApiInternalProcessLeadRoute: ApiInternalProcessLeadRoute,
-  ApiPublicCatalogRoute: ApiPublicCatalogRoute,
-  ApiPublicLeadsRoute: ApiPublicLeadsRoute,
+  ApiInternalHealthRoute: ApiInternalHealthRoute,
+  ApiStorageFileRoute: ApiStorageFileRoute,
+  ApiStorageSignedUrlRoute: ApiStorageSignedUrlRoute,
+  ApiStorageUploadRoute: ApiStorageUploadRoute,
+  ApiContentContentIdWorkflowRoute: ApiContentContentIdWorkflowRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
