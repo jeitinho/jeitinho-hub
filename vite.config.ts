@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [
     viteTsconfigPaths(),
     tailwindcss(),
-    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    cloudflare({
+      configPath: "./wrangler.jsonc",
+      viteEnvironment: { name: "ssr" },
+    }),
     tanstackStart(),
     react(),
   ],
