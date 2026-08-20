@@ -14,6 +14,12 @@
       "database_id": "REPLACE_WITH_D1_DATABASE_ID"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "jeitinho-hub-media"
+    }
+  ],
   "vars": {
     "ENVIRONMENT": "production"
   },
