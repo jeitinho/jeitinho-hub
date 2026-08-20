@@ -4,7 +4,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* JEITINHO Platform — Design System */
+/*
+ * JEITINHO Platform — Design System
+ * Derived from the official JEITINHO Direction Artistique.
+ *
+ * Brand palette (source-of-truth):
+ *   Terracotta  #B15D36 — CTA principal, accents, logo "BR"
+ *   Crème       #F6F2E9 — fond dominant (~80% des surfaces)
+ *   Noir chaud  #221E1A — texte, bordures (jamais bleu marine, jamais noir pur)
+ *   Or pêche    #F7CA98 — accent rare
+ *   Blanc       #FFFFFF — texte sur photo sombre uniquement
+ *
+ * Typographie:
+ *   Display serif (H1/H2)  → Fraunces
+ *   Sans-serif géométrique → Inter (uppercase tracked pour boutons/nav)
+ */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -59,13 +73,17 @@
 
 :root {
   --radius: 0.5rem;
-  --terracotta: oklch(0.564 0.128 42.5);
+
+  /* Raw brand tokens */
+  --terracotta: oklch(0.564 0.128 42.5);       /* #B15D36 */
   --terracotta-hover: oklch(0.512 0.128 42.5);
-  --cream: oklch(0.962 0.014 85);
+  --cream: oklch(0.962 0.014 85);              /* #F6F2E9 */
   --cream-soft: oklch(0.98 0.008 85);
-  --ink: oklch(0.204 0.008 60);
+  --ink: oklch(0.204 0.008 60);                /* #221E1A warm charcoal */
   --ink-soft: oklch(0.38 0.008 60);
-  --peach: oklch(0.86 0.08 65);
+  --peach: oklch(0.86 0.08 65);                /* #F7CA98 */
+
+  /* Semantic tokens */
   --background: var(--cream);
   --foreground: var(--ink);
   --card: oklch(0.995 0.005 85);
@@ -90,6 +108,7 @@
   --chart-3: oklch(0.45 0.06 50);
   --chart-4: oklch(0.82 0.08 85);
   --chart-5: oklch(0.35 0.02 60);
+
   --sidebar: oklch(0.98 0.01 82);
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--terracotta);
@@ -125,24 +144,29 @@
   --sidebar-primary: var(--terracotta);
   --sidebar-primary-foreground: oklch(0.99 0.005 85);
   --sidebar-accent: oklch(0.26 0.01 60);
-  --sidebar-accent-foreground: var(--ink);
+  --sidebar-accent-foreground: oklch(0.95 0.01 85);
   --sidebar-border: oklch(0.3 0.008 60);
   --sidebar-ring: var(--terracotta);
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.01em;
   }
+
   .tracked {
     letter-spacing: 0.14em;
     text-transform: uppercase;
