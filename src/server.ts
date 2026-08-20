@@ -1,7 +1,17 @@
 import "./lib/error-capture";
 
+import type { D1Database } from "@cloudflare/workers-types";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+
+type CloudflareEnv = {
+  DB: D1Database;
+  ENVIRONMENT?: string;
+  SETUP_KEY?: string;
+  GITHUB_API_KEY?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM?: string;
+};
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -18,8 +28,6 @@ async function getServerEntry(): Promise<ServerEntry> {
   return serverEntryPromise;
 }
 
-// h3 swallows in-handler throws into a normal 500 Response with body
-// {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
 async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
   if (response.status < 500) return response;
   const contentType = response.headers.get("content-type") ?? "";
@@ -44,8 +52,16 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+declare global {
+  // Request-scoped code inside TanStack Start reads the immutable Worker bindings
+  // through this Worker-instance reference. The bindings are set immediately
+  // before each request is dispatched to the Start server entry.
+  var __CF_ENV__: CloudflareEnv | undefined;
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    globalThis.__CF_ENV__ = env as CloudflareEnv;
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
