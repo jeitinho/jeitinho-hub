@@ -24,6 +24,9 @@ jobs:
       - name: Regenerate lockfile
         run: bun install --lockfile-only
 
+      - name: Verify frozen lockfile
+        run: bun install --frozen-lockfile
+
       - name: Commit synchronized lockfile
         run: |
           if git diff --quiet -- bun.lock; then
