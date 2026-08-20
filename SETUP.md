@@ -1,16 +1,14 @@
-# SETUP — Développement local
+# SETUP — JEITINHO Hub Cloudflare
 
-Ce projet est **JEITINHO Hub**, construit sur TanStack Start v1 + React 19 + Vite 7 + Tailwind v4, avec **le projet Supabase JEITINHO comme unique backend**.
+JEITINHO Hub runs on Cloudflare Workers with D1 and R2. There is no Supabase or Lovable runtime dependency.
 
-## 1. Prérequis
+## 1. Prerequisites
 
-- **Bun** ≥ 1.1 (le lockfile est `bun.lock`, `bunfig.toml` présent)
-- Node ≥ 20 (pour compatibilité outillage)
-- Accès au projet Supabase JEITINHO : `sxzdabtarlgozixcbzus` (`https://sxzdabtarlgozixcbzus.supabase.co`)
+- Bun >= 1.1
+- Node >= 20 for tooling compatibility
+- A Cloudflare account with permission to manage Workers, D1, R2 and secrets
 
-> ⚠️ **Le Hub ne doit utiliser aucun projet Supabase Lovable.** Toute l'authentification, la base de données, les données CRM, le catalogue, le stockage et les opérations serveur doivent utiliser exclusivement le projet `sxzdabtarlgozixcbzus`.
-
-## 2. Cloner et installer
+## 2. Install
 
 ```bash
 git clone <repo-url> jeitinho-hub
@@ -18,71 +16,62 @@ cd jeitinho-hub
 bun install
 ```
 
-## 3. Variables d'environnement
+## 3. Cloudflare resources
 
-Copier le template :
+Create:
+
+- D1 database: `jeitinho-hub`
+- R2 bucket: `jeitinho-hub-media`
+
+Put the D1 database ID in `wrangler.jsonc`.
+
+## 4. Secrets
+
+Set server-only secrets with Wrangler:
 
 ```bash
-cp .env.example .env
+npx wrangler secret put SETUP_KEY
+npx wrangler secret put GITHUB_API_KEY
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put RESEND_FROM
 ```
 
-Remplir avec les valeurs du projet Supabase JEITINHO :
+Only configure the optional integration secrets when the feature is enabled.
 
-| Variable | Valeur / source |
-|---|---|
-| `VITE_SUPABASE_URL` / `SUPABASE_URL` | `https://sxzdabtarlgozixcbzus.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | clé publishable du projet JEITINHO |
-| `VITE_SUPABASE_PROJECT_ID` / `SUPABASE_PROJECT_ID` | `sxzdabtarlgozixcbzus` |
-| `SUPABASE_SERVICE_ROLE_KEY` | clé service-role du projet JEITINHO, serveur uniquement |
-| `SETUP_KEY` | secret initial pour créer le premier admin via `/setup` |
-| `GITHUB_API_KEY` | publication blog vers `rio-uncovered` |
+## 5. Migrations
 
-Les formulaires publics de `jeitinho.fr` écrivent désormais directement dans le même Supabase via la RPC `capture_public_lead`. **Il n'existe plus de secret d'ingestion inter-app, ni d'endpoint HTTP de synchronisation des leads entre `jeitinho.fr` et le Manager.**
+Apply the D1 schema:
 
-> Les variables `VITE_*` sont exposées au navigateur. Toutes les autres sont **serveur uniquement**.
->
-> **Aucune variable `LOVABLE_*`, aucun endpoint Lovable et aucun Supabase Lovable ne doit être nécessaire au runtime.**
+```bash
+npx wrangler d1 migrations apply jeitinho-hub --remote
+```
 
-## 4. Lancer le dev server
+The source of truth is `migrations/`.
+
+## 6. First administrator
+
+Open `/auth` and create the first account, or use the protected setup flow with `SETUP_KEY`.
+
+The first account is `admin`. Subsequent signups are `pending_validation` until a manager/admin activates them.
+
+## 7. Development
 
 ```bash
 bun run dev
+bun run typecheck
+bun run build
 ```
 
-Vite écoute par défaut sur `http://localhost:8080`. Le routeur TanStack régénère `src/routeTree.gen.ts` à la volée — ne jamais l'éditer.
-
-## 5. Première connexion
-
-1. Ouvrir `http://localhost:8080/auth`
-2. Créer un compte (email + mot de passe)
-3. Si c'est le **premier utilisateur** de l'instance, il devient automatiquement admin (`handle_new_user` trigger)
-4. Sinon, le compte passe en `pending_validation` : un admin doit l'activer via `/parametres/utilisateurs`
-
-Pour bootstrapper un admin sur une base pré-existante : aller sur `/setup`, saisir email + `SETUP_KEY`.
-
-## 6. Base de données
-
-- Les migrations vivent dans `supabase/migrations/`
-- Le projet cible est **uniquement** `sxzdabtarlgozixcbzus`
-- Toute migration doit être appliquée et vérifiée sur ce projet Supabase
-- Ne jamais reconnecter le Hub à un projet Supabase Lovable ou à un ancien project ref
-- `capture_public_lead` est la frontière unique d'entrée des formulaires publics : elle crée/enrichit le lead, le prospect et la tâche CRM dans le même Supabase, avec scoring, priorité et valeur estimée.
-
-## 7. Commandes utiles
+## 8. Deployment
 
 ```bash
-bun run dev          # dev server
-bun run build        # build production
-bun run lint         # eslint
-bunx tsgo            # typecheck
+bun run build
+npx wrangler deploy
 ```
 
-## 8. Sécurité
+## 9. Security rules
 
-- `.env` n'est pas committé (`.env.local` est couvert par `*.local` dans `.gitignore` ; **ajouter `.env` manuellement** si vous en créez un contenant des secrets)
-- Ne jamais logger `SUPABASE_SERVICE_ROLE_KEY` ni `SETUP_KEY`
-- Les clés `VITE_*` publiables peuvent apparaître dans le bundle
-
-## 9. Publication blog vers `rio-uncovered`
-
-Le module Articles pousse les fichiers `.ts` générés vers `jeitinho/rio-uncovered@main` via le connecteur GitHub (`GITHUB_API_KEY`). Le déploiement Cloudflare Pages est déclenché automatiquement par ce push.
+- Never commit `.env`, API keys, or Cloudflare secrets.
+- Never expose D1 credentials to the browser.
+- Keep R2 media private and serve it through authenticated Worker routes.
+- Do not reintroduce Supabase or Lovable SDKs, environment variables, gateways or managed database calls.
