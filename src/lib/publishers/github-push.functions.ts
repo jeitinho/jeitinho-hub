@@ -1,61 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getBindings } from "@/lib/cloudflare-db";
 
 const API = "https://api.github.com";
-
-const InputSchema = z.object({
-  owner: z.string().min(1), repo: z.string().min(1), branch: z.string().min(1),
-  path: z.string().min(1), content: z.string(), message: z.string().min(1), allowUpdate: z.boolean().optional().default(false),
-});
-const DeleteSchema = z.object({ owner: z.string().min(1), repo: z.string().min(1), branch: z.string().min(1), path: z.string().min(1), message: z.string().min(1) });
-
-function b64(str: string): string {
-  const bytes = new TextEncoder().encode(str);
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
-}
-
-async function githubFetch(path: string, init: RequestInit = {}) {
-  const token = process.env.GITHUB_API_KEY;
-  if (!token) throw new Error("GITHUB_API_KEY manquant");
-  const headers = new Headers(init.headers);
-  headers.set("Accept", "application/vnd.github+json");
-  headers.set("Authorization", `Bearer ${token}`);
-  headers.set("X-GitHub-Api-Version", "2022-11-28");
-  if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-  return fetch(`${API}${path}`, { ...init, headers });
-}
-
-export const pushArticleToGithub = createServerFn({ method: "POST" })
-  .inputValidator((input) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
-    const filePath = `/repos/${data.owner}/${data.repo}/contents/${encodeURI(data.path)}`;
-    const check = await githubFetch(`${filePath}?ref=${encodeURIComponent(data.branch)}`);
-    let existingSha: string | undefined;
-    if (check.status === 200) {
-      const body = (await check.json()) as { sha?: string };
-      existingSha = body.sha;
-      if (!data.allowUpdate) return { ok: false as const, conflict: true as const, error: `Le fichier existe déjà sur ${data.branch}: ${data.path}.` };
-    } else if (check.status !== 404) return { ok: false as const, error: `GitHub lookup ${check.status}: ${await check.text()}` };
-
-    const put = await githubFetch(filePath, { method: "PUT", body: JSON.stringify({ message: data.message, content: b64(data.content), branch: data.branch, ...(existingSha ? { sha: existingSha } : {}) }) });
-    if (!put.ok) return { ok: false as const, error: `GitHub push ${put.status}: ${await put.text()}` };
-    const body = (await put.json()) as { content?: { html_url?: string; sha?: string; path?: string }; commit?: { sha?: string; html_url?: string } };
-    return { ok: true as const, updated: !!existingSha, commitUrl: body.commit?.html_url ?? null, commitSha: body.commit?.sha ?? null, fileUrl: body.content?.html_url ?? null, path: body.content?.path ?? data.path };
-  });
-
-export const deleteArticleFromGithub = createServerFn({ method: "POST" })
-  .inputValidator((input) => DeleteSchema.parse(input))
-  .handler(async ({ data }) => {
-    const filePath = `/repos/${data.owner}/${data.repo}/contents/${encodeURI(data.path)}`;
-    const check = await githubFetch(`${filePath}?ref=${encodeURIComponent(data.branch)}`);
-    if (check.status === 404) return { ok: true as const, alreadyGone: true as const, commitUrl: null, commitSha: null };
-    if (!check.ok) return { ok: false as const, error: `GitHub lookup ${check.status}: ${await check.text()}` };
-    const info = (await check.json()) as { sha?: string };
-    if (!info.sha) return { ok: false as const, error: "sha introuvable" };
-    const del = await githubFetch(filePath, { method: "DELETE", body: JSON.stringify({ message: data.message, branch: data.branch, sha: info.sha }) });
-    if (!del.ok) return { ok: false as const, error: `GitHub delete ${del.status}: ${await del.text()}` };
-    const body = (await del.json()) as { commit?: { sha?: string; html_url?: string } };
-    return { ok: true as const, alreadyGone: false as const, commitUrl: body.commit?.html_url ?? null, commitSha: body.commit?.sha ?? null };
-  });
+const InputSchema = z.object({ owner:z.string().min(1), repo:z.string().min(1), branch:z.string().min(1), path:z.string().min(1), content:z.string(), message:z.string().min(1), allowUpdate:z.boolean().optional().default(false) });
+const DeleteSchema = z.object({ owner:z.string().min(1), repo:z.string().min(1), branch:z.string().min(1), path:z.string().min(1), message:z.string().min(1) });
+function b64(str:string){const bytes=new TextEncoder().encode(str);let binary="";for(const byte of bytes) binary+=String.fromCharCode(byte);return btoa(binary)}
+async function githubFetch(path:string,init:RequestInit={}){const token=getBindings().GITHUB_API_KEY;if(!token)throw new Error("GITHUB_API_KEY manquant");const headers=new Headers(init.headers);headers.set("Accept","application/vnd.github+json");headers.set("Authorization",`Bearer ${token}`);headers.set("X-GitHub-Api-Version","2022-11-28");if(init.body&&!headers.has("Content-Type"))headers.set("Content-Type","application/json");return fetch(`${API}${path}`,{...init,headers})}
+export const pushArticleToGithub=createServerFn({method:"POST"}).inputValidator((input)=>InputSchema.parse(input)).handler(async({data})=>{const filePath=`/repos/${data.owner}/${data.repo}/contents/${encodeURI(data.path)}`;const check=await githubFetch(`${filePath}?ref=${encodeURIComponent(data.branch)}`);let existingSha:string|undefined;if(check.status===200){const body=await check.json() as {sha?:string};existingSha=body.sha;if(!data.allowUpdate)return {ok:false as const,conflict:true as const,error:`Le fichier existe déjà sur ${data.branch}: ${data.path}.`}}else if(check.status!==404)return {ok:false as const,error:`GitHub lookup ${check.status}: ${await check.text()}`};const put=await githubFetch(filePath,{method:"PUT",body:JSON.stringify({message:data.message,content:b64(data.content),branch:data.branch,...(existingSha?{sha:existingSha}:{})})});if(!put.ok)return {ok:false as const,error:`GitHub push ${put.status}: ${await put.text()}`};const body=await put.json() as {content?:{html_url?:string;sha?:string;path?:string};commit?:{sha?:string;html_url?:string}};return {ok:true as const,updated:!!existingSha,commitUrl:body.commit?.html_url??null,commitSha:body.commit?.sha??null,fileUrl:body.content?.html_url??null,path:body.content?.path??data.path}});
+export const deleteArticleFromGithub=createServerFn({method:"POST"}).inputValidator((input)=>DeleteSchema.parse(input)).handler(async({data})=>{const filePath=`/repos/${data.owner}/${data.repo}/contents/${encodeURI(data.path)}`;const check=await githubFetch(`${filePath}?ref=${encodeURIComponent(data.branch)}`);if(check.status===404)return {ok:true as const,alreadyGone:true as const,commitUrl:null,commitSha:null};if(!check.ok)return {ok:false as const,error:`GitHub lookup ${check.status}: ${await check.text()}`};const info=await check.json() as {sha?:string};if(!info.sha)return {ok:false as const,error:"sha introuvable"};const del=await githubFetch(filePath,{method:"DELETE",body:JSON.stringify({message:data.message,branch:data.branch,sha:info.sha})});if(!del.ok)return {ok:false as const,error:`GitHub delete ${del.status}: ${await del.text()}`};const body=await del.json() as {commit?:{sha?:string;html_url?:string}};return {ok:true as const,alreadyGone:false as const,commitUrl:body.commit?.html_url??null,commitSha:body.commit?.sha??null}});
