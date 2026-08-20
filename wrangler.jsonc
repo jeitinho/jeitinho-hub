@@ -3,7 +3,7 @@
   "name": "jeitinho-hub",
   "compatibility_date": "2026-08-20",
   "compatibility_flags": ["nodejs_compat_v2"],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "./dist/server/server.js",
   "assets": {
     "directory": "./dist/client"
   },
