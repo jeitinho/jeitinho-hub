@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { getBindings } from "@/lib/cloudflare-db";
-import { createSession, hashPassword, sessionCookie } from "@/lib/auth/cloudflare-auth";
+import { createPendingProfile, sessionCookie, signUp } from "@/lib/auth/supabase-auth";
 
 const SignupSchema = z.object({
   email: z.string().email(),
@@ -13,37 +12,22 @@ export const Route = createFileRoute("/api/auth/signup")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const body = await request.json().catch(() => null);
-        const parsed = SignupSchema.safeParse(body);
+        const parsed = SignupSchema.safeParse(await request.json().catch(() => null));
         if (!parsed.success) return Response.json({ ok: false, error: "Informations invalides." }, { status: 400 });
-        const { DB } = getBindings();
-        const email = parsed.data.email.toLowerCase();
-        const existing = await DB.prepare("SELECT id FROM users WHERE email = ? LIMIT 1").bind(email).first<{ id: string }>();
-        if (existing) return Response.json({ ok: false, error: "Un compte existe déjà avec cet email." }, { status: 409 });
-
-        const userId = crypto.randomUUID();
-        const now = new Date().toISOString();
-        const firstUser = await DB.prepare("SELECT COUNT(*) AS count FROM users").first<{ count: number }>();
-        const isFirstUser = Number(firstUser?.count ?? 0) === 0;
-        const status = isFirstUser ? "active" : "pending_validation";
-        const passwordHash = await hashPassword(parsed.data.password);
-
-        await DB.batch([
-          DB.prepare("INSERT INTO users (id,email,password_hash,full_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)")
-            .bind(userId, email, passwordHash, parsed.data.fullName, status, now, now),
-          DB.prepare("INSERT INTO profiles (id,email,full_name,status,created_at,updated_at) VALUES (?,?,?,?,?,?)")
-            .bind(userId, email, parsed.data.fullName, status, now, now),
-          DB.prepare("INSERT INTO user_roles (user_id,role,is_active,created_at) VALUES (?,?,1,?)")
-            .bind(userId, isFirstUser ? "admin" : "auteur", now),
-        ]);
-
-        if (!isFirstUser) return Response.json({ ok: true, active: false, message: "Compte créé. Un administrateur doit valider votre accès." });
-
-        const token = await createSession(DB, userId);
-        return new Response(JSON.stringify({ ok: true, active: true }), {
-          status: 200,
-          headers: { "content-type": "application/json", "set-cookie": sessionCookie(token, new URL(request.url).protocol === "https:") },
-        });
+        try {
+          const result = await signUp(parsed.data.email, parsed.data.password, parsed.data.fullName);
+          if (!result.user) return Response.json({ ok: false, error: "Création impossible." }, { status: 502 });
+          if (!result.access_token || !result.refresh_token) {
+            return Response.json({ ok: true, active: false, message: "Compte créé. Vérifiez votre email si nécessaire, puis un administrateur validera votre accès." });
+          }
+          await createPendingProfile(result.access_token, result.user, parsed.data.fullName);
+          return new Response(JSON.stringify({ ok: true, active: false, message: "Compte créé. Un administrateur doit valider votre accès." }), {
+            status: 200,
+            headers: { "content-type": "application/json", "set-cookie": sessionCookie({ access_token: result.access_token, refresh_token: result.refresh_token }) },
+          });
+        } catch (error) {
+          return Response.json({ ok: false, error: error instanceof Error ? error.message : "Création impossible." }, { status: 400 });
+        }
       },
     },
   },
