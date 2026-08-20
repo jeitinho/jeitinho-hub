@@ -14,7 +14,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - run: bun install --no-save --frozen-lockfile=false
+      - run: bun install --no-save
       - name: Reject legacy platform dependencies
         run: |
           set -e
