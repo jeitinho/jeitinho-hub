@@ -101,7 +101,7 @@ function AuthPage() {
               <form onSubmit={onSignup} className="space-y-4">
                 <div className="space-y-2"><Label htmlFor="name">Nom complet</Label><Input id="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
                 <div className="space-y-2"><Label htmlFor="email2">Email</Label><Input id="email2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                <div className="space-y-2"><Label htmlFor="password2">Mot de passe</Label><Input id="password2" type="password" required minLength={10} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="password2">Mot de passe</Label><Input id="password2" type="password" required minLength={10} value={password} onChange={(e) => setPassword(e.target.value)} /><p className="text-xs text-muted-foreground">10 caractères minimum.</p></div>
                 <Button type="submit" disabled={loading} className="btn-primary w-full">{loading ? "..." : "Créer mon compte"}</Button>
                 <p className="text-xs text-muted-foreground text-center">Les nouveaux comptes attendent une validation administrateur avant accès au Hub.</p>
               </form>

@@ -1,4 +1,5 @@
 import type { AuthUser, AppRole, AccountStatus } from "@/hooks/use-auth";
+import { env } from "cloudflare:workers";
 
 const SUPABASE_URL = "https://sxzdabtarlgozixcbzus.supabase.co";
 const SESSION_COOKIE = "jeitinho_supabase_session";
@@ -8,12 +9,23 @@ type SessionPayload = { access_token: string; refresh_token: string; expires_at?
 type SupabaseUser = { id: string; email?: string | null };
 
 function anonKey() {
-  const key = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+  const runtimeEnv = env as unknown as Record<string, string | undefined>;
+  const key = runtimeEnv.SUPABASE_ANON_KEY ?? (typeof process !== "undefined" ? process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY : undefined);
   if (!key) throw new Error("SUPABASE_ANON_KEY is not configured.");
   return key;
 }
 function headers(accessToken?: string) {
   return { apikey: anonKey(), Authorization: `Bearer ${accessToken ?? anonKey()}`, "Content-Type": "application/json" };
+}
+function serviceRoleKey() {
+  const runtimeEnv = env as unknown as Record<string, string | undefined>;
+  const key = runtimeEnv.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured.");
+  return key;
+}
+function serviceHeaders() {
+  const key = serviceRoleKey();
+  return { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
 }
 function encodeSession(session: SessionPayload) { return btoa(JSON.stringify(session)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", ""); }
 function decodeSession(value: string): SessionPayload | null {
@@ -54,7 +66,26 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
   if (!authUser && session.refresh_token) { const refreshed = await refreshSession(session.refresh_token); if (refreshed) { session = refreshed; authUser = await getSupabaseUser(session.access_token); } }
   if (!authUser?.id || !authUser.email) return null;
   const profiles = await rest<Array<{ id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean }>>(`profiles?id=eq.${encodeURIComponent(authUser.id)}&select=id,email,full_name,status,is_active&limit=1`, session.access_token);
-  const profile = profiles?.[0];
+  let profile = profiles?.[0];
+  if (profile?.status === "pending_validation") {
+    const adminRolesResponse = await fetch(`${SUPABASE_URL}/rest/v1/user_roles?role=eq.admin&select=user_id&limit=1`, { headers: serviceHeaders() });
+    const adminRoles = adminRolesResponse.ok ? await adminRolesResponse.json().catch(() => []) as Array<{ user_id: string }> : [];
+    if (adminRoles.length === 0) {
+      const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(authUser.id)}`, {
+        method: "PATCH",
+        headers: { ...serviceHeaders(), Prefer: "return=representation" },
+        body: JSON.stringify({ status: "active", is_active: true }),
+      });
+      if (updateResponse.ok) {
+        await fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
+          method: "POST",
+          headers: { ...serviceHeaders(), Prefer: "resolution=ignore-duplicates" },
+          body: JSON.stringify({ user_id: authUser.id, role: "admin" }),
+        });
+        profile = { ...profile, status: "active", is_active: true };
+      }
+    }
+  }
   if (!profile || !profile.is_active || profile.status !== "active") return null;
   const roles = await rest<Array<{ role: AppRole }>>(`user_roles?user_id=eq.${encodeURIComponent(authUser.id)}&select=role`, session.access_token);
   return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, status: profile.status, roles: (roles ?? []).map((row) => row.role) } };
@@ -62,7 +93,10 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
 export async function signUp(email: string, password: string, fullName: string) {
   const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, { method: "POST", headers: headers(), body: JSON.stringify({ email: email.toLowerCase(), password, data: { full_name: fullName } }) });
   const body = await response.json().catch(() => null);
-  if (!response.ok) { if (body?.msg?.toLowerCase?.().includes("already registered")) throw new Error("Un compte existe déjà avec cet email."); throw new Error(body?.msg ?? body?.message ?? "Création impossible."); }
+  if (!response.ok) {
+    if (body?.msg?.toLowerCase?.().includes("already registered")) throw new Error("Un compte existe déjà avec cet email.");
+    throw new Error(body?.msg ?? body?.message ?? body?.error_description ?? `Création impossible (Supabase ${response.status}).`);
+  }
   return body as { user?: SupabaseUser; access_token?: string; refresh_token?: string };
 }
 export async function createPendingProfile(accessToken: string, user: SupabaseUser, fullName: string) {

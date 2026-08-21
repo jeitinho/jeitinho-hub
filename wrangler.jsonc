@@ -11,7 +11,7 @@
     {
       "binding": "DB",
       "database_name": "jeitinho-hub",
-      "database_id": "00000000-0000-4000-8000-000000000000",
+      "database_id": "c363efd5-8b79-4d0f-b23c-1eb327ee1c0f",
       "migrations_dir": "migrations"
     }
   ],

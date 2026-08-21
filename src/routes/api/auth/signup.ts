@@ -4,7 +4,7 @@ import { createPendingProfile, sessionCookie, signUp } from "@/lib/auth/supabase
 
 const SignupSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(10),
+  password: z.string().min(10, "Le mot de passe doit contenir au moins 10 caractères."),
   fullName: z.string().trim().min(2).max(120),
 });
 
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/auth/signup")({
     handlers: {
       POST: async ({ request }) => {
         const parsed = SignupSchema.safeParse(await request.json().catch(() => null));
-        if (!parsed.success) return Response.json({ ok: false, error: "Informations invalides." }, { status: 400 });
+        if (!parsed.success) return Response.json({ ok: false, error: parsed.error.issues[0]?.message ?? "Informations invalides." }, { status: 400 });
         try {
           const result = await signUp(parsed.data.email, parsed.data.password, parsed.data.fullName);
           if (!result.user) return Response.json({ ok: false, error: "Création impossible." }, { status: 502 });
