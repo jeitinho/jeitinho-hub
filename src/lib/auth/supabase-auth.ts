@@ -1,32 +1,22 @@
 import type { AuthUser, AppRole, AccountStatus } from "@/hooks/use-auth";
-import { env } from "cloudflare:workers";
 
 const SUPABASE_URL = "https://sxzdabtarlgozixcbzus.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn";
 const SESSION_COOKIE = "jeitinho_supabase_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
 type SessionPayload = { access_token: string; refresh_token: string; expires_at?: number };
 type SupabaseUser = { id: string; email?: string | null };
+type HubProfile = { id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean };
 
-function anonKey() {
-  const runtimeEnv = env as unknown as Record<string, string | undefined>;
-  const key = runtimeEnv.SUPABASE_ANON_KEY ?? (typeof process !== "undefined" ? process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY : undefined);
-  if (!key) throw new Error("SUPABASE_ANON_KEY is not configured.");
-  return key;
+afunction headers(accessToken?: string) {
+  return {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    Authorization: `Bearer ${accessToken ?? SUPABASE_PUBLISHABLE_KEY}`,
+    "Content-Type": "application/json",
+  };
 }
-function headers(accessToken?: string) {
-  return { apikey: anonKey(), Authorization: `Bearer ${accessToken ?? anonKey()}`, "Content-Type": "application/json" };
-}
-function serviceRoleKey() {
-  const runtimeEnv = env as unknown as Record<string, string | undefined>;
-  const key = runtimeEnv.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured.");
-  return key;
-}
-function serviceHeaders() {
-  const key = serviceRoleKey();
-  return { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
-}
+
 function encodeSession(session: SessionPayload) { return btoa(JSON.stringify(session)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", ""); }
 function decodeSession(value: string): SessionPayload | null {
   try { const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "==="; return JSON.parse(atob(padded.slice(0, Math.ceil(padded.length / 4) * 4))) as SessionPayload; } catch { return null; }
@@ -55,9 +45,15 @@ async function getSupabaseUser(accessToken: string): Promise<SupabaseUser | null
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: headers(accessToken) });
   return response.ok ? await response.json().catch(() => null) as SupabaseUser | null : null;
 }
-async function serviceRest<T>(path: string): Promise<T | null> {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: { ...serviceHeaders(), Prefer: "return=representation" } });
-  return response.ok ? await response.json().catch(() => null) as T | null : null;
+async function getHubProfile(accessToken: string): Promise<{ profile: HubProfile | null; roles: AppRole[] }> {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_current_hub_user`, {
+    method: "POST",
+    headers: headers(accessToken),
+    body: "{}",
+  });
+  if (!response.ok) throw new Error(`Profil Hub indisponible (${response.status}).`);
+  const body = await response.json().catch(() => null) as { profile?: HubProfile | null; roles?: AppRole[] } | null;
+  return { profile: body?.profile ?? null, roles: body?.roles ?? [] };
 }
 export async function getCurrentUser(request: Request): Promise<{ user: AuthUser; session: SessionPayload } | null> {
   let session = getSession(request);
@@ -66,33 +62,9 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
   if (!authUser && session.refresh_token) { const refreshed = await refreshSession(session.refresh_token); if (refreshed) { session = refreshed; authUser = await getSupabaseUser(session.access_token); } }
   if (!authUser?.id || !authUser.email) return null;
 
-  // IMPORTANT: Auth identity is verified above. Profile/roles are read server-side
-  // with the service role so restrictive RLS policies can never turn an active user
-  // into a false "Votre compte n'est pas encore actif" response.
-  const profiles = await serviceRest<Array<{ id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean }>>(`profiles?id=eq.${encodeURIComponent(authUser.id)}&select=id,email,full_name,status,is_active&limit=1`);
-  let profile = profiles?.[0];
-  if (profile?.status === "pending_validation") {
-    const adminRoles = await serviceRest<Array<{ user_id: string }>>(`user_roles?role=eq.admin&select=user_id&limit=1`) ?? [];
-    const currentUserIsAdmin = adminRoles.some((role) => role.user_id === authUser.id);
-    if (adminRoles.length === 0 || currentUserIsAdmin) {
-      const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(authUser.id)}`, {
-        method: "PATCH",
-        headers: { ...serviceHeaders(), Prefer: "return=representation" },
-        body: JSON.stringify({ status: "active", is_active: true }),
-      });
-      if (updateResponse.ok) {
-        await fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
-          method: "POST",
-          headers: { ...serviceHeaders(), Prefer: "resolution=ignore-duplicates" },
-          body: JSON.stringify({ user_id: authUser.id, role: "admin" }),
-        });
-        profile = { ...profile, status: "active", is_active: true };
-      }
-    }
-  }
+  const { profile, roles } = await getHubProfile(session.access_token);
   if (!profile || !profile.is_active || profile.status !== "active") return null;
-  const roles = await serviceRest<Array<{ role: AppRole }>>(`user_roles?user_id=eq.${encodeURIComponent(authUser.id)}&select=role`);
-  return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, status: profile.status, roles: (roles ?? []).map((row) => row.role) } };
+  return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, status: profile.status, roles } };
 }
 export async function signUp(email: string, password: string, fullName: string) {
   const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, { method: "POST", headers: headers(), body: JSON.stringify({ email: email.toLowerCase(), password, data: { full_name: fullName } }) });
