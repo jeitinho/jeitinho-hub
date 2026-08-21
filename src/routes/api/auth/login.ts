@@ -14,7 +14,12 @@ export const Route = createFileRoute("/api/auth/login")({
         try {
           const session = await signIn(parsed.data.email, parsed.data.password);
           const current = await getCurrentUser(new Request(request.url, { headers: { Cookie: sessionCookie(session) } }));
-          if (!current) return Response.json({ ok: false, error: "Votre compte n'est pas encore actif." }, { status: 403 });
+          if (!current) {
+            return Response.json({
+              ok: false,
+              error: "Profil Hub introuvable ou inactif après authentification Supabase.",
+            }, { status: 403 });
+          }
           return new Response(JSON.stringify({ ok: true, user: current.user }), {
             status: 200,
             headers: { "content-type": "application/json", "set-cookie": sessionCookie(session) },
