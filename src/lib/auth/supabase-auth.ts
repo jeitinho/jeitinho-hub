@@ -10,13 +10,8 @@ type SupabaseUser = { id: string; email?: string | null };
 type HubProfile = { id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean };
 
 function headers(accessToken?: string) {
-  return {
-    apikey: SUPABASE_PUBLISHABLE_KEY,
-    Authorization: `Bearer ${accessToken ?? SUPABASE_PUBLISHABLE_KEY}`,
-    "Content-Type": "application/json",
-  };
+  return { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${accessToken ?? SUPABASE_PUBLISHABLE_KEY}`, "Content-Type": "application/json" };
 }
-
 function encodeSession(session: SessionPayload) { return btoa(JSON.stringify(session)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", ""); }
 function decodeSession(value: string): SessionPayload | null {
   try { const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "==="; return JSON.parse(atob(padded.slice(0, Math.ceil(padded.length / 4) * 4))) as SessionPayload; } catch { return null; }
@@ -45,11 +40,11 @@ async function getSupabaseUser(accessToken: string): Promise<SupabaseUser | null
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: headers(accessToken) });
   return response.ok ? await response.json().catch(() => null) as SupabaseUser | null : null;
 }
-async function getHubProfile(accessToken: string): Promise<{ profile: HubProfile | null; roles: AppRole[] }> {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_current_hub_user`, {
+async function getHubProfile(accessToken: string, userId: string): Promise<{ profile: HubProfile | null; roles: AppRole[] }> {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_hub_user_by_auth_uid`, {
     method: "POST",
     headers: headers(accessToken),
-    body: "{}",
+    body: JSON.stringify({ _user_id: userId }),
   });
   if (!response.ok) throw new Error(`Profil Hub indisponible (${response.status}).`);
   const body = await response.json().catch(() => null) as { profile?: HubProfile | null; roles?: AppRole[] } | null;
@@ -61,8 +56,7 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
   let authUser = await getSupabaseUser(session.access_token);
   if (!authUser && session.refresh_token) { const refreshed = await refreshSession(session.refresh_token); if (refreshed) { session = refreshed; authUser = await getSupabaseUser(session.access_token); } }
   if (!authUser?.id || !authUser.email) return null;
-
-  const { profile, roles } = await getHubProfile(session.access_token);
+  const { profile, roles } = await getHubProfile(session.access_token, authUser.id);
   if (!profile || !profile.is_active || profile.status !== "active") return null;
   return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, status: profile.status, roles } };
 }
