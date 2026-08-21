@@ -55,10 +55,6 @@ async function getSupabaseUser(accessToken: string): Promise<SupabaseUser | null
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: headers(accessToken) });
   return response.ok ? await response.json().catch(() => null) as SupabaseUser | null : null;
 }
-async function rest<T>(path: string, accessToken: string): Promise<T | null> {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: { ...headers(accessToken), Prefer: "return=representation" } });
-  return response.ok ? await response.json().catch(() => null) as T | null : null;
-}
 async function serviceRest<T>(path: string): Promise<T | null> {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: { ...serviceHeaders(), Prefer: "return=representation" } });
   return response.ok ? await response.json().catch(() => null) as T | null : null;
@@ -70,10 +66,9 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
   if (!authUser && session.refresh_token) { const refreshed = await refreshSession(session.refresh_token); if (refreshed) { session = refreshed; authUser = await getSupabaseUser(session.access_token); } }
   if (!authUser?.id || !authUser.email) return null;
 
-  // Server-side authorization must not depend on the caller's RLS visibility.
-  // The authenticated user is already verified by Supabase Auth above, so read
-  // the Hub profile and roles with the service role to avoid false "inactive"
-  // results when profile RLS is restrictive.
+  // IMPORTANT: Auth identity is verified above. Profile/roles are read server-side
+  // with the service role so restrictive RLS policies can never turn an active user
+  // into a false "Votre compte n'est pas encore actif" response.
   const profiles = await serviceRest<Array<{ id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean }>>(`profiles?id=eq.${encodeURIComponent(authUser.id)}&select=id,email,full_name,status,is_active&limit=1`);
   let profile = profiles?.[0];
   if (profile?.status === "pending_validation") {
