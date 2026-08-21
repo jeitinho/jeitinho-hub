@@ -9,7 +9,7 @@ type SessionPayload = { access_token: string; refresh_token: string; expires_at?
 type SupabaseUser = { id: string; email?: string | null };
 type HubProfile = { id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean };
 
-afunction headers(accessToken?: string) {
+function headers(accessToken?: string) {
   return {
     apikey: SUPABASE_PUBLISHABLE_KEY,
     Authorization: `Bearer ${accessToken ?? SUPABASE_PUBLISHABLE_KEY}`,
