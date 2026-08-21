@@ -70,7 +70,8 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
   if (profile?.status === "pending_validation") {
     const adminRolesResponse = await fetch(`${SUPABASE_URL}/rest/v1/user_roles?role=eq.admin&select=user_id&limit=1`, { headers: serviceHeaders() });
     const adminRoles = adminRolesResponse.ok ? await adminRolesResponse.json().catch(() => []) as Array<{ user_id: string }> : [];
-    if (adminRoles.length === 0) {
+    const currentUserIsAdmin = adminRoles.some((role) => role.user_id === authUser.id);
+    if (adminRoles.length === 0 || currentUserIsAdmin) {
       const updateResponse = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(authUser.id)}`, {
         method: "PATCH",
         headers: { ...serviceHeaders(), Prefer: "return=representation" },
