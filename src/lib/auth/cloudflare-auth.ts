@@ -21,8 +21,9 @@ function base64url(bytes: Uint8Array) {
   return btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 function fromBase64url(value: string) {
-  const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "===";
-  const binary = atob(padded.slice(0, Math.ceil(padded.length / 4) * 4));
+  const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+  const padding = (4 - (normalized.length % 4)) % 4;
+  const binary = atob(normalized + "=".repeat(padding));
   return Uint8Array.from(binary, (c) => c.charCodeAt(0));
 }
 
