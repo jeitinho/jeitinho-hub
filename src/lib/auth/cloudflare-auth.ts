@@ -21,8 +21,9 @@ function base64url(bytes: Uint8Array) {
   return btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 function fromBase64url(value: string) {
-  const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "===";
-  const binary = atob(padded.slice(0, Math.ceil(padded.length / 4) * 4));
+  const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+  const padding = (4 - (normalized.length % 4)) % 4;
+  const binary = atob(normalized + "=".repeat(padding));
   return Uint8Array.from(binary, (c) => c.charCodeAt(0));
 }
 
@@ -104,4 +105,30 @@ export function canAccessModule(module: string, roles: AppRole[]) {
     calendrier: ["admin","manager","redacteur_chef","redacteur","auteur","guide"], analytics: ["admin","manager"], parametres: ["admin","manager"],
   };
   return (matrix[module] ?? []).some((role) => roles.includes(role));
+}
+
+const RESET_TTL_SECONDS = 60 * 60;
+
+export async function createPasswordResetToken(db: D1Database, userId: string) {
+  const rawToken = base64url(randomBytes(32));
+  const tokenHash = await sha256Hex(rawToken);
+  const now = Math.floor(Date.now() / 1000);
+  await db.prepare("INSERT INTO auth_password_resets (id,user_id,token_hash,expires_at,created_at) VALUES (?,?,?,?,?)")
+    .bind(crypto.randomUUID(), userId, tokenHash, now + RESET_TTL_SECONDS, now).run();
+  return rawToken;
+}
+
+export async function consumePasswordResetToken(db: D1Database, rawToken: string, newPassword: string) {
+  const tokenHash = await sha256Hex(rawToken);
+  const now = Math.floor(Date.now() / 1000);
+  const row = await db.prepare("SELECT id,user_id,expires_at,used_at FROM auth_password_resets WHERE token_hash = ? LIMIT 1")
+    .bind(tokenHash).first<{ id: string; user_id: string; expires_at: number; used_at: number | null }>();
+  if (!row || row.used_at !== null || row.expires_at <= now) return null;
+  const passwordHash = await hashPassword(newPassword);
+  await db.batch([
+    db.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?").bind(passwordHash, now, row.user_id),
+    db.prepare("UPDATE auth_password_resets SET used_at = ? WHERE id = ?").bind(now, row.id),
+    db.prepare("UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL").bind(now, row.user_id),
+  ]);
+  return { userId: row.user_id };
 }
