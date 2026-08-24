@@ -43,6 +43,9 @@ import { Route as AuthenticatedServicesIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedServicesNewRouteImport } from './routes/_authenticated/services.new'
 import { Route as AuthenticatedVoyagesIdRouteImport } from './routes/_authenticated/voyages.$id'
 import { Route as AuthenticatedVoyagesNewRouteImport } from './routes/_authenticated/voyages.new'
+import { Route as ApiAuthDiagnosticsRouteImport } from './routes/api/auth/diagnostics'
+import { Route as ApiAuthDiagnosticsLoginRouteImport } from './routes/api/auth/diagnostics-login'
+import { Route as ApiAuthDiagnosticsLogoRouteImport } from './routes/api/auth/diagnostics-logo'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
@@ -237,6 +240,21 @@ const AuthenticatedVoyagesNewRoute = AuthenticatedVoyagesNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthenticatedVoyagesRoute,
 } as any)
+const ApiAuthDiagnosticsRoute = ApiAuthDiagnosticsRouteImport.update({
+  id: '/api/auth/diagnostics',
+  path: '/api/auth/diagnostics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthDiagnosticsLoginRoute = ApiAuthDiagnosticsLoginRouteImport.update({
+  id: '/api/auth/diagnostics-login',
+  path: '/api/auth/diagnostics-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthDiagnosticsLogoRoute = ApiAuthDiagnosticsLogoRouteImport.update({
+  id: '/api/auth/diagnostics-logo',
+  path: '/api/auth/diagnostics-logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
   id: '/api/auth/login',
   path: '/api/auth/login',
@@ -343,6 +361,9 @@ export interface FileRoutesByFullPath {
   '/services/new': typeof AuthenticatedServicesNewRoute
   '/voyages/$id': typeof AuthenticatedVoyagesIdRoute
   '/voyages/new': typeof AuthenticatedVoyagesNewRoute
+  '/api/auth/diagnostics': typeof ApiAuthDiagnosticsRoute
+  '/api/auth/diagnostics-login': typeof ApiAuthDiagnosticsLoginRoute
+  '/api/auth/diagnostics-logo': typeof ApiAuthDiagnosticsLogoRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
@@ -392,6 +413,9 @@ export interface FileRoutesByTo {
   '/services/new': typeof AuthenticatedServicesNewRoute
   '/voyages/$id': typeof AuthenticatedVoyagesIdRoute
   '/voyages/new': typeof AuthenticatedVoyagesNewRoute
+  '/api/auth/diagnostics': typeof ApiAuthDiagnosticsRoute
+  '/api/auth/diagnostics-login': typeof ApiAuthDiagnosticsLoginRoute
+  '/api/auth/diagnostics-logo': typeof ApiAuthDiagnosticsLogoRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
@@ -443,6 +467,9 @@ export interface FileRoutesById {
   '/_authenticated/services/new': typeof AuthenticatedServicesNewRoute
   '/_authenticated/voyages/$id': typeof AuthenticatedVoyagesIdRoute
   '/_authenticated/voyages/new': typeof AuthenticatedVoyagesNewRoute
+  '/api/auth/diagnostics': typeof ApiAuthDiagnosticsRoute
+  '/api/auth/diagnostics-login': typeof ApiAuthDiagnosticsLoginRoute
+  '/api/auth/diagnostics-logo': typeof ApiAuthDiagnosticsLogoRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
@@ -494,6 +521,9 @@ export interface FileRouteTypes {
     | '/services/new'
     | '/voyages/$id'
     | '/voyages/new'
+    | '/api/auth/diagnostics'
+    | '/api/auth/diagnostics-login'
+    | '/api/auth/diagnostics-logo'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -543,6 +573,9 @@ export interface FileRouteTypes {
     | '/services/new'
     | '/voyages/$id'
     | '/voyages/new'
+    | '/api/auth/diagnostics'
+    | '/api/auth/diagnostics-login'
+    | '/api/auth/diagnostics-logo'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -593,6 +626,9 @@ export interface FileRouteTypes {
     | '/_authenticated/services/new'
     | '/_authenticated/voyages/$id'
     | '/_authenticated/voyages/new'
+    | '/api/auth/diagnostics'
+    | '/api/auth/diagnostics-login'
+    | '/api/auth/diagnostics-logo'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -615,6 +651,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiAuthDiagnosticsRoute: typeof ApiAuthDiagnosticsRoute
+  ApiAuthDiagnosticsLoginRoute: typeof ApiAuthDiagnosticsLoginRoute
+  ApiAuthDiagnosticsLogoRoute: typeof ApiAuthDiagnosticsLogoRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
@@ -870,6 +909,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/voyages/new'
       preLoaderRoute: typeof AuthenticatedVoyagesNewRouteImport
       parentRoute: typeof AuthenticatedVoyagesRoute
+    }
+    '/api/auth/diagnostics': {
+      id: '/api/auth/diagnostics'
+      path: '/api/auth/diagnostics'
+      fullPath: '/api/auth/diagnostics'
+      preLoaderRoute: typeof ApiAuthDiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/diagnostics-login': {
+      id: '/api/auth/diagnostics-login'
+      path: '/api/auth/diagnostics-login'
+      fullPath: '/api/auth/diagnostics-login'
+      preLoaderRoute: typeof ApiAuthDiagnosticsLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/diagnostics-logo': {
+      id: '/api/auth/diagnostics-logo'
+      path: '/api/auth/diagnostics-logo'
+      fullPath: '/api/auth/diagnostics-logo'
+      preLoaderRoute: typeof ApiAuthDiagnosticsLogoRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/login': {
       id: '/api/auth/login'
@@ -1129,6 +1189,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiAuthDiagnosticsRoute: ApiAuthDiagnosticsRoute,
+  ApiAuthDiagnosticsLoginRoute: ApiAuthDiagnosticsLoginRoute,
+  ApiAuthDiagnosticsLogoRoute: ApiAuthDiagnosticsLogoRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
