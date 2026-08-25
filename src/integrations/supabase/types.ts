@@ -1,0 +1,2078 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      access_codes: {
+        Row: {
+          access_count: number
+          code_hash: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          label: string | null
+          last_access_at: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          access_count?: number
+          code_hash: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          last_access_at?: string | null
+          status?: string
+          type?: string
+        }
+        Update: {
+          access_count?: number
+          code_hash?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          last_access_at?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: number
+          payload: Json | null
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: number
+          payload?: Json | null
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: number
+          payload?: Json | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          amount_due: number
+          created_at: string
+          email: string
+          id: string
+          items: Json
+          nb_travelers: number
+          nom: string
+          payment_method: string
+          payment_mode: string
+          prenom: string
+          reference: string
+          status: string
+          subtotal: number
+          telephone: string
+          travelers: Json
+          updated_at: string
+        }
+        Insert: {
+          amount_due?: number
+          created_at?: string
+          email: string
+          id?: string
+          items?: Json
+          nb_travelers?: number
+          nom: string
+          payment_method: string
+          payment_mode: string
+          prenom: string
+          reference: string
+          status?: string
+          subtotal?: number
+          telephone: string
+          travelers?: Json
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          created_at?: string
+          email?: string
+          id?: string
+          items?: Json
+          nb_travelers?: number
+          nom?: string
+          payment_method?: string
+          payment_mode?: string
+          prenom?: string
+          reference?: string
+          status?: string
+          subtotal?: number
+          telephone?: string
+          travelers?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_events: {
+        Row: {
+          all_day: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          kind: string
+          location: string | null
+          related_content_id: string | null
+          related_trip_id: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          related_content_id?: string | null
+          related_trip_id?: string | null
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          location?: string | null
+          related_content_id?: string | null
+          related_trip_id?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_related_trip_id_fkey"
+            columns: ["related_trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapters: {
+        Row: {
+          cover_media: string | null
+          created_at: string
+          id: string
+          intro: string | null
+          number: string
+          position: number
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_media?: string | null
+          created_at?: string
+          id?: string
+          intro?: string | null
+          number: string
+          position: number
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_media?: string | null
+          created_at?: string
+          id?: string
+          intro?: string | null
+          number?: string
+          position?: number
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          last_contact_at: string | null
+          notes: string | null
+          phone: string | null
+          source: string | null
+          stage: string
+          status: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          last_contact_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          stage?: string
+          status?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          last_contact_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          stage?: string
+          status?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_tasks: {
+        Row: {
+          channel: string
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          due_at: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          kind: string
+          lead_id: string | null
+          message_draft: string | null
+          prospect_id: string | null
+          quote_id: string | null
+          stage: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          message_draft?: string | null
+          prospect_id?: string | null
+          quote_id?: string | null
+          stage?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string | null
+          message_draft?: string | null
+          prospect_id?: string | null
+          quote_id?: string | null
+          stage?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devis_nordeste: {
+        Row: {
+          activites: string[] | null
+          budget_personne: string | null
+          created_at: string | null
+          date_depart: string | null
+          duree: string | null
+          email: string
+          id: string
+          message: string | null
+          nb_voyageurs: number
+          niveau_confort: string | null
+          nom: string
+          notes_internes: string | null
+          prenom: string
+          statut: string | null
+          telephone: string
+          type_vehicule: string | null
+          villes_souhaitees: string[] | null
+        }
+        Insert: {
+          activites?: string[] | null
+          budget_personne?: string | null
+          created_at?: string | null
+          date_depart?: string | null
+          duree?: string | null
+          email: string
+          id?: string
+          message?: string | null
+          nb_voyageurs?: number
+          niveau_confort?: string | null
+          nom: string
+          notes_internes?: string | null
+          prenom: string
+          statut?: string | null
+          telephone: string
+          type_vehicule?: string | null
+          villes_souhaitees?: string[] | null
+        }
+        Update: {
+          activites?: string[] | null
+          budget_personne?: string | null
+          created_at?: string | null
+          date_depart?: string | null
+          duree?: string | null
+          email?: string
+          id?: string
+          message?: string | null
+          nb_voyageurs?: number
+          niveau_confort?: string | null
+          nom?: string
+          notes_internes?: string | null
+          prenom?: string
+          statut?: string | null
+          telephone?: string
+          type_vehicule?: string | null
+          villes_souhaitees?: string[] | null
+        }
+        Relationships: []
+      }
+      email_send_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          idempotency_key: string | null
+          message_id: string | null
+          metadata: Json
+          recipient_email: string
+          status: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          message_id?: string | null
+          metadata?: Json
+          recipient_email: string
+          status: string
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          message_id?: string | null
+          metadata?: Json
+          recipient_email?: string
+          status?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_unsubscribe_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          token: string
+          updated_at: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          token: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          token?: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      experiences: {
+        Row: {
+          category: string | null
+          city: string | null
+          commission_basis: string
+          commission_pct: number | null
+          conditions: Json
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          duration: string | null
+          exclusions: Json
+          experience_type: string | null
+          faq: Json
+          fixed_cost: number | null
+          gallery: Json
+          id: string
+          inclusions: Json
+          is_excursion: boolean
+          is_published: boolean
+          level: string | null
+          location: string | null
+          max_group_size: number | null
+          min_age: number | null
+          neighborhood: string | null
+          partner_id: string | null
+          price_from: number | null
+          price_model: string
+          requires_driver: boolean
+          seo_description: string | null
+          seo_title: string | null
+          short_description: string | null
+          slug: string
+          supplier_cost: number | null
+          supplier_net: number | null
+          tags: string[]
+          title: string
+          updated_at: string
+          videos: Json
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          commission_basis?: string
+          commission_pct?: number | null
+          conditions?: Json
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          duration?: string | null
+          exclusions?: Json
+          experience_type?: string | null
+          faq?: Json
+          fixed_cost?: number | null
+          gallery?: Json
+          id?: string
+          inclusions?: Json
+          is_excursion?: boolean
+          is_published?: boolean
+          level?: string | null
+          location?: string | null
+          max_group_size?: number | null
+          min_age?: number | null
+          neighborhood?: string | null
+          partner_id?: string | null
+          price_from?: number | null
+          price_model?: string
+          requires_driver?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string | null
+          slug: string
+          supplier_cost?: number | null
+          supplier_net?: number | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          videos?: Json
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          commission_basis?: string
+          commission_pct?: number | null
+          conditions?: Json
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          duration?: string | null
+          exclusions?: Json
+          experience_type?: string | null
+          faq?: Json
+          fixed_cost?: number | null
+          gallery?: Json
+          id?: string
+          inclusions?: Json
+          is_excursion?: boolean
+          is_published?: boolean
+          level?: string | null
+          location?: string | null
+          max_group_size?: number | null
+          min_age?: number | null
+          neighborhood?: string | null
+          partner_id?: string | null
+          price_from?: number | null
+          price_model?: string
+          requires_driver?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string | null
+          slug?: string
+          supplier_cost?: number | null
+          supplier_net?: number | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          videos?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiences_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          activities: string[]
+          assigned_to: string | null
+          campaign: string | null
+          created_at: string
+          email: string | null
+          estimated_value: number | null
+          external_ref: string | null
+          id: string
+          last_contact_at: string | null
+          message: string | null
+          name: string | null
+          next_action: string | null
+          next_action_at: string | null
+          party_size: number | null
+          phone: string | null
+          pipeline_stage: string
+          priority: string
+          processed_at: string | null
+          prospect_id: string | null
+          raw_payload: Json
+          received_at: string
+          request_type: string | null
+          score: number
+          score_breakdown: Json
+          source: string
+          status: Database["public"]["Enums"]["lead_status"]
+          travel_end: string | null
+          travel_start: string | null
+          updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          activities?: string[]
+          assigned_to?: string | null
+          campaign?: string | null
+          created_at?: string
+          email?: string | null
+          estimated_value?: number | null
+          external_ref?: string | null
+          id?: string
+          last_contact_at?: string | null
+          message?: string | null
+          name?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
+          party_size?: number | null
+          phone?: string | null
+          pipeline_stage?: string
+          priority?: string
+          processed_at?: string | null
+          prospect_id?: string | null
+          raw_payload?: Json
+          received_at?: string
+          request_type?: string | null
+          score?: number
+          score_breakdown?: Json
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          activities?: string[]
+          assigned_to?: string | null
+          campaign?: string | null
+          created_at?: string
+          email?: string | null
+          estimated_value?: number | null
+          external_ref?: string | null
+          id?: string
+          last_contact_at?: string | null
+          message?: string | null
+          name?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
+          party_size?: number | null
+          phone?: string | null
+          pipeline_stage?: string
+          priority?: string
+          processed_at?: string | null
+          prospect_id?: string | null
+          raw_payload?: Json
+          received_at?: string
+          request_type?: string | null
+          score?: number
+          score_breakdown?: Json
+          source?: string
+          status?: Database["public"]["Enums"]["lead_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manual_sections_backup_20260819: {
+        Row: {
+          blocks: Json | null
+          chapter_slug: string | null
+          created_at: string | null
+          id: string | null
+          kicker: string | null
+          position: number | null
+          search_text: string | null
+          slug: string | null
+          subtitle: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          blocks?: Json | null
+          chapter_slug?: string | null
+          created_at?: string | null
+          id?: string | null
+          kicker?: string | null
+          position?: number | null
+          search_text?: string | null
+          slug?: string | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          blocks?: Json | null
+          chapter_slug?: string | null
+          created_at?: string | null
+          id?: string | null
+          kicker?: string | null
+          position?: number | null
+          search_text?: string | null
+          slug?: string | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      manual_sessions: {
+        Row: {
+          code_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          last_chapter: string | null
+          last_section: string | null
+          last_seen_at: string
+          scope: string
+          token_hash: string
+        }
+        Insert: {
+          code_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_chapter?: string | null
+          last_section?: string | null
+          last_seen_at?: string
+          scope?: string
+          token_hash: string
+        }
+        Update: {
+          code_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_chapter?: string | null
+          last_section?: string | null
+          last_seen_at?: string
+          scope?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_sessions_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "access_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manual_visual_assets: {
+        Row: {
+          alt: string | null
+          asset_key: string
+          category: string
+          created_at: string
+          id: string
+          page_slug: string | null
+          position: number | null
+          required: boolean
+          source: string | null
+          status: string
+          type: string | null
+          updated_at: string
+          url: string | null
+          variant: string | null
+        }
+        Insert: {
+          alt?: string | null
+          asset_key: string
+          category: string
+          created_at?: string
+          id?: string
+          page_slug?: string | null
+          position?: number | null
+          required?: boolean
+          source?: string | null
+          status?: string
+          type?: string | null
+          updated_at?: string
+          url?: string | null
+          variant?: string | null
+        }
+        Update: {
+          alt?: string | null
+          asset_key?: string
+          category?: string
+          created_at?: string
+          id?: string
+          page_slug?: string | null
+          position?: number | null
+          required?: boolean
+          source?: string | null
+          status?: string
+          type?: string | null
+          updated_at?: string
+          url?: string | null
+          variant?: string | null
+        }
+        Relationships: []
+      }
+      media: {
+        Row: {
+          alt: string | null
+          caption: string | null
+          copyright: string | null
+          created_at: string
+          drive_url: string | null
+          file_name: string
+          height: number | null
+          id: string
+          kind: string
+          mime_type: string | null
+          orientation: string | null
+          photographer: string | null
+          size_bytes: number | null
+          storage_path: string
+          tags: string[] | null
+          updated_at: string | null
+          uploaded_by: string | null
+          url: string
+          used_count: number
+          width: number | null
+        }
+        Insert: {
+          alt?: string | null
+          caption?: string | null
+          copyright?: string | null
+          created_at?: string
+          drive_url?: string | null
+          file_name: string
+          height?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          orientation?: string | null
+          photographer?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          tags?: string[] | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          url: string
+          used_count?: number
+          width?: number | null
+        }
+        Update: {
+          alt?: string | null
+          caption?: string | null
+          copyright?: string | null
+          created_at?: string
+          drive_url?: string | null
+          file_name?: string
+          height?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string | null
+          orientation?: string | null
+          photographer?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          url?: string
+          used_count?: number
+          width?: number | null
+        }
+        Relationships: []
+      }
+      media_assets: {
+        Row: {
+          alt: string | null
+          caption: string | null
+          chapter_slug: string | null
+          created_at: string
+          crop: Json | null
+          id: string
+          key: string
+          mobile_crop: Json | null
+          position: number | null
+          source: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          alt?: string | null
+          caption?: string | null
+          chapter_slug?: string | null
+          created_at?: string
+          crop?: Json | null
+          id?: string
+          key: string
+          mobile_crop?: Json | null
+          position?: number | null
+          source?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          alt?: string | null
+          caption?: string | null
+          chapter_slug?: string | null
+          created_at?: string
+          crop?: Json | null
+          id?: string
+          key?: string
+          mobile_crop?: Json | null
+          position?: number | null
+          source?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      partners: {
+        Row: {
+          category: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          location: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          is_active: boolean
+          last_seen_at: string | null
+          status: Database["public"]["Enums"]["account_status"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          status?: Database["public"]["Enums"]["account_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      prospects: {
+        Row: {
+          activities: string[]
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          estimated_value: number | null
+          id: string
+          last_contact_at: string | null
+          message: string | null
+          metadata: Json
+          name: string
+          next_action: string | null
+          next_action_at: string | null
+          notes: string | null
+          owner_id: string | null
+          party_size: number | null
+          phone: string | null
+          pipeline_stage: string
+          priority: string
+          score: number
+          source: string
+          status: Database["public"]["Enums"]["prospect_status"]
+          travel_end: string | null
+          travel_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          activities?: string[]
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          estimated_value?: number | null
+          id?: string
+          last_contact_at?: string | null
+          message?: string | null
+          metadata?: Json
+          name: string
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          party_size?: number | null
+          phone?: string | null
+          pipeline_stage?: string
+          priority?: string
+          score?: number
+          source?: string
+          status?: Database["public"]["Enums"]["prospect_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activities?: string[]
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          estimated_value?: number | null
+          id?: string
+          last_contact_at?: string | null
+          message?: string | null
+          metadata?: Json
+          name?: string
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          party_size?: number | null
+          phone?: string | null
+          pipeline_stage?: string
+          priority?: string
+          score?: number
+          source?: string
+          status?: Database["public"]["Enums"]["prospect_status"]
+          travel_end?: string | null
+          travel_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_lines: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string
+          details: Json
+          icon: string | null
+          id: string
+          label: string
+          position: number
+          quantity: number
+          quote_id: string
+          unit: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string
+          details?: Json
+          icon?: string | null
+          id?: string
+          label: string
+          position?: number
+          quantity?: number
+          quote_id: string
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string
+          details?: Json
+          icon?: string | null
+          id?: string
+          label?: string
+          position?: number
+          quantity?: number
+          quote_id?: string
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_lines_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quote_number_sequences: {
+        Row: {
+          next_number: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          next_number?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          next_number?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      quotes: {
+        Row: {
+          accepted_at: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          deposit_pct: number
+          description: string | null
+          equipment: Json
+          eyebrow: string | null
+          followup_anchor_at: string | null
+          followup_paused: boolean
+          followup_stage: number
+          highlights: Json
+          id: string
+          items: Json
+          itinerary: Json
+          last_contact_at: string | null
+          location: string | null
+          next_action: string | null
+          next_action_at: string | null
+          notes: string | null
+          number: string | null
+          paid_at: string | null
+          party_size: number | null
+          period_end: string | null
+          period_start: string | null
+          project_label: string | null
+          prospect_id: string | null
+          reference: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["quote_status"]
+          title: string
+          total_amount: number
+          updated_at: string
+          valid_until: string | null
+          validity_days: number
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deposit_pct?: number
+          description?: string | null
+          equipment?: Json
+          eyebrow?: string | null
+          followup_anchor_at?: string | null
+          followup_paused?: boolean
+          followup_stage?: number
+          highlights?: Json
+          id?: string
+          items?: Json
+          itinerary?: Json
+          last_contact_at?: string | null
+          location?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          number?: string | null
+          paid_at?: string | null
+          party_size?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          project_label?: string | null
+          prospect_id?: string | null
+          reference: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["quote_status"]
+          title: string
+          total_amount?: number
+          updated_at?: string
+          valid_until?: string | null
+          validity_days?: number
+        }
+        Update: {
+          accepted_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          deposit_pct?: number
+          description?: string | null
+          equipment?: Json
+          eyebrow?: string | null
+          followup_anchor_at?: string | null
+          followup_paused?: boolean
+          followup_stage?: number
+          highlights?: Json
+          id?: string
+          items?: Json
+          itinerary?: Json
+          last_contact_at?: string | null
+          location?: string | null
+          next_action?: string | null
+          next_action_at?: string | null
+          notes?: string | null
+          number?: string | null
+          paid_at?: string | null
+          party_size?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          project_label?: string | null
+          prospect_id?: string | null
+          reference?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["quote_status"]
+          title?: string
+          total_amount?: number
+          updated_at?: string
+          valid_until?: string | null
+          validity_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservations: {
+        Row: {
+          adresse_exacte: string | null
+          categorie: string | null
+          created_at: string | null
+          date_souhaitee: string | null
+          email: string
+          experience: string
+          heure: string | null
+          id: string
+          message: string | null
+          montant_paye: number | null
+          montant_total: number | null
+          nb_voyageurs: number
+          nom: string
+          notes_internes: string | null
+          prenom: string
+          quartier_pickup: string | null
+          statut: string | null
+          telephone: string
+        }
+        Insert: {
+          adresse_exacte?: string | null
+          categorie?: string | null
+          created_at?: string | null
+          date_souhaitee?: string | null
+          email: string
+          experience: string
+          heure?: string | null
+          id?: string
+          message?: string | null
+          montant_paye?: number | null
+          montant_total?: number | null
+          nb_voyageurs?: number
+          nom: string
+          notes_internes?: string | null
+          prenom: string
+          quartier_pickup?: string | null
+          statut?: string | null
+          telephone: string
+        }
+        Update: {
+          adresse_exacte?: string | null
+          categorie?: string | null
+          created_at?: string | null
+          date_souhaitee?: string | null
+          email?: string
+          experience?: string
+          heure?: string | null
+          id?: string
+          message?: string | null
+          montant_paye?: number | null
+          montant_total?: number | null
+          nb_voyageurs?: number
+          nom?: string
+          notes_internes?: string | null
+          prenom?: string
+          quartier_pickup?: string | null
+          statut?: string | null
+          telephone?: string
+        }
+        Relationships: []
+      }
+      roles: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          is_active: boolean
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sections: {
+        Row: {
+          blocks: Json
+          chapter_slug: string
+          created_at: string
+          id: string
+          kicker: string | null
+          position: number
+          search_text: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          blocks?: Json
+          chapter_slug: string
+          created_at?: string
+          id?: string
+          kicker?: string | null
+          position: number
+          search_text?: string | null
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          blocks?: Json
+          chapter_slug?: string
+          created_at?: string
+          id?: string
+          kicker?: string | null
+          position?: number
+          search_text?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sections_chapter_slug_fkey"
+            columns: ["chapter_slug"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          bookable: boolean
+          category: string | null
+          commission_basis: string
+          commission_pct: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          fixed_cost: number | null
+          group_slug: string | null
+          id: string
+          is_active: boolean
+          is_published: boolean
+          metadata: Json
+          partner_id: string | null
+          price_from: number | null
+          price_label: string | null
+          price_model: string
+          requires_driver: boolean
+          slug: string | null
+          supplier_cost: number | null
+          supplier_net: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bookable?: boolean
+          category?: string | null
+          commission_basis?: string
+          commission_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          fixed_cost?: number | null
+          group_slug?: string | null
+          id?: string
+          is_active?: boolean
+          is_published?: boolean
+          metadata?: Json
+          partner_id?: string | null
+          price_from?: number | null
+          price_label?: string | null
+          price_model?: string
+          requires_driver?: boolean
+          slug?: string | null
+          supplier_cost?: number | null
+          supplier_net?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bookable?: boolean
+          category?: string | null
+          commission_basis?: string
+          commission_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          fixed_cost?: number | null
+          group_slug?: string | null
+          id?: string
+          is_active?: boolean
+          is_published?: boolean
+          metadata?: Json
+          partner_id?: string | null
+          price_from?: number | null
+          price_label?: string | null
+          price_model?: string
+          requires_driver?: boolean
+          slug?: string | null
+          supplier_cost?: number | null
+          supplier_net?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      staff_directory: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      suppressed_emails: {
+        Row: {
+          created_at: string
+          email: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      ticket_offers: {
+        Row: {
+          category: string | null
+          commission_basis: string
+          commission_pct: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          event_date: string | null
+          event_time: string | null
+          fixed_cost: number | null
+          id: string
+          is_active: boolean
+          is_published: boolean
+          metadata: Json
+          notes: string | null
+          pricing_model: string
+          public_price: number | null
+          slug: string | null
+          supplier_cost: number | null
+          supplier_net: number | null
+          title: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          category?: string | null
+          commission_basis?: string
+          commission_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          event_date?: string | null
+          event_time?: string | null
+          fixed_cost?: number | null
+          id?: string
+          is_active?: boolean
+          is_published?: boolean
+          metadata?: Json
+          notes?: string | null
+          pricing_model?: string
+          public_price?: number | null
+          slug?: string | null
+          supplier_cost?: number | null
+          supplier_net?: number | null
+          title: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          category?: string | null
+          commission_basis?: string
+          commission_pct?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          event_date?: string | null
+          event_time?: string | null
+          fixed_cost?: number | null
+          id?: string
+          is_active?: boolean
+          is_published?: boolean
+          metadata?: Json
+          notes?: string | null
+          pricing_model?: string
+          public_price?: number | null
+          slug?: string | null
+          supplier_cost?: number | null
+          supplier_net?: number | null
+          title?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          guide_id: string | null
+          hotels: Json
+          id: string
+          itinerary: Json
+          notes: string | null
+          payments: Json
+          reference: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["trip_status"]
+          title: string
+          transport: Json
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          guide_id?: string | null
+          hotels?: Json
+          id?: string
+          itinerary?: Json
+          notes?: string | null
+          payments?: Json
+          reference: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["trip_status"]
+          title: string
+          transport?: Json
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          guide_id?: string | null
+          hotels?: Json
+          id?: string
+          itinerary?: Json
+          notes?: string | null
+          payments?: Json
+          reference?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["trip_status"]
+          title?: string
+          transport?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trouver_jeitinho: {
+        Row: {
+          budget: string | null
+          created_at: string | null
+          duree: string | null
+          email: string
+          extras: Json | null
+          id: string
+          interets: string[] | null
+          nb_voyageurs: string | null
+          notes_internes: string | null
+          prenom: string
+          programme_genere: string | null
+          statut: string | null
+          telephone: string
+        }
+        Insert: {
+          budget?: string | null
+          created_at?: string | null
+          duree?: string | null
+          email: string
+          extras?: Json | null
+          id?: string
+          interets?: string[] | null
+          nb_voyageurs?: string | null
+          notes_internes?: string | null
+          prenom: string
+          programme_genere?: string | null
+          statut?: string | null
+          telephone: string
+        }
+        Update: {
+          budget?: string | null
+          created_at?: string | null
+          duree?: string | null
+          email?: string
+          extras?: Json | null
+          id?: string
+          interets?: string[] | null
+          nb_voyageurs?: string | null
+          notes_internes?: string | null
+          prenom?: string
+          programme_genere?: string | null
+          statut?: string | null
+          telephone?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      can_edit_content: { Args: { _user_id: string }; Returns: boolean }
+      can_manage: { Args: { _user_id: string }; Returns: boolean }
+      can_review_content: { Args: { _user_id: string }; Returns: boolean }
+      capture_public_lead: { Args: { p_payload: Json }; Returns: string }
+      get_current_hub_user: { Args: never; Returns: Json }
+      get_hub_user_by_auth_uid: { Args: { _user_id: string }; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_account_active: { Args: { _user_id: string }; Returns: boolean }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      next_quote_number: { Args: never; Returns: string }
+    }
+    Enums: {
+      account_status: "pending_validation" | "active" | "rejected"
+      app_role:
+        | "admin"
+        | "manager"
+        | "redacteur"
+        | "guide"
+        | "prestataire"
+        | "redacteur_chef"
+        | "auteur"
+      lead_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "converted"
+        | "lost"
+        | "spam"
+      prospect_status:
+        | "new"
+        | "contacted"
+        | "quoted"
+        | "negotiating"
+        | "won"
+        | "lost"
+      quote_status:
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "refused"
+        | "paid"
+        | "ready"
+        | "expired"
+      trip_status:
+        | "draft"
+        | "confirmed"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      account_status: ["pending_validation", "active", "rejected"],
+      app_role: [
+        "admin",
+        "manager",
+        "redacteur",
+        "guide",
+        "prestataire",
+        "redacteur_chef",
+        "auteur",
+      ],
+      lead_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "converted",
+        "lost",
+        "spam",
+      ],
+      prospect_status: [
+        "new",
+        "contacted",
+        "quoted",
+        "negotiating",
+        "won",
+        "lost",
+      ],
+      quote_status: [
+        "draft",
+        "sent",
+        "accepted",
+        "refused",
+        "paid",
+        "ready",
+        "expired",
+      ],
+      trip_status: [
+        "draft",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
+    },
+  },
+} as const
