@@ -60,6 +60,61 @@ export async function getCurrentUser(request: Request): Promise<{ user: AuthUser
   if (!profile || !profile.is_active || profile.status !== "active") return null;
   return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, status: profile.status, roles } };
 }
+// TEMP DEBUG — remove after diagnosing the "Profil Hub introuvable" bug.
+export async function getCurrentUserDebug(request: Request): Promise<{ trace: string[] }> {
+  const trace: string[] = [];
+  let session = getSession(request);
+  if (!session) { trace.push("no session cookie"); return { trace }; }
+  trace.push("session cookie decoded ok");
+  let authUser: SupabaseUser | null = null;
+  try {
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: headers(session.access_token) });
+    const bodyText = await response.text().catch(() => "");
+    trace.push(`GET /auth/v1/user -> ${response.status} :: ${bodyText.slice(0, 200)}`);
+    authUser = response.ok ? (JSON.parse(bodyText || "null") as SupabaseUser) : null;
+  } catch (e) {
+    trace.push(`GET /auth/v1/user threw: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  if (!authUser && session.refresh_token) {
+    trace.push("attempting refresh");
+    const refreshed = await refreshSession(session.refresh_token);
+    if (refreshed) {
+      session = refreshed;
+      trace.push("refresh ok");
+      try {
+        const response2 = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: headers(session.access_token) });
+        const bodyText2 = await response2.text().catch(() => "");
+        trace.push(`GET /auth/v1/user (retry) -> ${response2.status} :: ${bodyText2.slice(0, 200)}`);
+        authUser = response2.ok ? (JSON.parse(bodyText2 || "null") as SupabaseUser) : null;
+      } catch (e) {
+        trace.push(`retry threw: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    } else {
+      trace.push("refresh failed");
+    }
+  }
+  if (!authUser?.id || !authUser.email) { trace.push(`authUser invalid: ${JSON.stringify(authUser)}`); return { trace }; }
+  trace.push(`authUser ok: id=${authUser.id} email=${authUser.email}`);
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/get_hub_user_by_auth_uid`, {
+      method: "POST",
+      headers: headers(session.access_token),
+      body: JSON.stringify({ _user_id: authUser.id }),
+    });
+    const bodyText = await response.text().catch(() => "");
+    trace.push(`POST rpc get_hub_user_by_auth_uid -> ${response.status} :: ${bodyText.slice(0, 300)}`);
+    const body = JSON.parse(bodyText || "null") as { profile?: HubProfile | null; roles?: AppRole[] } | null;
+    const profile = body?.profile ?? null;
+    if (!profile || !profile.is_active || profile.status !== "active") {
+      trace.push(`profile check failed: ${JSON.stringify(profile)}`);
+    } else {
+      trace.push("profile check passed — should have logged in");
+    }
+  } catch (e) {
+    trace.push(`rpc threw: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  return { trace };
+}
 export async function signUp(email: string, password: string, fullName: string) {
   const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, { method: "POST", headers: headers(), body: JSON.stringify({ email: email.toLowerCase(), password, data: { full_name: fullName } }) });
   const body = await response.json().catch(() => null);

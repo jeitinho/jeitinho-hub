@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { getCurrentUser, sessionCookie, signIn } from "@/lib/auth/supabase-auth";
+import { getCurrentUser, getCurrentUserDebug, sessionCookie, signIn } from "@/lib/auth/supabase-auth";
 
 const LoginSchema = z.object({ email: z.string().email(), password: z.string().min(8) });
 
@@ -15,9 +15,10 @@ export const Route = createFileRoute("/api/auth/login")({
           const session = await signIn(parsed.data.email, parsed.data.password);
           const current = await getCurrentUser(new Request(request.url, { headers: { Cookie: sessionCookie(session) } }));
           if (!current) {
+            const { trace } = await getCurrentUserDebug(new Request(request.url, { headers: { Cookie: sessionCookie(session) } }));
             return Response.json({
               ok: false,
-              error: "Profil Hub introuvable ou inactif après authentification Supabase.",
+              error: `[DEBUG TEMPORAIRE] ${trace.join(" | ")}`,
             }, { status: 403 });
           }
           return new Response(JSON.stringify({ ok: true, user: current.user }), {
