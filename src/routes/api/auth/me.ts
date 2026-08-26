@@ -1,20 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { clearSessionCookie, getCurrentUser } from "@/lib/auth/cloudflare-auth";
-import { getBindings } from "@/lib/cloudflare-db";
+import { clearSessionCookie, getCurrentUser, sessionCookie } from "@/lib/auth/supabase-auth";
 
 export const Route = createFileRoute("/api/auth/me")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const env = getBindings();
-        const user = await getCurrentUser(env.DB, request);
-        if (!user) {
-          return new Response(JSON.stringify({ ok: false, user: null }), {
-            status: 401,
-            headers: { "content-type": "application/json", "set-cookie": clearSessionCookie() },
-          });
-        }
-        return Response.json({ ok: true, user });
+        const current = await getCurrentUser(request);
+        if (!current) return new Response(JSON.stringify({ ok: false, user: null }), { status: 401, headers: { "content-type": "application/json", "set-cookie": clearSessionCookie() } });
+        return new Response(JSON.stringify({ ok: true, user: current.user }), {
+          status: 200,
+          headers: { "content-type": "application/json", "set-cookie": sessionCookie(current.session) },
+        });
       },
     },
   },
