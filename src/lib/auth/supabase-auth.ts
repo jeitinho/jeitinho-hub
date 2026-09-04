@@ -14,7 +14,11 @@ function headers(accessToken?: string) {
 }
 function encodeSession(session: SessionPayload) { return btoa(JSON.stringify(session)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", ""); }
 function decodeSession(value: string): SessionPayload | null {
-  try { const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "==="; return JSON.parse(atob(padded.slice(0, Math.ceil(padded.length / 4) * 4))) as SessionPayload; } catch { return null; }
+  try {
+    const base64 = value.replaceAll("-", "+").replaceAll("_", "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+    return JSON.parse(atob(padded)) as SessionPayload;
+  } catch { return null; }
 }
 export function getSession(request: Request): SessionPayload | null {
   const cookie = request.headers.get("Cookie") ?? "";
