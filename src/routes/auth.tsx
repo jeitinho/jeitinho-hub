@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,6 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -21,9 +20,9 @@ function AuthPage() {
 
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" }).then((r) => {
-      if (r.ok) navigate({ to: "/dashboard", replace: true });
+      if (r.ok) window.location.assign("/dashboard");
     });
-  }, [navigate]);
+  }, []);
 
   const onLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +36,7 @@ function AuthPage() {
       });
       const body = await response.json().catch(() => null);
       if (!response.ok) return toast.error(body?.error ?? "Connexion impossible.");
-      navigate({ to: "/dashboard", replace: true });
+      window.location.assign("/dashboard");
     } catch {
       toast.error("Connexion impossible.");
     } finally {
@@ -58,7 +57,7 @@ function AuthPage() {
       const body = await response.json().catch(() => null);
       if (!response.ok) return toast.error(body?.error ?? "Création impossible.");
       toast.success(body?.message ?? "Compte créé. Il sera activé après validation.");
-      if (body?.active) navigate({ to: "/dashboard", replace: true });
+      if (body?.active) window.location.assign("/dashboard");
     } catch {
       toast.error("Création impossible.");
     } finally {
