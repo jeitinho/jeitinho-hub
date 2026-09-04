@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArticleForm } from "@/components/article-form";
+import { ArticleForm, type ArticleValues } from "@/components/article-form";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -87,8 +87,8 @@ function EditArticle() {
           cover_image_url: meta.cover_url ?? null,
           seo_title: data.seo_title,
           seo_description: data.seo_description,
-          status: data.status,
-          tags: data.tags ?? [],
+          status: data.status as ArticleValues["status"],
+          tags: (data.tags ?? []) as string[],
           scheduled_at: data.scheduled_at,
           published_at: data.published_at,
           category_id: data.category_id,

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCurrentUser } from "@/lib/auth/cloudflare-auth";
+import { getCurrentUser } from "@/lib/auth/supabase-auth";
 import { getBindings } from "@/lib/cloudflare-db";
 
 const ALLOWED_BUCKETS = new Set(["avatars", "media"]);
@@ -9,7 +9,8 @@ export const Route = createFileRoute("/api/storage/upload")({
     handlers: {
       POST: async ({ request }) => {
         const env = getBindings();
-        const user = await getCurrentUser(env.DB, request);
+        const current = await getCurrentUser(request);
+        const user = current?.user ?? null;
         if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
         if (!env.MEDIA) return Response.json({ ok: false, error: "R2 MEDIA binding missing" }, { status: 503 });
 
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/api/storage/upload")({
           }
         }
         const normalizedPath = path.replace(/^\/+/, "").replace(/\.\.(?:\/|\\)/g, "");
-        await env.MEDIA.put(normalizedPath, file.stream(), {
+        await env.MEDIA.put(normalizedPath, file.stream() as unknown as ArrayBuffer, {
           httpMetadata: { contentType: file.type || "application/octet-stream", contentDisposition: "inline" },
           customMetadata: { owner_id: user.id, bucket },
         });

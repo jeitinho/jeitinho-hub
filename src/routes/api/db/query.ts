@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import type { D1Database } from "@cloudflare/workers-types";
 import { getCurrentUser } from "@/lib/auth/cloudflare-auth";
 import { getBindings } from "@/lib/cloudflare-db";
 

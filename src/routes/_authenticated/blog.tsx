@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/lib/db-client";
+import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ function BlogList() {
   const { data, isLoading } = useQuery({
     queryKey: ["contents", "blog"],
     queryFn: async () => {
-      const { data, error } = await db.from("contents")
+      const { data, error } = await supabase.from("contents")
         .select("id,title,slug,status,excerpt,metadata,published_at,updated_at")
         .eq("type", "blog")
         .order("updated_at", { ascending: false });

@@ -1,12 +1,14 @@
-# SETUP — JEITINHO Hub Cloudflare
+# SETUP — JEITINHO Hub
 
-JEITINHO Hub runs on Cloudflare Workers with D1 and R2. There is no Supabase or Lovable runtime dependency.
+JEITINHO Hub runs on Cloudflare Workers for hosting/SSR and private R2 media,
+with Supabase as the system of record for authentication and application data.
 
 ## 1. Prerequisites
 
 - Bun >= 1.1
 - Node >= 20 for tooling compatibility
-- A Cloudflare account with permission to manage Workers, D1, R2 and secrets
+- A Cloudflare account with permission to manage Workers, R2 and secrets
+- Access to the `JEITINHO` Supabase project (`sxzdabtarlgozixcbzus`)
 
 ## 2. Install
 
@@ -20,39 +22,49 @@ bun install
 
 Create:
 
-- D1 database: `jeitinho-hub`
 - R2 bucket: `jeitinho-hub-media`
 
-Put the D1 database ID in `wrangler.jsonc`.
+A D1 database binding (`jeitinho-hub`) is also declared in `wrangler.jsonc` for
+legacy code that is no longer on any live request path (see `ARCHITECTURE.md`
+§9) — it does not need to hold real data to run the app.
 
 ## 4. Secrets
 
 Set server-only secrets with Wrangler:
 
 ```bash
-npx wrangler secret put SETUP_KEY
 npx wrangler secret put GITHUB_API_KEY
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put RESEND_FROM
 ```
 
 Only configure the optional integration secrets when the feature is enabled.
+The Supabase URL and publishable key are not secrets and are already in
+`src/integrations/supabase/client.ts` / `src/lib/auth/supabase-auth.ts`.
 
-## 5. Migrations
+For CI deploys, set these GitHub Actions repository secrets
+(Settings → Secrets and variables → Actions):
 
-Apply the D1 schema:
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
 
-```bash
-npx wrangler d1 migrations apply jeitinho-hub --remote
-```
+Without them, the `Deploy Cloudflare Worker` workflow fails and deploys must be
+run manually (`npx wrangler deploy`) from a machine with Cloudflare credentials.
 
-The source of truth is `migrations/`.
+## 5. Database
 
-## 6. First administrator
+The schema, RLS policies and RPC functions live in Supabase. Apply changes
+through the Supabase MCP tools or Supabase CLI, then regenerate
+`src/integrations/supabase/types.ts` from the live project schema.
 
-Open `/auth` and create the first account, or use the protected setup flow with `SETUP_KEY`.
+## 6. First administrator / account activation
 
-The first account is `admin`. Subsequent signups are `pending_validation` until a manager/admin activates them.
+New signups through `/auth` land in `pending_validation` until a manager or
+admin activates them from `/parametres/utilisateurs` (choose full name, roles,
+photo). There is no separate one-shot bootstrap flow currently wired to
+Supabase — the first account must be activated directly in Supabase (set
+`profiles.status = 'active'`, `profiles.is_active = true`, and insert an
+`admin` row into `user_roles`) if no admin exists yet.
 
 ## 7. Development
 
@@ -72,6 +84,6 @@ npx wrangler deploy
 ## 9. Security rules
 
 - Never commit `.env`, API keys, or Cloudflare secrets.
-- Never expose D1 credentials to the browser.
+- Never add a Supabase service-role key to client-reachable code — RLS is the
+  authorization boundary for everything under `src/integrations/supabase/`.
 - Keep R2 media private and serve it through authenticated Worker routes.
-- Do not reintroduce Supabase or Lovable SDKs, environment variables, gateways or managed database calls.

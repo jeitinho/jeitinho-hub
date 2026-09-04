@@ -1,18 +1,21 @@
 # ARCHITECTURE — JEITINHO Platform
 
-> Source of truth for the JEITINHO Hub. The runtime is Cloudflare-native: Workers + D1 + R2. Supabase and Lovable are not part of the architecture.
+> Source of truth for the JEITINHO Hub.
 
 ## 1. Stack
 
 - Framework: TanStack Start v1 + React 19
 - UI: Tailwind CSS v4 + shadcn/ui
-- Runtime: Cloudflare Workers
-- Database: Cloudflare D1
-- Media: Cloudflare R2
-- Auth: application-owned sessions stored in D1, delivered with HttpOnly cookies
+- Runtime: Cloudflare Workers (SSR + API routes)
+- Database & Auth: **Supabase** (Postgres with Row Level Security, Supabase Auth)
+- Media storage: Cloudflare R2, served through authenticated Worker routes
 - Editor: Tiptap
 - Package manager: Bun
 - Deployment: Wrangler
+
+The application data model, business logic and auth live in Supabase. Cloudflare
+Workers host the app and proxy private R2 media. Cloudflare D1 is provisioned in
+`wrangler.jsonc` but is **not** the system of record — see §9.
 
 ## 2. Structure
 
@@ -21,36 +24,41 @@ src/
   routes/                    TanStack file routes
     auth.tsx                 login / signup
     reset-password.tsx       password reset UI
-    api/auth/*               session endpoints
-    api/db/*                 authenticated D1 query/RPC endpoints
-    api/storage/*            private R2 media endpoints
-    api/content/*            content workflow APIs
-    _authenticated/          authenticated application modules
+    api/auth/*               Supabase-backed session endpoints
+    api/storage/*             private R2 media endpoints (avatars, media library)
+    api/content/*             content workflow API (writes to Supabase)
+    _authenticated/           authenticated application modules
   components/                UI and domain components
   hooks/                     React hooks
+  integrations/supabase/     Supabase client, generated types
   lib/
-    auth/                    Cloudflare-native authentication
-    db-client.ts             browser-safe D1 API client
-    cloudflare-db.ts         Worker bindings
-    publishers/              external publication adapters
-    setup/                   one-shot admin bootstrap
-    avatars.ts               R2 avatar helpers
-migrations/                  D1 SQLite migrations
-wrangler.jsonc               Workers + D1 + R2 configuration
+    auth/supabase-auth.ts    Supabase-backed authentication (source of truth)
+    publishers/               external publication adapters
+    setup/                    one-shot admin bootstrap (D1, currently unused — see §9)
+    avatars.ts                R2 avatar helpers
+migrations/                   legacy D1 SQLite migrations (see §9)
+supabase/                     Supabase migrations applied via MCP/Supabase CLI
+wrangler.jsonc                Workers + D1 + R2 configuration
 ```
 
 ## 3. Data model
 
-The D1 schema mirrors the Hub business model: CRM, prospects and leads, clients, quotes, travel, experiences/services/tickets, content OS, media, publications, agents, manual content, and analytics.
+Business data lives in Supabase Postgres: CRM (clients, prospects, leads), quotes,
+trips (`trips`, `trip_travelers`, `trip_activities`), experiences/services/ticket
+offers, partners, the blog/content workflow (`contents`, `content_categories`,
+`content_revisions`, `content_comments`, `authors`, `channels`, `publications`),
+media, and staff/roles.
 
-Authentication is separate from business profiles:
+Authentication:
 
-- `users`: email, password hash, account status
-- `user_roles`: application roles
-- `auth_sessions`: hashed random session tokens with expiry/revocation
-- `profiles`: user-facing profile data
+- `auth.users` / `auth.identities`: Supabase Auth, email + password
+- `public.profiles`: application-facing profile (status, is_active, full_name)
+- `public.user_roles`: application roles, keyed to `auth.users.id`
+- `public.roles`: role catalog shown when validating a pending account
 
-Business tables are in `migrations/0002_core.sql`.
+Every table with sensitive data has Row Level Security enabled; policies are
+enforced by `can_manage(uid)` (admin/manager) and `can_edit_content(uid)`
+(admin/manager/redacteur) helper functions defined in Supabase.
 
 ## 4. Roles and authorization
 
@@ -64,72 +72,84 @@ Roles:
 - `guide`
 - `prestataire`
 
-The frontend can hide modules, but server routes remain authoritative. Every write API checks the authenticated session and role before touching D1.
+The frontend hides modules by role, and Supabase RLS is the authoritative
+enforcement layer for every table read/write. Cross-table business operations
+(e.g. converting an accepted quote into a trip) are implemented as
+`SECURITY DEFINER` Postgres functions called via `supabase.rpc(...)`.
 
 ## 5. Authentication flow
 
-1. User signs up through `/api/auth/signup`.
-2. The first account is bootstrapped as `admin`; subsequent accounts enter `pending_validation`.
-3. Login is handled by `/api/auth/login`.
-4. The Worker stores a one-way hash of the random session token in D1.
-5. The raw token is sent only through an HttpOnly, SameSite cookie.
-6. `/api/auth/me` resolves the current account and roles.
-7. `/api/auth/logout` revokes the session server-side.
-
-The dedicated setup function can create the initial administrator once using the Cloudflare `SETUP_KEY` secret.
+1. `/api/auth/signup` calls Supabase Auth `signUp`, then creates a
+   `pending_validation` row in `public.profiles`.
+2. The first account created in Supabase (by email) is treated as the admin
+   once a manager/admin activates it through `/parametres/utilisateurs`.
+3. `/api/auth/login` authenticates against Supabase, then resolves the caller's
+   Hub profile + roles via the `get_hub_user_by_auth_uid` RPC.
+4. The Supabase access/refresh token pair is stored in a single HttpOnly,
+   SameSite cookie (`jeitinho_supabase_session`) — never exposed to client JS.
+5. `/api/auth/me` refreshes the session and re-resolves the profile on every
+   authenticated page load.
+6. `/api/auth/logout` revokes the Supabase session.
 
 ## 6. Data access
 
-Browser code uses `src/lib/db-client.ts`, which talks to authenticated Worker endpoints. It does not contain database credentials.
-
-The Worker validates table names, columns, filters and sort keys against D1 schema metadata before executing SQL. RPC-style business operations live in `src/routes/api/db/rpc.ts`.
+Browser code talks to Supabase directly through `src/integrations/supabase/client.ts`
+(publishable/anon key only — RLS enforces access control). There is no
+custom D1 query proxy in the request path for business data.
 
 ## 7. Media
 
-Private media is stored in the Cloudflare R2 bucket `jeitinho-hub-media`.
+Private media is stored in the Cloudflare R2 bucket `jeitinho-hub-media`, proxied
+through Worker routes that authenticate the caller via the Supabase session
+cookie:
 
 - Upload: `/api/storage/upload`
 - Authenticated object URL: `/api/storage/signed-url`
 - Stream object: `/api/storage/file`
 
-The bucket is private; application session authentication is required for access.
-
 ## 8. Content workflow
 
 `draft → writing → to_review → changes_requested/approved → ready_to_publish/scheduled → published → archived`
 
-Every transition writes a row in `content_revisions`. Publication adapters use server-side GitHub credentials only when configured.
+Every transition writes a row in `content_revisions` (`/api/content/$contentId/workflow`,
+which authenticates via Supabase and writes to Supabase using the caller's own
+access token so RLS applies). Publication adapters use server-side GitHub
+credentials only when configured.
 
-## 9. External integrations
+## 9. Cloudflare D1 — legacy, not in use
 
-GitHub and Resend are optional external APIs called from the Worker. Credentials are Cloudflare secrets.
+An earlier iteration of this app targeted Cloudflare D1 for both auth and
+business data (`migrations/`, `src/lib/auth/cloudflare-auth.ts`,
+`src/lib/db-client.ts`, `src/routes/api/db/*`). That migration was reverted:
+D1's `users`/`profiles` tables are empty in production, and the app has run on
+Supabase auth + data since. This legacy code remains in the tree (D1 binding
+still declared in `wrangler.jsonc`) but is no longer on any request path
+reachable from the UI. Do not add new features against it; treat it as
+scheduled for removal once confirmed fully dead.
 
-No provider-specific database or auth SDK is required at runtime.
+## 10. External integrations
 
-## 10. Deployment
+GitHub and Resend are optional external APIs called from the Worker. Credentials
+are Cloudflare secrets.
 
-Required resources:
+## 11. Deployment
 
-- D1: `jeitinho-hub`
+Required Cloudflare resources:
+
 - R2: `jeitinho-hub-media`
+- (D1 binding `jeitinho-hub` remains declared for the legacy code in §9)
 
-Required secret for initial bootstrap:
-
-- `SETUP_KEY`
-
-Optional secrets:
-
-- `GITHUB_API_KEY`
-- `RESEND_API_KEY`
-- `RESEND_FROM`
+Required Supabase project: `JEITINHO` (`sxzdabtarlgozixcbzus`).
 
 Commands:
 
 ```bash
 bun install
 bun run build
-npx wrangler d1 migrations apply jeitinho-hub --remote
 npx wrangler deploy
 ```
 
-Do not add Supabase, Lovable, or provider-managed database/auth configuration back into the repository.
+Deploys happen via the `Deploy Cloudflare Worker` GitHub Actions workflow,
+which requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository
+secrets. Until those are configured, deploys must be run manually with
+`npx wrangler deploy` from a machine with Cloudflare credentials.

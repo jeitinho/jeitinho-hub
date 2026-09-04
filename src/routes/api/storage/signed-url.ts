@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCurrentUser } from "@/lib/auth/cloudflare-auth";
+import { getCurrentUser } from "@/lib/auth/supabase-auth";
 import { getBindings } from "@/lib/cloudflare-db";
 
 const ALLOWED_BUCKETS = new Set(["avatars", "media"]);
@@ -9,7 +9,8 @@ export const Route = createFileRoute("/api/storage/signed-url")({
     handlers: {
       GET: async ({ request }) => {
         const env = getBindings();
-        const user = await getCurrentUser(env.DB, request);
+        const current = await getCurrentUser(request);
+        const user = current?.user ?? null;
         if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
         if (!env.MEDIA) return Response.json({ ok: false, error: "R2 MEDIA binding missing" }, { status: 503 });
         const url = new URL(request.url);

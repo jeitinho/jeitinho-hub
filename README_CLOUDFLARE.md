@@ -1,48 +1,48 @@
-# JEITINHO HUB — Cloudflare Native
+# JEITINHO HUB — Cloudflare + Supabase
 
 ## Architecture
 
-JEITINHO Hub runs as a TanStack Start application on Cloudflare Workers.
+JEITINHO Hub runs as a TanStack Start application on Cloudflare Workers, with
+Supabase as the system of record for authentication and business data.
 
 - **Cloudflare Workers** — application runtime and SSR/API
-- **D1** — application database
-- **R2** — private media storage
-- **HttpOnly sessions** — authentication and authorization
+- **Supabase (Postgres + RLS + Auth)** — application database and authentication
+- **R2** — private media storage, proxied through Worker routes
+- **HttpOnly cookie** — carries the Supabase session (access/refresh token)
 - **GitHub API** — optional editorial publication integration
 - **Resend API** — optional transactional email integration
 
-There is no runtime dependency on Supabase or Lovable.
+See `ARCHITECTURE.md` for the full picture, including the legacy Cloudflare D1
+code that predates the move to Supabase and is no longer on any live request
+path.
 
 ## Required Cloudflare resources
 
-Create these resources in the Cloudflare account:
-
-- D1 database: `jeitinho-hub`
 - R2 bucket: `jeitinho-hub-media`
-
-Put the resulting D1 database ID in `wrangler.jsonc`.
+- (D1 database binding `jeitinho-hub` is declared in `wrangler.jsonc` for
+  legacy code only — see `ARCHITECTURE.md` §9)
 
 ## Secrets / environment
 
-Required for production bootstrap:
+Worker secrets (optional integrations only):
 
-- `SETUP_KEY`
 - `GITHUB_API_KEY` (only when GitHub publishing is enabled)
 - `RESEND_API_KEY` and `RESEND_FROM` (only when password-reset email is enabled)
 
+GitHub Actions repository secrets, required for the `Deploy Cloudflare Worker`
+workflow to actually deploy:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
 Never commit credentials to Git.
 
-## D1 migrations
+## Supabase schema changes
 
-Run migrations against the Cloudflare D1 database using Wrangler. The schema lives in `migrations/`.
-
-```bash
-npx wrangler d1 migrations apply jeitinho-hub --remote
-```
+Apply migrations through the Supabase MCP tools or CLI against the `JEITINHO`
+project, then regenerate `src/integrations/supabase/types.ts`.
 
 ## Local development
-
-Use a local D1 database when testing Worker APIs:
 
 ```bash
 bun install
@@ -51,17 +51,20 @@ bun run dev
 
 ## Authentication
 
-The first administrator can be bootstrapped once using the protected setup flow with `SETUP_KEY`. All subsequent registrations enter `pending_validation` until an administrator activates the account.
-
-Passwords are hashed server-side. Sessions are stored as hashed random tokens in D1 and delivered only through an HttpOnly cookie.
+Supabase Auth issues the session; `/api/auth/*` routes bridge it to an
+HttpOnly cookie and resolve the caller's Hub profile/roles. New signups enter
+`pending_validation` until an administrator activates them from
+`/parametres/utilisateurs`.
 
 ## Deployment
 
-Build the TanStack Start application and deploy the generated Worker with Wrangler:
+Build the TanStack Start application and deploy the generated Worker with
+Wrangler:
 
 ```bash
 bun run build
 npx wrangler deploy
 ```
 
-The GitHub CI workflow blocks reintroduction of Supabase/Lovable references in the application/runtime configuration.
+CI (`.github/workflows/ci.yml`) runs `typecheck`, `build` and `wrangler check`
+on every push/PR to `main`; keep it green before merging.

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCurrentUser } from "@/lib/auth/cloudflare-auth";
+import { getCurrentUser } from "@/lib/auth/supabase-auth";
 import { getBindings } from "@/lib/cloudflare-db";
 
 export const Route = createFileRoute("/api/storage/file")({
@@ -7,7 +7,8 @@ export const Route = createFileRoute("/api/storage/file")({
     handlers: {
       GET: async ({ request }) => {
         const env = getBindings();
-        const user = await getCurrentUser(env.DB, request);
+        const current = await getCurrentUser(request);
+        const user = current?.user ?? null;
         if (!user) return new Response("Unauthorized", { status: 401 });
         if (!env.MEDIA) return new Response("R2 MEDIA binding missing", { status: 503 });
         const url = new URL(request.url);
@@ -18,10 +19,10 @@ export const Route = createFileRoute("/api/storage/file")({
         const object = await env.MEDIA.get(path);
         if (!object) return new Response("Not found", { status: 404 });
         const headers = new Headers();
-        object.writeHttpMetadata(headers);
+        object.writeHttpMetadata(headers as unknown as Parameters<typeof object.writeHttpMetadata>[0]);
         headers.set("etag", object.httpEtag);
         headers.set("cache-control", "private, max-age=3600");
-        return new Response(object.body, { headers });
+        return new Response(object.body as unknown as ReadableStream<Uint8Array>, { headers });
       },
     },
   },
