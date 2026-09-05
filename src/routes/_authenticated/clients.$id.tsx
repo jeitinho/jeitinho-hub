@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { FileDown, Trash2 } from "lucide-react";
 import { formatMoney, quoteStatusLabel } from "@/lib/quotes/status";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LEGAL_TYPES, type LegalType } from "@/lib/invoices/status";
 
 export const Route = createFileRoute("/_authenticated/clients/$id")({
   component: ClientDetail,
@@ -48,6 +50,11 @@ function ClientDetail() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [legalType, setLegalType] = useState<LegalType>("individual");
+  const [companyName, setCompanyName] = useState("");
+  const [siret, setSiret] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
+  const [billingAddress, setBillingAddress] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -56,6 +63,11 @@ function ClientDetail() {
     setEmail(data.email ?? "");
     setPhone(data.phone ?? "");
     setNotes(data.notes ?? "");
+    setLegalType((data.legal_type as LegalType) ?? "individual");
+    setCompanyName(data.company_name ?? "");
+    setSiret(data.siret ?? "");
+    setVatNumber(data.vat_number ?? "");
+    setBillingAddress(data.billing_address ?? "");
   }, [data]);
 
   if (isLoading || !data) return <PageShell title="Chargement…">{null}</PageShell>;
@@ -64,7 +76,17 @@ function ClientDetail() {
     setSaving(true);
     const { error } = await (supabase as any)
       .from("clients")
-      .update({ full_name: fullName.trim(), email: email.trim() || null, phone: phone.trim() || null, notes: notes.trim() || null })
+      .update({
+        full_name: fullName.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        notes: notes.trim() || null,
+        legal_type: legalType,
+        company_name: legalType === "company" ? companyName.trim() || null : null,
+        siret: legalType === "company" ? siret.trim() || null : null,
+        vat_number: legalType === "company" ? vatNumber.trim() || null : null,
+        billing_address: billingAddress.trim() || null,
+      })
       .eq("id", id);
     setSaving(false);
     if (error) return toast.error(error.message);
@@ -120,6 +142,40 @@ function ClientDetail() {
               <Textarea className="mt-1.5 min-h-24" value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
             <Button className="btn-primary" onClick={save} disabled={saving}>{saving ? "Enregistrement…" : "Enregistrer"}</Button>
+          </Card>
+
+          <Card className="space-y-4 p-5">
+            <p className="tracked text-[10px] text-muted-foreground">Facturation</p>
+            <div>
+              <Label>Type</Label>
+              <Select value={legalType} onValueChange={(v) => setLegalType(v as LegalType)}>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LEGAL_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {legalType === "company" && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Label>Raison sociale</Label>
+                  <Input className="mt-1.5" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Nom de la société" />
+                </div>
+                <div>
+                  <Label>SIRET</Label>
+                  <Input className="mt-1.5" value={siret} onChange={(e) => setSiret(e.target.value)} />
+                </div>
+                <div>
+                  <Label>N° TVA intracommunautaire</Label>
+                  <Input className="mt-1.5" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
+                </div>
+              </div>
+            )}
+            <div>
+              <Label>Adresse de facturation</Label>
+              <Textarea className="mt-1.5 min-h-16" value={billingAddress} onChange={(e) => setBillingAddress(e.target.value)} placeholder="Numéro, rue, code postal, ville, pays" />
+            </div>
+            <p className="text-xs text-muted-foreground">Ces informations apparaissent sur les factures générées pour ce client.</p>
           </Card>
 
           <Card className="p-5">

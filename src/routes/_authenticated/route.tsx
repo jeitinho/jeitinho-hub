@@ -42,7 +42,7 @@ function AuthenticatedLayout() {
 function pathnameToTitle(p: string): string {
   const seg = p.split("/").filter(Boolean)[0] ?? "dashboard";
   const map: Record<string, string> = {
-    dashboard: "Dashboard", crm: "CRM", clients: "Clients", voyages: "Voyages", devis: "Devis",
+    dashboard: "Dashboard", crm: "CRM", clients: "Clients", voyages: "Voyages", devis: "Devis & Factures",
     experiences: "Expériences", contenus: "Bibliothèque de contenus", blog: "Blog", mediatheque: "Médiathèque",
     partenaires: "Partenaires", calendrier: "Calendrier", analytics: "Analytics", parametres: "Paramètres",
   };

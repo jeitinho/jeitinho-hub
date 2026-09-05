@@ -325,48 +325,63 @@ export type Database = {
       clients: {
         Row: {
           assigned_to: string | null
+          billing_address: string | null
+          company_name: string | null
           created_at: string
           email: string | null
           full_name: string
           id: string
           last_contact_at: string | null
+          legal_type: string
           notes: string | null
           phone: string | null
+          siret: string | null
           source: string | null
           stage: string
           status: string
           tags: string[]
           updated_at: string
+          vat_number: string | null
         }
         Insert: {
           assigned_to?: string | null
+          billing_address?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
           full_name: string
           id?: string
           last_contact_at?: string | null
+          legal_type?: string
           notes?: string | null
           phone?: string | null
+          siret?: string | null
           source?: string | null
           stage?: string
           status?: string
           tags?: string[]
           updated_at?: string
+          vat_number?: string | null
         }
         Update: {
           assigned_to?: string | null
+          billing_address?: string | null
+          company_name?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           id?: string
           last_contact_at?: string | null
+          legal_type?: string
           notes?: string | null
           phone?: string | null
+          siret?: string | null
           source?: string | null
           stage?: string
           status?: string
           tags?: string[]
           updated_at?: string
+          vat_number?: string | null
         }
         Relationships: []
       }
@@ -1097,6 +1112,162 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_lines: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          invoice_id: string
+          label: string
+          position: number
+          quantity: number
+          unit: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id: string
+          label: string
+          position?: number
+          quantity?: number
+          unit?: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string
+          label?: string
+          position?: number
+          quantity?: number
+          unit?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_number_sequences: {
+        Row: {
+          next_number: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          next_number?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          next_number?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          billing_address: string | null
+          billing_company_name: string | null
+          billing_legal_type: string
+          billing_name: string
+          billing_siret: string | null
+          billing_vat_number: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          due_date: string | null
+          id: string
+          issue_date: string
+          notes: string | null
+          number: string
+          paid_at: string | null
+          quote_id: string
+          status: string
+          title: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          billing_address?: string | null
+          billing_company_name?: string | null
+          billing_legal_type?: string
+          billing_name: string
+          billing_siret?: string | null
+          billing_vat_number?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          due_date?: string | null
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          number: string
+          paid_at?: string | null
+          quote_id: string
+          status?: string
+          title: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          billing_address?: string | null
+          billing_company_name?: string | null
+          billing_legal_type?: string
+          billing_name?: string
+          billing_siret?: string | null
+          billing_vat_number?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          due_date?: string | null
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          number?: string
+          paid_at?: string | null
+          quote_id?: string
+          status?: string
+          title?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
@@ -2748,6 +2919,10 @@ export type Database = {
         Args: { p_prospect_id: string }
         Returns: string
       }
+      convert_quote_to_invoice: {
+        Args: { p_quote_id: string }
+        Returns: string
+      }
       get_current_hub_user: { Args: never; Returns: Json }
       get_hub_user_by_auth_uid: { Args: { _user_id: string }; Returns: Json }
       has_role: {
@@ -2759,6 +2934,7 @@ export type Database = {
       }
       is_account_active: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      next_invoice_number: { Args: never; Returns: string }
       next_quote_number: { Args: never; Returns: string }
       next_trip_reference: { Args: { p_year?: number }; Returns: string }
     }

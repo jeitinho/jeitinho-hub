@@ -35,6 +35,7 @@ import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
 import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
 import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
+import { Route as AuthenticatedDevisFacturesRouteImport } from './routes/_authenticated/devis.factures'
 import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
 import { Route as AuthenticatedExperiencesIdRouteImport } from './routes/_authenticated/experiences.$id'
 import { Route as AuthenticatedExperiencesNewRouteImport } from './routes/_authenticated/experiences.new'
@@ -57,6 +58,7 @@ import { Route as ApiInternalHealthRouteImport } from './routes/api/internal/hea
 import { Route as ApiStorageFileRouteImport } from './routes/api/storage/file'
 import { Route as ApiStorageSignedUrlRouteImport } from './routes/api/storage/signed-url'
 import { Route as ApiStorageUploadRouteImport } from './routes/api/storage/upload'
+import { Route as AuthenticatedDevisFacturesIdRouteImport } from './routes/_authenticated/devis.factures.$id'
 import { Route as ApiContentContentIdWorkflowRouteImport } from './routes/api/content/$contentId/workflow'
 
 const IndexRoute = IndexRouteImport.update({
@@ -194,6 +196,12 @@ const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedDevisRoute,
 } as any)
+const AuthenticatedDevisFacturesRoute =
+  AuthenticatedDevisFacturesRouteImport.update({
+    id: '/factures',
+    path: '/factures',
+    getParentRoute: () => AuthenticatedDevisRoute,
+  } as any)
 const AuthenticatedDevisNewRoute = AuthenticatedDevisNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -308,6 +316,12 @@ const ApiStorageUploadRoute = ApiStorageUploadRouteImport.update({
   path: '/api/storage/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDevisFacturesIdRoute =
+  AuthenticatedDevisFacturesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedDevisFacturesRoute,
+  } as any)
 const ApiContentContentIdWorkflowRoute =
   ApiContentContentIdWorkflowRouteImport.update({
     id: '/api/content/$contentId/workflow',
@@ -341,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/blog/new': typeof AuthenticatedBlogNewRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/devis/factures': typeof AuthenticatedDevisFacturesRouteWithChildren
   '/devis/new': typeof AuthenticatedDevisNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
@@ -363,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/api/storage/file': typeof ApiStorageFileRoute
   '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
   '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/devis/factures/$id': typeof AuthenticatedDevisFacturesIdRoute
   '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
 export interface FileRoutesByTo {
@@ -391,6 +407,7 @@ export interface FileRoutesByTo {
   '/blog/new': typeof AuthenticatedBlogNewRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/devis/factures': typeof AuthenticatedDevisFacturesRouteWithChildren
   '/devis/new': typeof AuthenticatedDevisNewRoute
   '/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/experiences/new': typeof AuthenticatedExperiencesNewRoute
@@ -413,6 +430,7 @@ export interface FileRoutesByTo {
   '/api/storage/file': typeof ApiStorageFileRoute
   '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
   '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/devis/factures/$id': typeof AuthenticatedDevisFacturesIdRoute
   '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
 export interface FileRoutesById {
@@ -443,6 +461,7 @@ export interface FileRoutesById {
   '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
   '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
   '/_authenticated/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/_authenticated/devis/factures': typeof AuthenticatedDevisFacturesRouteWithChildren
   '/_authenticated/devis/new': typeof AuthenticatedDevisNewRoute
   '/_authenticated/experiences/$id': typeof AuthenticatedExperiencesIdRoute
   '/_authenticated/experiences/new': typeof AuthenticatedExperiencesNewRoute
@@ -465,6 +484,7 @@ export interface FileRoutesById {
   '/api/storage/file': typeof ApiStorageFileRoute
   '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
   '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/_authenticated/devis/factures/$id': typeof AuthenticatedDevisFacturesIdRoute
   '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
 export interface FileRouteTypes {
@@ -495,6 +515,7 @@ export interface FileRouteTypes {
     | '/blog/new'
     | '/clients/$id'
     | '/devis/$id'
+    | '/devis/factures'
     | '/devis/new'
     | '/experiences/$id'
     | '/experiences/new'
@@ -517,6 +538,7 @@ export interface FileRouteTypes {
     | '/api/storage/file'
     | '/api/storage/signed-url'
     | '/api/storage/upload'
+    | '/devis/factures/$id'
     | '/api/content/$contentId/workflow'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -545,6 +567,7 @@ export interface FileRouteTypes {
     | '/blog/new'
     | '/clients/$id'
     | '/devis/$id'
+    | '/devis/factures'
     | '/devis/new'
     | '/experiences/$id'
     | '/experiences/new'
@@ -567,6 +590,7 @@ export interface FileRouteTypes {
     | '/api/storage/file'
     | '/api/storage/signed-url'
     | '/api/storage/upload'
+    | '/devis/factures/$id'
     | '/api/content/$contentId/workflow'
   id:
     | '__root__'
@@ -596,6 +620,7 @@ export interface FileRouteTypes {
     | '/_authenticated/blog/new'
     | '/_authenticated/clients/$id'
     | '/_authenticated/devis/$id'
+    | '/_authenticated/devis/factures'
     | '/_authenticated/devis/new'
     | '/_authenticated/experiences/$id'
     | '/_authenticated/experiences/new'
@@ -618,6 +643,7 @@ export interface FileRouteTypes {
     | '/api/storage/file'
     | '/api/storage/signed-url'
     | '/api/storage/upload'
+    | '/_authenticated/devis/factures/$id'
     | '/api/content/$contentId/workflow'
   fileRoutesById: FileRoutesById
 }
@@ -828,6 +854,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDevisIdRouteImport
       parentRoute: typeof AuthenticatedDevisRoute
     }
+    '/_authenticated/devis/factures': {
+      id: '/_authenticated/devis/factures'
+      path: '/factures'
+      fullPath: '/devis/factures'
+      preLoaderRoute: typeof AuthenticatedDevisFacturesRouteImport
+      parentRoute: typeof AuthenticatedDevisRoute
+    }
     '/_authenticated/devis/new': {
       id: '/_authenticated/devis/new'
       path: '/new'
@@ -982,6 +1015,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStorageUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/devis/factures/$id': {
+      id: '/_authenticated/devis/factures/$id'
+      path: '/$id'
+      fullPath: '/devis/factures/$id'
+      preLoaderRoute: typeof AuthenticatedDevisFacturesIdRouteImport
+      parentRoute: typeof AuthenticatedDevisFacturesRoute
+    }
     '/api/content/$contentId/workflow': {
       id: '/api/content/$contentId/workflow'
       path: '/api/content/$contentId/workflow'
@@ -1032,13 +1072,29 @@ const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
 const AuthenticatedClientsRouteWithChildren =
   AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
 
+interface AuthenticatedDevisFacturesRouteChildren {
+  AuthenticatedDevisFacturesIdRoute: typeof AuthenticatedDevisFacturesIdRoute
+}
+
+const AuthenticatedDevisFacturesRouteChildren: AuthenticatedDevisFacturesRouteChildren =
+  {
+    AuthenticatedDevisFacturesIdRoute: AuthenticatedDevisFacturesIdRoute,
+  }
+
+const AuthenticatedDevisFacturesRouteWithChildren =
+  AuthenticatedDevisFacturesRoute._addFileChildren(
+    AuthenticatedDevisFacturesRouteChildren,
+  )
+
 interface AuthenticatedDevisRouteChildren {
   AuthenticatedDevisIdRoute: typeof AuthenticatedDevisIdRoute
+  AuthenticatedDevisFacturesRoute: typeof AuthenticatedDevisFacturesRouteWithChildren
   AuthenticatedDevisNewRoute: typeof AuthenticatedDevisNewRoute
 }
 
 const AuthenticatedDevisRouteChildren: AuthenticatedDevisRouteChildren = {
   AuthenticatedDevisIdRoute: AuthenticatedDevisIdRoute,
+  AuthenticatedDevisFacturesRoute: AuthenticatedDevisFacturesRouteWithChildren,
   AuthenticatedDevisNewRoute: AuthenticatedDevisNewRoute,
 }
 
