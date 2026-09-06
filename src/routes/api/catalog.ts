@@ -6,7 +6,11 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn
 const TABLES = new Set(["experiences", "services", "ticket_offers"]);
 
 function headers(accessToken: string) {
-  return { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json` };
+  return {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+  };
 }
 
 async function handle({ request }: { request: Request }) {
@@ -46,7 +50,11 @@ async function handle({ request }: { request: Request }) {
   if (!body) return Response.json({ data: null, error: { message: "Invalid JSON" } }, { status: 400 });
 
   if (request.method === "POST") {
-    const response = await fetch(restUrl, { method: "POST", headers: { ...headers(current.session.access_token), Prefer: "return=representation" }, body: JSON.stringify(body.values ?? body) });
+    const response = await fetch(restUrl, {
+      method: "POST",
+      headers: { ...headers(current.session.access_token), Prefer: "return=representation" },
+      body: JSON.stringify(body.values ?? body),
+    });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
@@ -56,13 +64,20 @@ async function handle({ request }: { request: Request }) {
   restUrl.searchParams.set("id", `eq.${id}`);
 
   if (request.method === "PATCH") {
-    const response = await fetch(restUrl, { method: "PATCH", headers: { ...headers(current.session.access_token), Prefer: "return=representation" }, body: JSON.stringify(body.values ?? {}) });
+    const response = await fetch(restUrl, {
+      method: "PATCH",
+      headers: { ...headers(current.session.access_token), Prefer: "return=representation" },
+      body: JSON.stringify(body.values ?? {}),
+    });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
 
   if (request.method === "DELETE") {
-    const response = await fetch(restUrl, { method: "DELETE", headers: { ...headers(current.session.access_token), Prefer: "return=minimal" } });
+    const response = await fetch(restUrl, {
+      method: "DELETE",
+      headers: { ...headers(current.session.access_token), Prefer: "return=minimal" },
+    });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
@@ -70,4 +85,6 @@ async function handle({ request }: { request: Request }) {
   return Response.json({ data: null, error: { message: "Method not allowed" } }, { status: 405 });
 }
 
-export const Route = createFileRoute("/api/catalog")({ server: { handlers: { GET: handle, POST: handle, PATCH: handle, DELETE: handle } } });
+export const Route = createFileRoute("/api/catalog")({
+  server: { handlers: { GET: handle, POST: handle, PATCH: handle, DELETE: handle } },
+});
