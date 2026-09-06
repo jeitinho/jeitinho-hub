@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
-import { FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FilePlus2, FileText } from "lucide-react";
 import { formatMoney } from "@/lib/quotes/status";
 import { INVOICE_STATUSES, invoiceStatusLabel } from "@/lib/invoices/status";
 
@@ -29,10 +30,11 @@ function InvoicesList() {
     <PageShell
       eyebrow="Facturation"
       title="Factures"
-      description="Les factures sont générées à partir d'un devis accepté."
+      description="Factures liées à un devis, créées depuis jeitinho.fr ou saisies directement."
       actions={
         <div className="flex gap-2">
           <Link to="/devis"><button className="rounded-md border border-border/60 px-3 py-2 text-xs text-muted-foreground hover:text-foreground">Devis</button></Link>
+          <Link to="/devis/factures/new"><Button className="btn-primary"><FilePlus2 className="mr-2 h-4 w-4" />Nouvelle facture</Button></Link>
           <span className="rounded-md border border-primary bg-primary px-3 py-2 text-xs text-primary-foreground">Factures</span>
         </div>
       }
@@ -50,8 +52,8 @@ function InvoicesList() {
         <Card className="border-dashed p-16 text-center">
           <FileText className="mx-auto mb-4 h-8 w-8 text-primary" />
           <h2 className="text-xl">Aucune facture</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Une facture se crée depuis un devis accepté.</p>
-          <Link to="/devis" className="mt-6 inline-block"><span className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">Voir les devis</span></Link>
+          <p className="mt-2 text-sm text-muted-foreground">Créez une facture autonome ou convertissez un devis accepté.</p>
+          <Link to="/devis/factures/new" className="mt-6 inline-block"><span className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">Nouvelle facture</span></Link>
         </Card>
       ) : (
         <div className="space-y-2">
