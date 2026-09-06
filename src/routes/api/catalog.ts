@@ -6,11 +6,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn
 const TABLES = new Set(["experiences", "services", "ticket_offers"]);
 
 function headers(accessToken: string) {
-  return {
-    apikey: SUPABASE_PUBLISHABLE_KEY,
-    Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-  };
+  return { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json` };
 }
 
 async function handle({ request }: { request: Request }) {
@@ -22,13 +18,23 @@ async function handle({ request }: { request: Request }) {
   if (!TABLES.has(table)) return Response.json({ data: null, error: { message: "Invalid catalog table" } }, { status: 400 });
 
   const restUrl = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  restUrl.searchParams.set("select", "*");
+
   if (request.method === "GET") {
+    const id = url.searchParams.get("id");
     const order = url.searchParams.get("order") ?? "title.asc";
     const allowedOrders = new Set(["title.asc", "title.desc", "group_slug.asc,title.asc"]);
+    if (id) restUrl.searchParams.set("id", `eq.${id}`);
     restUrl.searchParams.set("order", allowedOrders.has(order) ? order : "title.asc");
-    restUrl.searchParams.set("select", "*");
     const response = await fetch(restUrl, { headers: headers(current.session.access_token) });
     const body = await response.text();
+    if (response.ok && id) {
+      const rows = JSON.parse(body) as unknown[];
+      if (!Array.isArray(rows) || rows.length !== 1) {
+        return Response.json({ data: null, error: { message: "Catalogue item introuvable" } }, { status: 404 });
+      }
+      return Response.json(rows[0]);
+    }
     return new Response(body, { status: response.status, headers: { "content-type": "application/json" } });
   }
 
@@ -40,11 +46,7 @@ async function handle({ request }: { request: Request }) {
   if (!body) return Response.json({ data: null, error: { message: "Invalid JSON" } }, { status: 400 });
 
   if (request.method === "POST") {
-    const response = await fetch(restUrl, {
-      method: "POST",
-      headers: { ...headers(current.session.access_token), Prefer: "return=representation" },
-      body: JSON.stringify(body.values ?? body),
-    });
+    const response = await fetch(restUrl, { method: "POST", headers: { ...headers(current.session.access_token), Prefer: "return=representation" }, body: JSON.stringify(body.values ?? body) });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
@@ -54,11 +56,7 @@ async function handle({ request }: { request: Request }) {
   restUrl.searchParams.set("id", `eq.${id}`);
 
   if (request.method === "PATCH") {
-    const response = await fetch(restUrl, {
-      method: "PATCH",
-      headers: { ...headers(current.session.access_token), Prefer: "return=representation" },
-      body: JSON.stringify(body.values ?? {}),
-    });
+    const response = await fetch(restUrl, { method: "PATCH", headers: { ...headers(current.session.access_token), Prefer: "return=representation" }, body: JSON.stringify(body.values ?? {}) });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
@@ -72,6 +70,4 @@ async function handle({ request }: { request: Request }) {
   return Response.json({ data: null, error: { message: "Method not allowed" } }, { status: 405 });
 }
 
-export const Route = createFileRoute("/api/catalog")({
-  server: { handlers: { GET: handle, POST: handle, PATCH: handle, DELETE: handle } },
-});
+export const Route = createFileRoute("/api/catalog")({ server: { handlers: { GET: handle, POST: handle, PATCH: handle, DELETE: handle } } });
