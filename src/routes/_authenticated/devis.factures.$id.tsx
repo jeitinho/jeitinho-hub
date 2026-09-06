@@ -8,5 +8,5 @@ export const Route = createFileRoute("/_authenticated/devis/factures/$id")({
 
 function InvoiceDetail() {
   const { id } = Route.useParams();
-  return <InvoiceForm invoiceId={id} />;
+  return <InvoiceForm invoiceId={id === "new" ? undefined : id} />;
 }
