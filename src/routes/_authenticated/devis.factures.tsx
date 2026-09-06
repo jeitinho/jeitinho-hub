@@ -40,12 +40,11 @@ function InvoicesList() {
   if (isNew) return <InvoiceForm />;
 
   const rows = (data ?? []).filter((i: any) => filter === "all" || i.status === filter);
-  const newInvoiceHref = "/devis/factures?new=1";
-  const newInvoiceAction = (
-    <a href={newInvoiceHref} className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">
+  const newInvoiceLink = (
+    <Link to="/devis/factures" search={{ new: "1" }} className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">
       <FilePlus2 className="mr-2 h-4 w-4" />
       Nouvelle facture
-    </a>
+    </Link>
   );
 
   return (
@@ -60,7 +59,7 @@ function InvoicesList() {
               Devis
             </button>
           </Link>
-          {newInvoiceAction}
+          {newInvoiceLink}
           <span className="rounded-md border border-primary bg-primary px-3 py-2 text-xs text-primary-foreground">Factures</span>
         </div>
       }
@@ -88,9 +87,7 @@ function InvoicesList() {
           <FileText className="mx-auto mb-4 h-8 w-8 text-primary" />
           <h2 className="text-xl">Aucune facture</h2>
           <p className="mt-2 text-sm text-muted-foreground">Créez une facture autonome ou convertissez un devis accepté.</p>
-          <a href={newInvoiceHref} className="mt-6 inline-flex">
-            <span className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">Nouvelle facture</span>
-          </a>
+          <div className="mt-6 inline-flex">{newInvoiceLink}</div>
         </Card>
       ) : (
         <div className="space-y-2">
