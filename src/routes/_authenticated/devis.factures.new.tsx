@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageShell } from "@/components/page-shell";
 import { InvoiceForm } from "@/components/invoice-form";
 
 export const Route = createFileRoute("/_authenticated/devis/factures/new")({
@@ -16,13 +15,5 @@ export const Route = createFileRoute("/_authenticated/devis/factures/new")({
 });
 
 function NewInvoice() {
-  return (
-    <PageShell
-      eyebrow="Facturation"
-      title="Nouvelle facture"
-      description="Le numéro de facture est attribué à l'enregistrement. Le PDF est généré automatiquement."
-    >
-      <InvoiceForm />
-    </PageShell>
-  );
+  return <InvoiceForm />;
 }
