@@ -45,5 +45,5 @@ export async function updateCatalogItem<T = Record<string, unknown>>(table: Cata
 }
 
 export async function deleteCatalogItem(table: CatalogTable, id: string): Promise<void> {
-  await requestCatalog(table, { method: "DELETE", body: JSON.stringify({ id }));
+  await requestCatalog(table, { method: "DELETE", body: JSON.stringify({ id }) });
 }
