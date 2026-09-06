@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
@@ -10,20 +9,15 @@ import { formatMoney } from "@/lib/quotes/status";
 import { INVOICE_STATUSES, invoiceStatusLabel } from "@/lib/invoices/status";
 import { InvoiceForm } from "@/components/invoice-form";
 
-const searchSchema = z.object({
-  new: z.literal("1").optional(),
-});
-
 export const Route = createFileRoute("/_authenticated/devis/factures")({
-  validateSearch: searchSchema,
   component: InvoicesList,
   head: () => ({ meta: [{ title: "Factures — JEITINHO" }] }),
 });
 
 function InvoicesList() {
   const [filter, setFilter] = useState("all");
-  const { new: newInvoice } = Route.useSearch();
-  const isNew = newInvoice === "1";
+  const [isNew, setIsNew] = useState(false);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["invoices"],
     enabled: !isNew,
@@ -40,12 +34,15 @@ function InvoicesList() {
   if (isNew) return <InvoiceForm />;
 
   const rows = (data ?? []).filter((i: any) => filter === "all" || i.status === filter);
-  const newInvoiceHref = "/devis/factures?new=1";
-  const newInvoiceAction = (
-    <a href={newInvoiceHref} className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">
+  const newInvoiceButton = (
+    <button
+      type="button"
+      onClick={() => setIsNew(true)}
+      className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm"
+    >
       <FilePlus2 className="mr-2 h-4 w-4" />
       Nouvelle facture
-    </a>
+    </button>
   );
 
   return (
@@ -60,7 +57,7 @@ function InvoicesList() {
               Devis
             </button>
           </Link>
-          {newInvoiceAction}
+          {newInvoiceButton}
           <span className="rounded-md border border-primary bg-primary px-3 py-2 text-xs text-primary-foreground">Factures</span>
         </div>
       }
@@ -88,9 +85,7 @@ function InvoicesList() {
           <FileText className="mx-auto mb-4 h-8 w-8 text-primary" />
           <h2 className="text-xl">Aucune facture</h2>
           <p className="mt-2 text-sm text-muted-foreground">Créez une facture autonome ou convertissez un devis accepté.</p>
-          <a href={newInvoiceHref} className="mt-6 inline-flex">
-            <span className="btn-primary inline-flex h-9 items-center rounded-md px-4 text-sm">Nouvelle facture</span>
-          </a>
+          <div className="mt-6">{newInvoiceButton}</div>
         </Card>
       ) : (
         <div className="space-y-2">
