@@ -1,7 +1,9 @@
 export type CatalogTable = "experiences" | "services" | "ticket_offers";
 
-async function requestCatalog<T>(table: CatalogTable, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api/catalog?table=${encodeURIComponent(table)}`, {
+async function requestCatalog<T>(table: CatalogTable, init?: RequestInit, query?: Record<string, string>): Promise<T> {
+  const params = new URLSearchParams({ table });
+  for (const [key, value] of Object.entries(query ?? {})) params.set(key, value);
+  const response = await fetch(`/api/catalog?${params.toString()}`, {
     credentials: "include",
     ...init,
     headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
@@ -20,10 +22,14 @@ export async function fetchCatalog<T = Record<string, unknown>>(
     : table === "services"
       ? "group_slug.asc,title.asc"
       : "title.asc";
-  return requestCatalog<T[]>(table, {
-    method: "GET",
-    headers: { "x-catalog-order": order },
-  });
+  return requestCatalog<T[]>(table, { method: "GET" }, { order });
+}
+
+export async function fetchCatalogItem<T = Record<string, unknown>>(
+  table: CatalogTable,
+  id: string,
+): Promise<T> {
+  return requestCatalog<T>(table, { method: "GET" }, { id });
 }
 
 export async function createCatalogItem<T = Record<string, unknown>>(table: CatalogTable, values: Record<string, unknown>): Promise<T> {
@@ -39,5 +45,5 @@ export async function updateCatalogItem<T = Record<string, unknown>>(table: Cata
 }
 
 export async function deleteCatalogItem(table: CatalogTable, id: string): Promise<void> {
-  await requestCatalog(table, { method: "DELETE", body: JSON.stringify({ id }) });
+  await requestCatalog(table, { method: "DELETE", body: JSON.stringify({ id }));
 }
