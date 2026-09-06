@@ -23,6 +23,34 @@ function cleanClientValues(input: unknown) {
   return Object.fromEntries(Object.entries(source).filter(([key]) => CLIENT_FIELDS.has(key)));
 }
 
+async function clearClientReferences(table: string, accessToken: string, clientId: string) {
+  const restUrl = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  restUrl.searchParams.set("client_id", `eq.${clientId}`);
+  const response = await fetch(restUrl, {
+    method: "PATCH",
+    headers: { ...headers(accessToken), Prefer: "return=minimal" },
+    body: JSON.stringify({ client_id: null }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Impossible de dissocier le client de ${table}.`);
+  }
+}
+
+async function clearClientTaskReferences(accessToken: string, clientId: string) {
+  const restUrl = new URL(`${SUPABASE_URL}/rest/v1/crm_tasks`);
+  restUrl.searchParams.set("client_id", `eq.${clientId}`);
+  const response = await fetch(restUrl, {
+    method: "PATCH",
+    headers: { ...headers(accessToken), Prefer: "return=minimal" },
+    body: JSON.stringify({ client_id: null }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Impossible de dissocier les tâches CRM du client.");
+  }
+}
+
 async function handle({ request }: { request: Request }) {
   const current = await getCurrentUser(request);
   if (!current) return Response.json({ data: null, error: { message: "Unauthorized" } }, { status: 401 });
@@ -95,7 +123,28 @@ async function handle({ request }: { request: Request }) {
   }
 
   if (request.method === "DELETE") {
-    const response = await fetch(restUrl, { method: "DELETE", headers: { ...baseHeaders, Prefer: "return=minimal" } });
+    try {
+      // Keep historical business records and only remove their client relationship.
+      // This also makes deletion work in environments where the historical FK
+      // was created with NO ACTION instead of the intended SET NULL behavior.
+      await Promise.all([
+        clearClientReferences("prospects", current.session.access_token, targetId),
+        clearClientReferences("quotes", current.session.access_token, targetId),
+        clearClientReferences("trips", current.session.access_token, targetId),
+        clearClientReferences("invoices", current.session.access_token, targetId),
+        clearClientTaskReferences(current.session.access_token, targetId),
+      ]);
+    } catch (error) {
+      return Response.json({
+        data: null,
+        error: { message: error instanceof Error ? error.message : "Impossible de supprimer les dépendances du client." },
+      }, { status: 409 });
+    }
+
+    const response = await fetch(restUrl, {
+      method: "DELETE",
+      headers: { ...baseHeaders, Prefer: "return=minimal" },
+    });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
