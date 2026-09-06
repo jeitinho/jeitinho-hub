@@ -83,7 +83,26 @@ async function handle({ request }: { request: Request }) {
   }
 
   if (request.method === "DELETE") {
-    const response = await fetch(restUrl, { method: "DELETE", headers: { ...baseHeaders, Prefer: "return=minimal" } });
+    // Delete CRM tasks explicitly first so older Supabase environments whose
+    // foreign key was created without ON DELETE CASCADE cannot return HTTP 409.
+    const tasksUrl = new URL(`${SUPABASE_URL}/rest/v1/crm_tasks`);
+    tasksUrl.searchParams.set("lead_id", `eq.${targetId}`);
+    const tasksResponse = await fetch(tasksUrl, {
+      method: "DELETE",
+      headers: { ...baseHeaders, Prefer: "return=minimal" },
+    });
+    if (!tasksResponse.ok) {
+      const taskText = await tasksResponse.text();
+      return new Response(taskText || JSON.stringify({ error: { message: "Impossible de supprimer les tâches liées au lead." } }), {
+        status: tasksResponse.status,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    const response = await fetch(restUrl, {
+      method: "DELETE",
+      headers: { ...baseHeaders, Prefer: "return=minimal" },
+    });
     const text = await response.text();
     return new Response(text, { status: response.status, headers: { "content-type": "application/json" } });
   }
