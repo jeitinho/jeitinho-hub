@@ -54,7 +54,7 @@ export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: st
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["ticket-offer-variants", ticketOfferId],
     queryFn: () => fetchTicketOfferVariants<VariantDb>(ticketOfferId),
   });
@@ -109,6 +109,8 @@ export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: st
 
       {isLoading ? (
         <div className="h-16 animate-pulse rounded-md bg-muted/50" />
+      ) : error ? (
+        <p className="text-sm text-destructive">Impossible de charger les secteurs : {error instanceof Error ? error.message : "erreur inconnue"}.</p>
       ) : !rows.length ? (
         <p className="text-sm text-muted-foreground">Aucun secteur — ce billet se vend au prix unique ci-dessus.</p>
       ) : (
