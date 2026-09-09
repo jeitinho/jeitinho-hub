@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth/supabase-auth";
 
 const SUPABASE_URL = "https://sxzdabtarlgozixcbzus.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn";
-const TABLES = new Set(["experiences", "services", "ticket_offers"]);
+const TABLES = new Set(["experiences", "services", "ticket_offers", "ticket_offer_variants"]);
 
 function headers(accessToken: string) {
   return {
@@ -27,8 +27,15 @@ async function handle({ request }: { request: Request }) {
   if (request.method === "GET") {
     const id = url.searchParams.get("id");
     const order = url.searchParams.get("order") ?? "title.asc";
-    const allowedOrders = new Set(["title.asc", "title.desc", "group_slug.asc,title.asc"]);
+    const allowedOrders = new Set(["title.asc", "title.desc", "group_slug.asc,title.asc", "sort_order.asc"]);
     if (id) restUrl.searchParams.set("id", `eq.${id}`);
+    // ticket_offer_variants is always scoped to one parent ticket — never
+    // list every variant across every ticket.
+    if (table === "ticket_offer_variants") {
+      const ticketOfferId = url.searchParams.get("ticket_offer_id");
+      if (!ticketOfferId) return Response.json({ data: null, error: { message: "Missing ticket_offer_id" } }, { status: 400 });
+      restUrl.searchParams.set("ticket_offer_id", `eq.${ticketOfferId}`);
+    }
     restUrl.searchParams.set("order", allowedOrders.has(order) ? order : "title.asc");
     const response = await fetch(restUrl, { headers: headers(current.session.access_token) });
     const body = await response.text();
