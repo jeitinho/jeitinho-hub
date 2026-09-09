@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/auth/login")({
               error: "Profil Hub introuvable ou inactif après authentification Supabase.",
             }, { status: 403 });
           }
-          return new Response(JSON.stringify({ ok: true, user: current.user }), {
+          return new Response(JSON.stringify({ ok: true, user: current.user, session: current.session }), {
             status: 200,
             headers: { "content-type": "application/json", "set-cookie": sessionCookie(session) },
           });

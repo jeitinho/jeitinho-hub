@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { JeitinhoLogo } from "@/components/jeitinho-logo";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -36,6 +37,9 @@ function AuthPage() {
       });
       const body = await response.json().catch(() => null);
       if (!response.ok) return toast.error(body?.error ?? "Connexion impossible.");
+      if (body?.session?.access_token && body?.session?.refresh_token) {
+        await supabase.auth.setSession({ access_token: body.session.access_token, refresh_token: body.session.refresh_token });
+      }
       window.location.assign("/dashboard");
     } catch {
       toast.error("Connexion impossible.");
@@ -57,6 +61,9 @@ function AuthPage() {
       const body = await response.json().catch(() => null);
       if (!response.ok) return toast.error(body?.error ?? "Création impossible.");
       toast.success(body?.message ?? "Compte créé. Il sera activé après validation.");
+      if (body?.session?.access_token && body?.session?.refresh_token) {
+        await supabase.auth.setSession({ access_token: body.session.access_token, refresh_token: body.session.refresh_token });
+      }
       if (body?.active) window.location.assign("/dashboard");
     } catch {
       toast.error("Création impossible.");

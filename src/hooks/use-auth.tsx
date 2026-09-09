@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
   | "admin"
@@ -19,6 +20,22 @@ export type AuthUser = {
   roles: AppRole[];
 };
 
+// The Hub's real login goes through an httpOnly cookie (see src/routes/auth.tsx),
+// which the browser's Supabase SDK never sees on its own. Without a bridged
+// session, every supabase.from(...) call from the browser runs as the anon
+// role and gets silently empty-filtered by RLS. New logins bridge immediately
+// (auth.tsx); this covers sessions that started before that existed.
+async function bridgeSupabaseSession() {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) return;
+  const response = await fetch("/api/auth/session", { credentials: "include" }).catch(() => null);
+  if (!response?.ok) return;
+  const body = await response.json().catch(() => null);
+  if (body?.session?.access_token && body?.session?.refresh_token) {
+    await supabase.auth.setSession({ access_token: body.session.access_token, refresh_token: body.session.refresh_token });
+  }
+}
+
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +47,7 @@ export function useAuth() {
         const body = await response.json().catch(() => null);
         if (!mounted) return;
         setUser(response.ok && body?.user ? body.user : null);
+        if (response.ok && body?.user) void bridgeSupabaseSession();
       })
       .catch(() => {
         if (mounted) setUser(null);

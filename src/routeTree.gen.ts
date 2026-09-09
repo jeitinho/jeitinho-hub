@@ -54,6 +54,7 @@ import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 import { Route as ApiAuthRequestResetRouteImport } from './routes/api/auth/request-reset'
 import { Route as ApiAuthResetPasswordRouteImport } from './routes/api/auth/reset-password'
+import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
 import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
 import { Route as ApiDbQueryRouteImport } from './routes/api/db/query'
 import { Route as ApiDbRpcRouteImport } from './routes/api/db/rpc'
@@ -301,6 +302,11 @@ const ApiAuthResetPasswordRoute = ApiAuthResetPasswordRouteImport.update({
   path: '/api/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
+  id: '/api/auth/session',
+  path: '/api/auth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSignupRoute = ApiAuthSignupRouteImport.update({
   id: '/api/auth/signup',
   path: '/api/auth/signup',
@@ -405,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/auth/request-reset': typeof ApiAuthRequestResetRoute
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
   '/api/db/query': typeof ApiDbQueryRoute
   '/api/db/rpc': typeof ApiDbRpcRoute
@@ -462,6 +469,7 @@ export interface FileRoutesByTo {
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/auth/request-reset': typeof ApiAuthRequestResetRoute
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
   '/api/db/query': typeof ApiDbQueryRoute
   '/api/db/rpc': typeof ApiDbRpcRoute
@@ -521,6 +529,7 @@ export interface FileRoutesById {
   '/api/auth/me': typeof ApiAuthMeRoute
   '/api/auth/request-reset': typeof ApiAuthRequestResetRoute
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
   '/api/db/query': typeof ApiDbQueryRoute
   '/api/db/rpc': typeof ApiDbRpcRoute
@@ -580,6 +589,7 @@ export interface FileRouteTypes {
     | '/api/auth/me'
     | '/api/auth/request-reset'
     | '/api/auth/reset-password'
+    | '/api/auth/session'
     | '/api/auth/signup'
     | '/api/db/query'
     | '/api/db/rpc'
@@ -637,6 +647,7 @@ export interface FileRouteTypes {
     | '/api/auth/me'
     | '/api/auth/request-reset'
     | '/api/auth/reset-password'
+    | '/api/auth/session'
     | '/api/auth/signup'
     | '/api/db/query'
     | '/api/db/rpc'
@@ -695,6 +706,7 @@ export interface FileRouteTypes {
     | '/api/auth/me'
     | '/api/auth/request-reset'
     | '/api/auth/reset-password'
+    | '/api/auth/session'
     | '/api/auth/signup'
     | '/api/db/query'
     | '/api/db/rpc'
@@ -723,6 +735,7 @@ export interface RootRouteChildren {
   ApiAuthMeRoute: typeof ApiAuthMeRoute
   ApiAuthRequestResetRoute: typeof ApiAuthRequestResetRoute
   ApiAuthResetPasswordRoute: typeof ApiAuthResetPasswordRoute
+  ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiAuthSignupRoute: typeof ApiAuthSignupRoute
   ApiDbQueryRoute: typeof ApiDbQueryRoute
   ApiDbRpcRoute: typeof ApiDbRpcRoute
@@ -1051,6 +1064,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/session': {
+      id: '/api/auth/session'
+      path: '/api/auth/session'
+      fullPath: '/api/auth/session'
+      preLoaderRoute: typeof ApiAuthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/signup': {
       id: '/api/auth/signup'
       path: '/api/auth/signup'
@@ -1326,6 +1346,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthMeRoute: ApiAuthMeRoute,
   ApiAuthRequestResetRoute: ApiAuthRequestResetRoute,
   ApiAuthResetPasswordRoute: ApiAuthResetPasswordRoute,
+  ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiAuthSignupRoute: ApiAuthSignupRoute,
   ApiDbQueryRoute: ApiDbQueryRoute,
   ApiDbRpcRoute: ApiDbRpcRoute,

@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/auth/signup")({
             return Response.json({ ok: true, active: false, message: "Compte créé. Vérifiez votre email si nécessaire, puis un administrateur validera votre accès." });
           }
           await createPendingProfile(result.access_token, result.user, parsed.data.fullName);
-          return new Response(JSON.stringify({ ok: true, active: false, message: "Compte créé. Un administrateur doit valider votre accès." }), {
+          return new Response(JSON.stringify({ ok: true, active: false, message: "Compte créé. Un administrateur doit valider votre accès.", session: { access_token: result.access_token, refresh_token: result.refresh_token } }), {
             status: 200,
             headers: { "content-type": "application/json", "set-cookie": sessionCookie({ access_token: result.access_token, refresh_token: result.refresh_token }) },
           });
