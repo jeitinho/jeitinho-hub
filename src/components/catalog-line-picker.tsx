@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 
 export type CatalogLineSource = "experience" | "service" | "ticket" | null;
 
@@ -19,10 +19,17 @@ type CatalogLinePickerProps = {
   onSelect: (selection: CatalogLineSelection) => void;
 };
 
-type CatalogOption = CatalogLineSelection & { value: string; kindLabel: string };
+export type CatalogOption = CatalogLineSelection & { value: string; kindLabel: string };
 
-export function CatalogLinePicker({ value, currency, onSelect }: CatalogLinePickerProps) {
-  const { data: options = [], isLoading } = useQuery({
+const MANUAL_VALUE = "__manual__";
+
+/**
+ * Shared catalog data source (experiences + services + ticket_offers) used
+ * by both the quote/invoice line picker and the lead "Activités souhaitées"
+ * field, so both stay backed by the exact same query.
+ */
+export function useCatalogLineOptions(currency: string) {
+  return useQuery({
     queryKey: ["catalog-line-options"],
     queryFn: async () => {
       const [{ data: experiences, error: experiencesError }, { data: services, error: servicesError }, { data: tickets, error: ticketsError }] = await Promise.all([
@@ -47,28 +54,31 @@ export function CatalogLinePicker({ value, currency, onSelect }: CatalogLinePick
       return rows;
     },
   });
+}
 
-  const effectiveValue = value || "__manual__";
+export function CatalogLinePicker({ value, currency, onSelect }: CatalogLinePickerProps) {
+  const { data: options = [], isLoading } = useCatalogLineOptions(currency);
+
+  const comboboxOptions: ComboboxOption[] = [
+    { value: MANUAL_VALUE, label: "Saisie manuelle" },
+    ...(options as CatalogOption[]).map((option) => ({ value: option.value, label: `${option.kindLabel} — ${option.label}` })),
+  ];
+
+  const effectiveValue = value || MANUAL_VALUE;
+
   return (
-    <Select
+    <Combobox
+      options={comboboxOptions}
       value={effectiveValue}
-      onValueChange={(next) => {
-        if (next === "__manual__") return;
+      onChange={(next) => {
+        if (next === MANUAL_VALUE) return;
         const option = (options as CatalogOption[]).find((item) => item.value === next);
         if (option) onSelect(option);
       }}
-    >
-      <SelectTrigger className="h-9 text-xs">
-        <SelectValue placeholder={isLoading ? "Chargement…" : "Choisir dans le catalogue"} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="__manual__">Saisie manuelle</SelectItem>
-        {(options as CatalogOption[]).map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.kindLabel} — {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+      placeholder={isLoading ? "Chargement…" : "Choisir dans le catalogue"}
+      searchPlaceholder="Rechercher dans le catalogue…"
+      emptyText="Aucun résultat."
+      className="h-9 text-xs"
+    />
   );
 }

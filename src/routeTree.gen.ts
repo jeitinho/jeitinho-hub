@@ -29,11 +29,15 @@ import { Route as AuthenticatedParametresRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
+import { Route as ApiCatalogRouteImport } from './routes/api/catalog'
+import { Route as ApiClientsRouteImport } from './routes/api/clients'
+import { Route as ApiLeadsRouteImport } from './routes/api/leads'
 import { Route as AuthenticatedBilletterieIdRouteImport } from './routes/_authenticated/billetterie.$id'
 import { Route as AuthenticatedBilletterieNewRouteImport } from './routes/_authenticated/billetterie.new'
 import { Route as AuthenticatedBlogIdRouteImport } from './routes/_authenticated/blog.$id'
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog.new'
 import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
+import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
 import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
 import { Route as AuthenticatedDevisFacturesRouteImport } from './routes/_authenticated/devis.factures'
 import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
@@ -58,6 +62,7 @@ import { Route as ApiInternalHealthRouteImport } from './routes/api/internal/hea
 import { Route as ApiStorageFileRouteImport } from './routes/api/storage/file'
 import { Route as ApiStorageSignedUrlRouteImport } from './routes/api/storage/signed-url'
 import { Route as ApiStorageUploadRouteImport } from './routes/api/storage/upload'
+import { Route as AuthenticatedCrmLeadsNewRouteImport } from './routes/_authenticated/crm.leads.new'
 import { Route as AuthenticatedDevisFacturesIdRouteImport } from './routes/_authenticated/devis.factures.$id'
 import { Route as ApiContentContentIdWorkflowRouteImport } from './routes/api/content/$contentId/workflow'
 
@@ -164,6 +169,21 @@ const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
   path: '/voyages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiCatalogRoute = ApiCatalogRouteImport.update({
+  id: '/api/catalog',
+  path: '/api/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClientsRoute = ApiClientsRouteImport.update({
+  id: '/api/clients',
+  path: '/api/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLeadsRoute = ApiLeadsRouteImport.update({
+  id: '/api/leads',
+  path: '/api/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedBilletterieIdRoute =
   AuthenticatedBilletterieIdRouteImport.update({
     id: '/$id',
@@ -189,6 +209,11 @@ const AuthenticatedBlogNewRoute = AuthenticatedBlogNewRouteImport.update({
 const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
+  getParentRoute: () => AuthenticatedClientsRoute,
+} as any)
+const AuthenticatedClientsNewRoute = AuthenticatedClientsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
   getParentRoute: () => AuthenticatedClientsRoute,
 } as any)
 const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
@@ -316,6 +341,12 @@ const ApiStorageUploadRoute = ApiStorageUploadRouteImport.update({
   path: '/api/storage/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCrmLeadsNewRoute =
+  AuthenticatedCrmLeadsNewRouteImport.update({
+    id: '/leads/new',
+    path: '/leads/new',
+    getParentRoute: () => AuthenticatedCrmRoute,
+  } as any)
 const AuthenticatedDevisFacturesIdRoute =
   AuthenticatedDevisFacturesIdRouteImport.update({
     id: '/$id',
@@ -340,7 +371,7 @@ export interface FileRoutesByFullPath {
   '/calendrier': typeof AuthenticatedCalendrierRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/contenus': typeof AuthenticatedContenusRoute
-  '/crm': typeof AuthenticatedCrmRoute
+  '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devis': typeof AuthenticatedDevisRouteWithChildren
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
@@ -349,11 +380,15 @@ export interface FileRoutesByFullPath {
   '/partenaires': typeof AuthenticatedPartenairesRoute
   '/services': typeof AuthenticatedServicesRouteWithChildren
   '/voyages': typeof AuthenticatedVoyagesRouteWithChildren
+  '/api/catalog': typeof ApiCatalogRoute
+  '/api/clients': typeof ApiClientsRoute
+  '/api/leads': typeof ApiLeadsRoute
   '/billetterie/$id': typeof AuthenticatedBilletterieIdRoute
   '/billetterie/new': typeof AuthenticatedBilletterieNewRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
+  '/clients/new': typeof AuthenticatedClientsNewRoute
   '/devis/$id': typeof AuthenticatedDevisIdRoute
   '/devis/factures': typeof AuthenticatedDevisFacturesRouteWithChildren
   '/devis/new': typeof AuthenticatedDevisNewRoute
@@ -378,6 +413,7 @@ export interface FileRoutesByFullPath {
   '/api/storage/file': typeof ApiStorageFileRoute
   '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
   '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/crm/leads/new': typeof AuthenticatedCrmLeadsNewRoute
   '/devis/factures/$id': typeof AuthenticatedDevisFacturesIdRoute
   '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
@@ -392,7 +428,7 @@ export interface FileRoutesByTo {
   '/calendrier': typeof AuthenticatedCalendrierRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/contenus': typeof AuthenticatedContenusRoute
-  '/crm': typeof AuthenticatedCrmRoute
+  '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devis': typeof AuthenticatedDevisRouteWithChildren
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
@@ -401,11 +437,15 @@ export interface FileRoutesByTo {
   '/partenaires': typeof AuthenticatedPartenairesRoute
   '/services': typeof AuthenticatedServicesRouteWithChildren
   '/voyages': typeof AuthenticatedVoyagesRouteWithChildren
+  '/api/catalog': typeof ApiCatalogRoute
+  '/api/clients': typeof ApiClientsRoute
+  '/api/leads': typeof ApiLeadsRoute
   '/billetterie/$id': typeof AuthenticatedBilletterieIdRoute
   '/billetterie/new': typeof AuthenticatedBilletterieNewRoute
   '/blog/$id': typeof AuthenticatedBlogIdRoute
   '/blog/new': typeof AuthenticatedBlogNewRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
+  '/clients/new': typeof AuthenticatedClientsNewRoute
   '/devis/$id': typeof AuthenticatedDevisIdRoute
   '/devis/factures': typeof AuthenticatedDevisFacturesRouteWithChildren
   '/devis/new': typeof AuthenticatedDevisNewRoute
@@ -430,6 +470,7 @@ export interface FileRoutesByTo {
   '/api/storage/file': typeof ApiStorageFileRoute
   '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
   '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/crm/leads/new': typeof AuthenticatedCrmLeadsNewRoute
   '/devis/factures/$id': typeof AuthenticatedDevisFacturesIdRoute
   '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
@@ -446,7 +487,7 @@ export interface FileRoutesById {
   '/_authenticated/calendrier': typeof AuthenticatedCalendrierRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/contenus': typeof AuthenticatedContenusRoute
-  '/_authenticated/crm': typeof AuthenticatedCrmRoute
+  '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/devis': typeof AuthenticatedDevisRouteWithChildren
   '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
@@ -455,11 +496,15 @@ export interface FileRoutesById {
   '/_authenticated/partenaires': typeof AuthenticatedPartenairesRoute
   '/_authenticated/services': typeof AuthenticatedServicesRouteWithChildren
   '/_authenticated/voyages': typeof AuthenticatedVoyagesRouteWithChildren
+  '/api/catalog': typeof ApiCatalogRoute
+  '/api/clients': typeof ApiClientsRoute
+  '/api/leads': typeof ApiLeadsRoute
   '/_authenticated/billetterie/$id': typeof AuthenticatedBilletterieIdRoute
   '/_authenticated/billetterie/new': typeof AuthenticatedBilletterieNewRoute
   '/_authenticated/blog/$id': typeof AuthenticatedBlogIdRoute
   '/_authenticated/blog/new': typeof AuthenticatedBlogNewRoute
   '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
+  '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
   '/_authenticated/devis/$id': typeof AuthenticatedDevisIdRoute
   '/_authenticated/devis/factures': typeof AuthenticatedDevisFacturesRouteWithChildren
   '/_authenticated/devis/new': typeof AuthenticatedDevisNewRoute
@@ -484,6 +529,7 @@ export interface FileRoutesById {
   '/api/storage/file': typeof ApiStorageFileRoute
   '/api/storage/signed-url': typeof ApiStorageSignedUrlRoute
   '/api/storage/upload': typeof ApiStorageUploadRoute
+  '/_authenticated/crm/leads/new': typeof AuthenticatedCrmLeadsNewRoute
   '/_authenticated/devis/factures/$id': typeof AuthenticatedDevisFacturesIdRoute
   '/api/content/$contentId/workflow': typeof ApiContentContentIdWorkflowRoute
 }
@@ -509,11 +555,15 @@ export interface FileRouteTypes {
     | '/partenaires'
     | '/services'
     | '/voyages'
+    | '/api/catalog'
+    | '/api/clients'
+    | '/api/leads'
     | '/billetterie/$id'
     | '/billetterie/new'
     | '/blog/$id'
     | '/blog/new'
     | '/clients/$id'
+    | '/clients/new'
     | '/devis/$id'
     | '/devis/factures'
     | '/devis/new'
@@ -538,6 +588,7 @@ export interface FileRouteTypes {
     | '/api/storage/file'
     | '/api/storage/signed-url'
     | '/api/storage/upload'
+    | '/crm/leads/new'
     | '/devis/factures/$id'
     | '/api/content/$contentId/workflow'
   fileRoutesByTo: FileRoutesByTo
@@ -561,11 +612,15 @@ export interface FileRouteTypes {
     | '/partenaires'
     | '/services'
     | '/voyages'
+    | '/api/catalog'
+    | '/api/clients'
+    | '/api/leads'
     | '/billetterie/$id'
     | '/billetterie/new'
     | '/blog/$id'
     | '/blog/new'
     | '/clients/$id'
+    | '/clients/new'
     | '/devis/$id'
     | '/devis/factures'
     | '/devis/new'
@@ -590,6 +645,7 @@ export interface FileRouteTypes {
     | '/api/storage/file'
     | '/api/storage/signed-url'
     | '/api/storage/upload'
+    | '/crm/leads/new'
     | '/devis/factures/$id'
     | '/api/content/$contentId/workflow'
   id:
@@ -614,11 +670,15 @@ export interface FileRouteTypes {
     | '/_authenticated/partenaires'
     | '/_authenticated/services'
     | '/_authenticated/voyages'
+    | '/api/catalog'
+    | '/api/clients'
+    | '/api/leads'
     | '/_authenticated/billetterie/$id'
     | '/_authenticated/billetterie/new'
     | '/_authenticated/blog/$id'
     | '/_authenticated/blog/new'
     | '/_authenticated/clients/$id'
+    | '/_authenticated/clients/new'
     | '/_authenticated/devis/$id'
     | '/_authenticated/devis/factures'
     | '/_authenticated/devis/new'
@@ -643,6 +703,7 @@ export interface FileRouteTypes {
     | '/api/storage/file'
     | '/api/storage/signed-url'
     | '/api/storage/upload'
+    | '/_authenticated/crm/leads/new'
     | '/_authenticated/devis/factures/$id'
     | '/api/content/$contentId/workflow'
   fileRoutesById: FileRoutesById
@@ -653,6 +714,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiCatalogRoute: typeof ApiCatalogRoute
+  ApiClientsRoute: typeof ApiClientsRoute
+  ApiLeadsRoute: typeof ApiLeadsRoute
   ApiAuthDiagnosticsLogoRoute: typeof ApiAuthDiagnosticsLogoRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
@@ -812,6 +876,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVoyagesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/catalog': {
+      id: '/api/catalog'
+      path: '/api/catalog'
+      fullPath: '/api/catalog'
+      preLoaderRoute: typeof ApiCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/clients': {
+      id: '/api/clients'
+      path: '/api/clients'
+      fullPath: '/api/clients'
+      preLoaderRoute: typeof ApiClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/leads': {
+      id: '/api/leads'
+      path: '/api/leads'
+      fullPath: '/api/leads'
+      preLoaderRoute: typeof ApiLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/billetterie/$id': {
       id: '/_authenticated/billetterie/$id'
       path: '/$id'
@@ -845,6 +930,13 @@ declare module '@tanstack/react-router' {
       path: '/$id'
       fullPath: '/clients/$id'
       preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
+      parentRoute: typeof AuthenticatedClientsRoute
+    }
+    '/_authenticated/clients/new': {
+      id: '/_authenticated/clients/new'
+      path: '/new'
+      fullPath: '/clients/new'
+      preLoaderRoute: typeof AuthenticatedClientsNewRouteImport
       parentRoute: typeof AuthenticatedClientsRoute
     }
     '/_authenticated/devis/$id': {
@@ -1015,6 +1107,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStorageUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/crm/leads/new': {
+      id: '/_authenticated/crm/leads/new'
+      path: '/leads/new'
+      fullPath: '/crm/leads/new'
+      preLoaderRoute: typeof AuthenticatedCrmLeadsNewRouteImport
+      parentRoute: typeof AuthenticatedCrmRoute
+    }
     '/_authenticated/devis/factures/$id': {
       id: '/_authenticated/devis/factures/$id'
       path: '/$id'
@@ -1063,14 +1162,27 @@ const AuthenticatedBlogRouteWithChildren =
 
 interface AuthenticatedClientsRouteChildren {
   AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRoute
+  AuthenticatedClientsNewRoute: typeof AuthenticatedClientsNewRoute
 }
 
 const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
   AuthenticatedClientsIdRoute: AuthenticatedClientsIdRoute,
+  AuthenticatedClientsNewRoute: AuthenticatedClientsNewRoute,
 }
 
 const AuthenticatedClientsRouteWithChildren =
   AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
+
+interface AuthenticatedCrmRouteChildren {
+  AuthenticatedCrmLeadsNewRoute: typeof AuthenticatedCrmLeadsNewRoute
+}
+
+const AuthenticatedCrmRouteChildren: AuthenticatedCrmRouteChildren = {
+  AuthenticatedCrmLeadsNewRoute: AuthenticatedCrmLeadsNewRoute,
+}
+
+const AuthenticatedCrmRouteWithChildren =
+  AuthenticatedCrmRoute._addFileChildren(AuthenticatedCrmRouteChildren)
 
 interface AuthenticatedDevisFacturesRouteChildren {
   AuthenticatedDevisFacturesIdRoute: typeof AuthenticatedDevisFacturesIdRoute
@@ -1167,7 +1279,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendrierRoute: typeof AuthenticatedCalendrierRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedContenusRoute: typeof AuthenticatedContenusRoute
-  AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
+  AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDevisRoute: typeof AuthenticatedDevisRouteWithChildren
   AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
@@ -1185,7 +1297,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendrierRoute: AuthenticatedCalendrierRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedContenusRoute: AuthenticatedContenusRoute,
-  AuthenticatedCrmRoute: AuthenticatedCrmRoute,
+  AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDevisRoute: AuthenticatedDevisRouteWithChildren,
   AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
@@ -1205,6 +1317,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiCatalogRoute: ApiCatalogRoute,
+  ApiClientsRoute: ApiClientsRoute,
+  ApiLeadsRoute: ApiLeadsRoute,
   ApiAuthDiagnosticsLogoRoute: ApiAuthDiagnosticsLogoRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,

@@ -6,9 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ComboboxMulti, type ComboboxOption } from "@/components/ui/combobox";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 import { createLead } from "@/lib/leads-gateway";
+import { useCatalogLineOptions, type CatalogOption } from "@/components/catalog-line-picker";
+
+const LEAD_SOURCES = ["Instagram", "WhatsApp", "Site web", "Blog", "Bouche-à-oreille", "Partenaire", "Autre"] as const;
 
 export const Route = createFileRoute("/_authenticated/crm/leads/new")({
   component: NewLead,
@@ -23,9 +28,11 @@ function NewLead() {
   const [travelStart, setTravelStart] = useState("");
   const [travelEnd, setTravelEnd] = useState("");
   const [partySize, setPartySize] = useState("");
-  const [activities, setActivities] = useState("");
+  const [activities, setActivities] = useState<string[]>([]);
   const [message, setMessage] = useState("");
-  const [source, setSource] = useState("manual");
+  const [source, setSource] = useState("");
+  const { data: catalogOptions = [] } = useCatalogLineOptions("EUR");
+  const activityOptions: ComboboxOption[] = (catalogOptions as CatalogOption[]).map((option) => ({ value: option.label, label: option.label }));
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -39,7 +46,7 @@ function NewLead() {
         travel_start: travelStart || null,
         travel_end: travelEnd || null,
         party_size: partySize ? Number(partySize) : null,
-        activities: activities.split(",").map((item) => item.trim()).filter(Boolean),
+        activities,
         message: message.trim() || null,
         source: source.trim() || "manual",
         status: "new",
@@ -71,9 +78,9 @@ function NewLead() {
             <div><Label>Arrivée</Label><Input className="mt-1.5" type="date" value={travelStart} onChange={(e) => setTravelStart(e.target.value)}/></div>
             <div><Label>Départ</Label><Input className="mt-1.5" type="date" value={travelEnd} onChange={(e) => setTravelEnd(e.target.value)}/></div>
             <div><Label>Nombre de personnes</Label><Input className="mt-1.5" type="number" min="1" step="1" value={partySize} onChange={(e) => setPartySize(e.target.value)}/></div>
-            <div><Label>Source</Label><Input className="mt-1.5" value={source} onChange={(e) => setSource(e.target.value)} placeholder="Instagram, WhatsApp…"/></div>
+            <div><Label>Source</Label><Select value={source} onValueChange={setSource}><SelectTrigger className="mt-1.5"><SelectValue placeholder="Choisir une source"/></SelectTrigger><SelectContent>{LEAD_SOURCES.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent></Select></div>
           </div>
-          <div><Label>Activités souhaitées</Label><Input className="mt-1.5" value={activities} onChange={(e) => setActivities(e.target.value)} placeholder="Rocinha, bateau, Maracanã…"/><p className="mt-1 text-xs text-muted-foreground">Séparer les activités par des virgules.</p></div>
+          <div><Label>Activités souhaitées</Label><ComboboxMulti className="mt-1.5" options={activityOptions} values={activities} onChange={setActivities} placeholder="Choisir dans le catalogue…" searchPlaceholder="Rechercher une activité…" emptyText="Aucune activité trouvée." allowCustomValues/></div>
           <div><Label>Message / contexte</Label><Textarea className="mt-1.5 min-h-32" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Demande, contexte, informations utiles…"/></div>
         </Card>
       </div>
