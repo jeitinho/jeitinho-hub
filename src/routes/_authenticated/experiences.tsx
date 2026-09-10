@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCatalog, fetchCatalogItem, deleteCatalogItem, updateCatalogItem } from "@/lib/catalog-gateway";
 import { PageShell } from "@/components/page-shell";
@@ -16,7 +16,9 @@ const searchSchema = z.object({ id: z.string().uuid().optional() });
 export const Route = createFileRoute("/_authenticated/experiences")({ validateSearch: searchSchema, component: ExperiencesList, head: () => ({ meta: [{ title: "Expériences — JEITINHO" }] }) });
 
 function ExperiencesList() {
+  const path = useRouterState({ select: (r) => r.location.pathname });
   const { id } = Route.useSearch();
+  if (path.replace(/\/$/, "") !== "/experiences") return <Outlet />;
   if (id) return <ExperienceDetail id={id} />;
   return <ExperiencesCatalog />;
 }

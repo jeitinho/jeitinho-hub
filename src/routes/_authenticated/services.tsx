@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCatalog, fetchCatalogItem, deleteCatalogItem, updateCatalogItem } from "@/lib/catalog-gateway";
 import { CatalogForm } from "@/components/catalog-form";
@@ -18,7 +18,9 @@ export const Route = createFileRoute("/_authenticated/services")({ validateSearc
 type Service = { id: string; title: string; description: string | null; group_slug: string | null; category: string | null; is_published: boolean; price_label: string | null; price_from: number | null; currency: string | null };
 
 function ServicesFactory() {
+  const path = useRouterState({ select: (r) => r.location.pathname });
   const { id } = Route.useSearch();
+  if (path.replace(/\/$/, "") !== "/services") return <Outlet />;
   if (id) return <ServiceDetail id={id} />;
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "archived">("all");
