@@ -14,14 +14,17 @@ export type CatalogLineSelection = {
 };
 
 type CatalogLinePickerProps = {
+  /** Catalog selection key (e.g. "experience:<uuid>"), or "" when the line is free text. */
   value: string;
+  /** Free-text description — shown in the field when `value` is "". */
+  descriptionValue: string;
+  /** Called when the user types/commits free text instead of picking a catalog item. */
+  onDescriptionChange: (text: string) => void;
   currency: string;
   onSelect: (selection: CatalogLineSelection) => void;
 };
 
 export type CatalogOption = CatalogLineSelection & { value: string; kindLabel: string };
-
-const MANUAL_VALUE = "__manual__";
 
 /**
  * Shared catalog data source (experiences + services + ticket_offers) used
@@ -56,28 +59,32 @@ export function useCatalogLineOptions(currency: string) {
   });
 }
 
-export function CatalogLinePicker({ value, currency, onSelect }: CatalogLinePickerProps) {
+// Single field that behaves as a combobox over the catalogue while still
+// accepting free-hand typing: `value` (a catalog key) takes priority when
+// set, otherwise the field shows/edits `descriptionValue` as plain text.
+// Selecting a catalog item calls onSelect (price/unit/etc. snapshot);
+// typing or committing free text calls onDescriptionChange instead.
+export function CatalogLinePicker({ value, descriptionValue, onDescriptionChange, currency, onSelect }: CatalogLinePickerProps) {
   const { data: options = [], isLoading } = useCatalogLineOptions(currency);
 
-  const comboboxOptions: ComboboxOption[] = [
-    { value: MANUAL_VALUE, label: "Saisie manuelle" },
-    ...(options as CatalogOption[]).map((option) => ({ value: option.value, label: `${option.kindLabel} — ${option.label}` })),
-  ];
+  const comboboxOptions: ComboboxOption[] = (options as CatalogOption[]).map((option) => ({ value: option.value, label: `${option.kindLabel} — ${option.label}` }));
 
-  const effectiveValue = value || MANUAL_VALUE;
+  const effectiveValue = value || descriptionValue;
 
   return (
     <Combobox
       options={comboboxOptions}
       value={effectiveValue}
       onChange={(next) => {
-        if (next === MANUAL_VALUE) return;
         const option = (options as CatalogOption[]).find((item) => item.value === next);
-        if (option) onSelect(option);
+        if (option) { onSelect(option); return; }
+        onDescriptionChange(next);
       }}
-      placeholder={isLoading ? "Chargement…" : "Choisir dans le catalogue"}
-      searchPlaceholder="Rechercher dans le catalogue…"
-      emptyText="Aucun résultat."
+      allowCustomValue
+      customValueLabel={(text) => `Saisie manuelle : « ${text} »`}
+      placeholder={isLoading ? "Chargement…" : "Catalogue ou saisie libre…"}
+      searchPlaceholder="Rechercher dans le catalogue ou saisir un texte libre…"
+      emptyText="Aucun résultat — tapez pour saisir du texte libre."
       className="h-9 text-xs"
     />
   );

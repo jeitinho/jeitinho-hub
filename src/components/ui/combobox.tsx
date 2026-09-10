@@ -27,7 +27,13 @@ type ComboboxProps = {
   searchPlaceholder?: string;
   disabled?: boolean;
   className?: string;
+  /** Allow committing free-typed text that isn't in `options` (adds a "Saisie manuelle" item, same pattern as ComboboxMulti's allowCustomValues). */
+  allowCustomValue?: boolean;
+  /** Label for the custom-value item. Defaults to `Saisie manuelle : « <text> »`. */
+  customValueLabel?: (text: string) => string;
 };
+
+const defaultCustomValueLabel = (text: string) => `Saisie manuelle : « ${text} »`;
 
 export function Combobox({
   options,
@@ -38,9 +44,25 @@ export function Combobox({
   searchPlaceholder = "Rechercher…",
   disabled,
   className,
+  allowCustomValue = false,
+  customValueLabel = defaultCustomValueLabel,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState("");
   const selected = options.find((option) => option.value === value);
+  // With allowCustomValue, `value` may be raw free text rather than an option's
+  // value — fall back to showing it verbatim instead of the placeholder.
+  const triggerLabel = selected ? selected.label : allowCustomValue && value ? value : undefined;
+
+  const trimmedSearch = search.trim();
+  const hasExactMatch = options.some((option) => option.label.toLowerCase() === trimmedSearch.toLowerCase());
+
+  const commitCustomValue = () => {
+    if (!trimmedSearch || hasExactMatch) return;
+    onChange(trimmedSearch);
+    setSearch("");
+    setOpen(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -53,17 +75,17 @@ export function Combobox({
           disabled={disabled}
           className={cn(
             "h-9 w-full justify-between font-normal",
-            !selected && "text-muted-foreground",
+            !triggerLabel && "text-muted-foreground",
             className,
           )}
         >
-          <span className="truncate">{selected ? selected.label : placeholder}</span>
+          <span className="truncate">{triggerLabel ?? placeholder}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+        <Command shouldFilter>
+          <CommandInput placeholder={searchPlaceholder} value={search} onValueChange={setSearch} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
@@ -73,6 +95,7 @@ export function Combobox({
                   value={option.label}
                   onSelect={() => {
                     onChange(option.value);
+                    setSearch("");
                     setOpen(false);
                   }}
                 >
@@ -86,6 +109,14 @@ export function Combobox({
                 </CommandItem>
               ))}
             </CommandGroup>
+            {allowCustomValue && trimmedSearch && !hasExactMatch && (
+              <CommandGroup>
+                <CommandItem value={`__custom__${trimmedSearch}`} onSelect={commitCustomValue}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {customValueLabel(trimmedSearch)}
+                </CommandItem>
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
