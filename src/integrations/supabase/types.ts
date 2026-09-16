@@ -283,6 +283,47 @@ export type Database = {
         }
         Relationships: []
       }
+      chapter_translations: {
+        Row: {
+          chapter_id: string
+          created_at: string
+          id: string
+          intro: string | null
+          language: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          chapter_id: string
+          created_at?: string
+          id?: string
+          intro?: string | null
+          language: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string
+          created_at?: string
+          id?: string
+          intro?: string | null
+          language?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapter_translations_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chapters: {
         Row: {
           cover_media: string | null
@@ -2386,6 +2427,53 @@ export type Database = {
         }
         Relationships: []
       }
+      section_translations: {
+        Row: {
+          blocks: Json | null
+          created_at: string
+          id: string
+          kicker: string | null
+          language: string
+          search_text: string | null
+          section_id: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          blocks?: Json | null
+          created_at?: string
+          id?: string
+          kicker?: string | null
+          language: string
+          search_text?: string | null
+          section_id: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blocks?: Json | null
+          created_at?: string
+          id?: string
+          kicker?: string | null
+          language?: string
+          search_text?: string | null
+          section_id?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "section_translations_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sections: {
         Row: {
           blocks: Json
@@ -2620,6 +2708,8 @@ export type Database = {
           is_published: boolean
           metadata: Json
           notes: string | null
+          photo_ratio: string
+          photo_url: string | null
           pricing_model: string
           public_price: number | null
           slug: string | null
@@ -2645,6 +2735,8 @@ export type Database = {
           is_published?: boolean
           metadata?: Json
           notes?: string | null
+          photo_ratio?: string
+          photo_url?: string | null
           pricing_model?: string
           public_price?: number | null
           slug?: string | null
@@ -2670,6 +2762,8 @@ export type Database = {
           is_published?: boolean
           metadata?: Json
           notes?: string | null
+          photo_ratio?: string
+          photo_url?: string | null
           pricing_model?: string
           public_price?: number | null
           slug?: string | null
