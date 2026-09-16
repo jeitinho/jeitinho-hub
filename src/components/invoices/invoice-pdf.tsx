@@ -3,6 +3,7 @@
  */
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
+import { normalizePdfLanguage, PDF_LOCALE_MAP, INVOICE_I18N } from "@/lib/pdf/pdf-i18n";
 
 registerQuotePdfFonts();
 
@@ -13,6 +14,8 @@ export type InvoicePdfData = {
   title: string;
   status: string;
   currency: string;
+  /** ISO 639-1 code: "fr" | "en" | "pt" | "es". Unrecognized/missing falls back to "fr". */
+  language?: string | null;
   issueDate: string;
   dueDate?: string | null;
   notes?: string | null;
@@ -56,8 +59,8 @@ const s = StyleSheet.create({
   footer: { position: "absolute", bottom: 24, left: 44, right: 44, borderTopWidth: 1, borderTopColor: BRAND.border, paddingTop: 8, fontSize: 7, color: BRAND.inkSoft, textAlign: "center" },
 });
 
-function money(v: number, currency: string) {
-  return `${v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+function money(v: number, currency: string, locale: string) {
+  return `${v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 function frDate(v?: string | null) {
   if (!v) return "—";
@@ -66,6 +69,9 @@ function frDate(v?: string | null) {
 }
 
 export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
+  const lang = normalizePdfLanguage(invoice.language);
+  const t = INVOICE_I18N[lang];
+  const locale = PDF_LOCALE_MAP[lang];
   const total = invoice.lines.reduce((acc, l) => acc + l.quantity * l.unit_price, 0);
   return (
     <Document title={`Facture ${invoice.number}`} author="JEITINHO">
@@ -76,7 +82,7 @@ export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
             <Text style={s.brandSub}>RIO DE JANEIRO · CONCIERGERIE</Text>
           </View>
           <View style={s.refBox}>
-            <Text style={s.label}>FACTURE N°</Text>
+            <Text style={s.label}>{t.invoiceNumberLabel}</Text>
             <Text style={s.ref}>{invoice.number}</Text>
           </View>
         </View>
@@ -85,24 +91,24 @@ export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
 
         <View style={s.cols}>
           <View style={s.card}>
-            <Text style={s.label}>{invoice.billing.legalType === "company" ? "FACTURÉ À (SOCIÉTÉ)" : "FACTURÉ À"}</Text>
+            <Text style={s.label}>{invoice.billing.legalType === "company" ? t.billedToCompanyLabel : t.billedToLabel}</Text>
             <Text style={s.value}>{invoice.billing.legalType === "company" ? (invoice.billing.companyName || invoice.billing.name) : invoice.billing.name}</Text>
-            {invoice.billing.legalType === "company" && invoice.billing.siret ? <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>SIRET : {invoice.billing.siret}</Text> : null}
-            {invoice.billing.legalType === "company" && invoice.billing.vatNumber ? <Text style={{ color: BRAND.inkSoft, marginTop: 2 }}>TVA : {invoice.billing.vatNumber}</Text> : null}
+            {invoice.billing.legalType === "company" && invoice.billing.siret ? <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{t.siretPrefix} {invoice.billing.siret}</Text> : null}
+            {invoice.billing.legalType === "company" && invoice.billing.vatNumber ? <Text style={{ color: BRAND.inkSoft, marginTop: 2 }}>{t.vatPrefix} {invoice.billing.vatNumber}</Text> : null}
             {invoice.billing.address ? <Text style={{ color: BRAND.inkSoft, marginTop: 2 }}>{invoice.billing.address}</Text> : null}
           </View>
           <View style={s.card}>
-            <Text style={s.label}>DATES</Text>
-            <Text style={s.value}>Émise le {frDate(invoice.issueDate)}</Text>
-            <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>Échéance : {frDate(invoice.dueDate)}</Text>
+            <Text style={s.label}>{t.datesLabel}</Text>
+            <Text style={s.value}>{t.issuedOn(frDate(invoice.issueDate))}</Text>
+            <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{t.dueDate(frDate(invoice.dueDate))}</Text>
           </View>
         </View>
 
         <View style={s.tableHead}>
-          <Text style={[s.cLabel, s.th]}>PRESTATION</Text>
-          <Text style={[s.cQty, s.th]}>QTÉ</Text>
-          <Text style={[s.cUnit, s.th]}>P.U.</Text>
-          <Text style={[s.cTotal, s.th]}>TOTAL</Text>
+          <Text style={[s.cLabel, s.th]}>{t.tablePrestation}</Text>
+          <Text style={[s.cQty, s.th]}>{t.tableQty}</Text>
+          <Text style={[s.cUnit, s.th]}>{t.tableUnit}</Text>
+          <Text style={[s.cTotal, s.th]}>{t.tableTotal}</Text>
         </View>
 
         {invoice.lines.map((l, i) => (
@@ -112,26 +118,26 @@ export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
               {l.unit ? <Text style={{ fontSize: 7.5, color: BRAND.inkSoft, marginTop: 2 }}>{l.unit}</Text> : null}
             </View>
             <Text style={s.cQty}>{l.quantity}</Text>
-            <Text style={s.cUnit}>{money(l.unit_price, invoice.currency)}</Text>
-            <Text style={s.cTotal}>{money(l.quantity * l.unit_price, invoice.currency)}</Text>
+            <Text style={s.cUnit}>{money(l.unit_price, invoice.currency, locale)}</Text>
+            <Text style={s.cTotal}>{money(l.quantity * l.unit_price, invoice.currency, locale)}</Text>
           </View>
         ))}
 
         <View style={s.totals}>
           <View style={s.grand}>
-            <Text style={s.grandLabel}>Total TTC</Text>
-            <Text style={s.grandValue}>{money(total, invoice.currency)}</Text>
+            <Text style={s.grandLabel}>{t.totalTtcLabel}</Text>
+            <Text style={s.grandValue}>{money(total, invoice.currency, locale)}</Text>
           </View>
         </View>
 
         {invoice.notes ? (
           <View style={s.notes}>
-            <Text style={s.label}>NOTES</Text>
+            <Text style={s.label}>{t.notesLabel}</Text>
             <Text style={{ lineHeight: 1.5 }}>{invoice.notes}</Text>
           </View>
         ) : null}
 
-        <Text style={s.footer}>JEITINHO · contact@jeitinho.fr · jeitinho.fr</Text>
+        <Text style={s.footer}>{t.footer}</Text>
       </Page>
     </Document>
   );

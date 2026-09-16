@@ -1281,6 +1281,7 @@ export type Database = {
           due_date: string | null
           id: string
           issue_date: string
+          language: string
           notes: string | null
           number: string
           paid_at: string | null
@@ -1306,6 +1307,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           issue_date?: string
+          language?: string
           notes?: string | null
           number: string
           paid_at?: string | null
@@ -1331,6 +1333,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           issue_date?: string
+          language?: string
           notes?: string | null
           number?: string
           paid_at?: string | null
@@ -2130,6 +2133,7 @@ export type Database = {
           id: string
           items: Json
           itinerary: Json
+          language: string
           last_contact_at: string | null
           location: string | null
           next_action: string | null
@@ -2168,6 +2172,7 @@ export type Database = {
           id?: string
           items?: Json
           itinerary?: Json
+          language?: string
           last_contact_at?: string | null
           location?: string | null
           next_action?: string | null
@@ -2206,6 +2211,7 @@ export type Database = {
           id?: string
           items?: Json
           itinerary?: Json
+          language?: string
           last_contact_at?: string | null
           location?: string | null
           next_action?: string | null

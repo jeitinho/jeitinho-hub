@@ -5,6 +5,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
 import { IconCheck, IconX, IconPackage } from "@/lib/pdf/quote-pdf-icons";
+import { normalizePdfLanguage, PDF_LOCALE_MAP, QUOTE_I18N } from "@/lib/pdf/pdf-i18n";
 
 registerQuotePdfFonts();
 
@@ -25,6 +26,8 @@ export type QuotePdfData = {
   project_label?: string | null;
   location?: string | null;
   currency: string;
+  /** ISO 639-1 code: "fr" | "en" | "pt" | "es". Unrecognized/missing falls back to "fr". */
+  language?: string | null;
   period_start?: string | null;
   period_end?: string | null;
   party_size?: number | null;
@@ -91,8 +94,8 @@ const s = StyleSheet.create({
   footer: { position: "absolute", bottom: 24, left: 44, right: 44, borderTopWidth: 1, borderTopColor: BRAND.border, paddingTop: 8, fontSize: 7, color: BRAND.inkSoft, textAlign: "center" },
 });
 
-function money(v: number, currency: string) {
-  return `${v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+function money(v: number, currency: string, locale: string) {
+  return `${v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function frDate(v?: string | null) {
@@ -111,6 +114,9 @@ function safeEquipment(v: QuotePdfData["equipment"]): QuotePdfEquipmentGroup[] {
 }
 
 export function QuotePdf({ quote }: { quote: QuotePdfData }) {
+  const lang = normalizePdfLanguage(quote.language);
+  const t = QUOTE_I18N[lang];
+  const locale = PDF_LOCALE_MAP[lang];
   const total = quote.lines.reduce((acc, l) => acc + l.quantity * l.unit_price, 0);
   const deposit = (total * quote.deposit_pct) / 100;
   const equipmentGroups = safeEquipment(quote.equipment);
@@ -128,7 +134,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
             <Text style={s.brandSub}>RIO DE JANEIRO · CONCIERGERIE</Text>
           </View>
           <View style={s.refBox}>
-            <Text style={s.label}>DEVIS N°</Text>
+            <Text style={s.label}>{t.quoteNumberLabel}</Text>
             <Text style={s.ref}>{quote.number}</Text>
           </View>
         </View>
@@ -136,31 +142,31 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
         {quote.eyebrow ? <Text style={s.eyebrow}>{quote.eyebrow.toUpperCase()}</Text> : null}
         <Text style={s.title}>{quote.title}</Text>
         <Text style={s.subtitle}>
-          {[quote.project_label, quote.location].filter(Boolean).join(" · ") || "Proposition sur mesure"}
+          {[quote.project_label, quote.location].filter(Boolean).join(" · ") || t.defaultSubtitle}
         </Text>
         {quote.description ? <Text style={s.description}>{quote.description}</Text> : null}
 
         <View style={s.cols}>
           <View style={s.card}>
-            <Text style={s.label}>CLIENT</Text>
+            <Text style={s.label}>{t.clientLabel}</Text>
             <Text style={s.value}>{quote.client.name}</Text>
             {quote.client.email ? <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{quote.client.email}</Text> : null}
             {quote.client.phone ? <Text style={{ color: BRAND.inkSoft, marginTop: 2 }}>{quote.client.phone}</Text> : null}
           </View>
           <View style={s.card}>
-            <Text style={s.label}>SÉJOUR</Text>
+            <Text style={s.label}>{t.stayLabel}</Text>
             <Text style={s.value}>
               {frDate(quote.period_start)} → {frDate(quote.period_end)}
             </Text>
             <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>
-              {quote.party_size ? `${quote.party_size} personne${quote.party_size > 1 ? "s" : ""}` : "Nombre de personnes à confirmer"}
+              {quote.party_size ? t.peopleCount(quote.party_size) : t.peopleTbd}
             </Text>
           </View>
         </View>
 
         {equipmentGroups.length > 0 && (
           <View style={{ marginBottom: 24 }}>
-            <Text style={s.label}>MATÉRIEL & PRESTATIONS TECHNIQUES</Text>
+            <Text style={s.label}>{t.equipmentLabel}</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 6 }}>
               {equipmentGroups.map((g) => (
                 <View key={g.label} style={s.equipmentGroup}>
@@ -183,7 +189,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
               <View style={s.darkBox}>
                 {included.length > 0 && (
                   <>
-                    <Text style={s.darkBoxTitle}>CE QUI EST INCLUS</Text>
+                    <Text style={s.darkBoxTitle}>{t.includedLabel}</Text>
                     {included.map((it, idx) => (
                       <View key={idx} style={s.darkBoxRow}>
                         <View style={s.darkBoxIcon}><IconCheck size={8} color="#F7CA98" /></View>
@@ -194,7 +200,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
                 )}
                 {excluded.length > 0 && (
                   <>
-                    <Text style={[s.darkBoxTitle, { marginTop: included.length > 0 ? 8 : 0 }]}>CE QUI N'EST PAS INCLUS</Text>
+                    <Text style={[s.darkBoxTitle, { marginTop: included.length > 0 ? 8 : 0 }]}>{t.excludedLabel}</Text>
                     {excluded.map((it, idx) => (
                       <View key={idx} style={s.darkBoxRow}>
                         <View style={s.darkBoxIcon}><IconX size={8} color={BRAND.terracotta} /></View>
@@ -207,7 +213,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
             )}
             {itinerary.length > 0 && (
               <View style={{ flex: 1 }}>
-                <Text style={s.label}>ROTEIRO (ITINÉRAIRE)</Text>
+                <Text style={s.label}>{t.itineraryLabel}</Text>
                 <View style={{ marginTop: 6 }}>
                   {itinerary.map((step, idx) => (
                     <View key={idx} style={s.itineraryStep}>
@@ -222,10 +228,10 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
         )}
 
         <View style={s.tableHead}>
-          <Text style={[s.cLabel, s.th]}>PRESTATION</Text>
-          <Text style={[s.cQty, s.th]}>QTÉ</Text>
-          <Text style={[s.cUnit, s.th]}>P.U.</Text>
-          <Text style={[s.cTotal, s.th]}>TOTAL</Text>
+          <Text style={[s.cLabel, s.th]}>{t.tablePrestation}</Text>
+          <Text style={[s.cQty, s.th]}>{t.tableQty}</Text>
+          <Text style={[s.cUnit, s.th]}>{t.tableUnit}</Text>
+          <Text style={[s.cTotal, s.th]}>{t.tableTotal}</Text>
         </View>
 
         {quote.lines.map((l, i) => (
@@ -235,36 +241,34 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
               {l.unit ? <Text style={{ fontSize: 7.5, color: BRAND.inkSoft, marginTop: 2 }}>{l.unit}</Text> : null}
             </View>
             <Text style={s.cQty}>{l.quantity}</Text>
-            <Text style={s.cUnit}>{money(l.unit_price, quote.currency)}</Text>
-            <Text style={s.cTotal}>{money(l.quantity * l.unit_price, quote.currency)}</Text>
+            <Text style={s.cUnit}>{money(l.unit_price, quote.currency, locale)}</Text>
+            <Text style={s.cTotal}>{money(l.quantity * l.unit_price, quote.currency, locale)}</Text>
           </View>
         ))}
 
         <View style={s.totals}>
           <View style={s.grand}>
-            <Text style={s.grandLabel}>Total</Text>
-            <Text style={s.grandValue}>{money(total, quote.currency)}</Text>
+            <Text style={s.grandLabel}>{t.totalLabel}</Text>
+            <Text style={s.grandValue}>{money(total, quote.currency, locale)}</Text>
           </View>
           <View style={s.totalRow}>
-            <Text style={{ color: BRAND.inkSoft }}>Acompte ({quote.deposit_pct}%)</Text>
-            <Text>{money(deposit, quote.currency)}</Text>
+            <Text style={{ color: BRAND.inkSoft }}>{t.depositLabel(quote.deposit_pct)}</Text>
+            <Text>{money(deposit, quote.currency, locale)}</Text>
           </View>
           <View style={s.totalRow}>
-            <Text style={{ color: BRAND.inkSoft }}>Solde</Text>
-            <Text>{money(total - deposit, quote.currency)}</Text>
+            <Text style={{ color: BRAND.inkSoft }}>{t.balanceLabel}</Text>
+            <Text>{money(total - deposit, quote.currency, locale)}</Text>
           </View>
         </View>
 
         {quote.notes ? (
           <View style={s.notes}>
-            <Text style={s.label}>NOTES</Text>
+            <Text style={s.label}>{t.notesLabel}</Text>
             <Text style={{ lineHeight: 1.5 }}>{quote.notes}</Text>
           </View>
         ) : null}
 
-        <Text style={s.footer}>
-          Devis valable {quote.validity_days} jours · JEITINHO · contact@jeitinho.fr · jeitinho.fr
-        </Text>
+        <Text style={s.footer}>{t.footer(quote.validity_days)}</Text>
       </Page>
     </Document>
   );
