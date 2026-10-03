@@ -85,10 +85,6 @@ export async function signUp(email: string, password: string, fullName: string) 
   }
   return body as { user?: SupabaseUser; access_token?: string; refresh_token?: string };
 }
-export async function createPendingProfile(accessToken: string, user: SupabaseUser, fullName: string) {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, { method: "POST", headers: { ...headers(accessToken), Prefer: "return=representation,resolution=ignore-duplicates" }, body: JSON.stringify({ id: user.id, email: user.email, full_name: fullName, status: "pending_validation", is_active: true }) });
-  if (!response.ok) throw new Error("Impossible de créer le profil utilisateur.");
-}
 export async function requestPasswordReset(email: string, redirectTo: string) {
   const response = await fetch(`${SUPABASE_URL}/auth/v1/recover`, { method: "POST", headers: headers(), body: JSON.stringify({ email: email.toLowerCase(), redirect_to: redirectTo }) });
   if (!response.ok) throw new Error("Impossible de traiter la demande.");

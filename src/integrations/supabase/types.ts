@@ -3187,6 +3187,177 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_posts: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          error: string | null
+          id: string
+          includes_manual_link: boolean
+          photo_credit: string | null
+          photo_source: string
+          photo_url: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
+          scheduled_at: string
+          section_id: string | null
+          sent_at: string | null
+          slot: string
+          source_url: string | null
+          status: string
+          updated_at: string
+          week_id: string | null
+          zapi_message_id: string | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          includes_manual_link?: boolean
+          photo_credit?: string | null
+          photo_source?: string
+          photo_url?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          scheduled_at: string
+          section_id?: string | null
+          sent_at?: string | null
+          slot: string
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          week_id?: string | null
+          zapi_message_id?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          includes_manual_link?: boolean
+          photo_credit?: string | null
+          photo_source?: string
+          photo_url?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          scheduled_at?: string
+          section_id?: string | null
+          sent_at?: string | null
+          slot?: string
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          week_id?: string | null
+          zapi_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_posts_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_posts_week_id_fkey"
+            columns: ["week_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_weeks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_settings: {
+        Row: {
+          admin_phone: string | null
+          auto_validate: boolean
+          daily_post_cap: number
+          group_id: string | null
+          id: number
+          launch_date: string | null
+          manual_url: string
+          max_manual_links_per_week: number
+          sender_phone: string | null
+          test_group_id: string | null
+          updated_at: string
+          use_test_group: boolean
+          validation_token: string
+          validation_url: string | null
+          zapi_instance_id: string | null
+        }
+        Insert: {
+          admin_phone?: string | null
+          auto_validate?: boolean
+          daily_post_cap?: number
+          group_id?: string | null
+          id?: number
+          launch_date?: string | null
+          manual_url?: string
+          max_manual_links_per_week?: number
+          sender_phone?: string | null
+          test_group_id?: string | null
+          updated_at?: string
+          use_test_group?: boolean
+          validation_token?: string
+          validation_url?: string | null
+          zapi_instance_id?: string | null
+        }
+        Update: {
+          admin_phone?: string | null
+          auto_validate?: boolean
+          daily_post_cap?: number
+          group_id?: string | null
+          id?: number
+          launch_date?: string | null
+          manual_url?: string
+          max_manual_links_per_week?: number
+          sender_phone?: string | null
+          test_group_id?: string | null
+          updated_at?: string
+          use_test_group?: boolean
+          validation_token?: string
+          validation_url?: string | null
+          zapi_instance_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_weeks: {
+        Row: {
+          answer_raw: string | null
+          created_at: string
+          id: string
+          questions: string | null
+          status: string
+          suggestions: Json | null
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          answer_raw?: string | null
+          created_at?: string
+          id?: string
+          questions?: string | null
+          status?: string
+          suggestions?: Json | null
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          answer_raw?: string | null
+          created_at?: string
+          id?: string
+          questions?: string | null
+          status?: string
+          suggestions?: Json | null
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -3222,6 +3393,39 @@ export type Database = {
       next_invoice_number: { Args: never; Returns: string }
       next_quote_number: { Args: never; Returns: string }
       next_trip_reference: { Args: { p_year?: number }; Returns: string }
+      whatsapp_apply_action: {
+        Args: {
+          p_action: string
+          p_date?: string
+          p_post?: string
+          p_reason?: string
+          p_token: string
+        }
+        Returns: string
+      }
+      whatsapp_insert_day_plan: {
+        Args: { p_raw: string; p_section_id?: string }
+        Returns: Json
+      }
+      whatsapp_mark_result: {
+        Args: {
+          p_error?: string
+          p_http_status: number
+          p_id: string
+          p_message_id?: string
+        }
+        Returns: string
+      }
+      whatsapp_next_due_post: { Args: { p_meteo?: string }; Returns: Json }
+      whatsapp_research_context: { Args: never; Returns: Json }
+      whatsapp_save_day_plan: {
+        Args: { p_raw: string; p_section_id?: string }
+        Returns: Json
+      }
+      whatsapp_validation_deadline: {
+        Args: { p_scheduled_at: string }
+        Returns: string
+      }
     }
     Enums: {
       account_status: "pending_validation" | "active" | "rejected"
