@@ -45,6 +45,7 @@ function pathnameToTitle(p: string): string {
     dashboard: "Dashboard", crm: "CRM", clients: "Clients", voyages: "Voyages", devis: "Devis & Factures",
     experiences: "Expériences", contenus: "Bibliothèque de contenus", blog: "Blog", mediatheque: "Médiathèque",
     partenaires: "Partenaires", calendrier: "Calendrier", analytics: "Analytics", parametres: "Paramètres",
+    "a-valider": "À valider", agents: "Agents", evenements: "Événements", whatsapp: "Groupe WhatsApp", manuel: "Manuel", distribution: "Distribution",
   };
   return map[seg] ?? seg;
 }

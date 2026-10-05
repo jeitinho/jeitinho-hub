@@ -98,6 +98,12 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   calendrier: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide"],
   analytics: ["admin", "manager"],
   parametres: ["admin", "manager"],
+  "a-valider": ["admin", "manager"],
+  agents: ["admin", "manager"],
+  evenements: ["admin", "manager"],
+  whatsapp: ["admin", "manager"],
+  manuel: ["admin", "manager"],
+  distribution: ["admin", "manager"],
 };
 
 export function canAccessModule(module: string, roles: AppRole[]) {

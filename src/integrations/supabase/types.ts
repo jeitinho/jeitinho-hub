@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_runs: {
+        Row: {
+          agent: string
+          created_at: string
+          id: string
+          report: string | null
+          started_at: string
+          status: string
+          summary: string | null
+        }
+        Insert: {
+          agent: string
+          created_at?: string
+          id?: string
+          report?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+        }
+        Update: {
+          agent?: string
+          created_at?: string
+          id?: string
+          report?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -1022,6 +1052,220 @@ export type Database = {
         }
         Relationships: []
       }
+      event_partner_sales: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          note: string | null
+          paid: boolean
+          paid_at: string | null
+          partner_id: string | null
+          partner_name: string
+          tickets: number
+          updated_at: string
+          vip_revenue: number
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          note?: string | null
+          paid?: boolean
+          paid_at?: string | null
+          partner_id?: string | null
+          partner_name: string
+          tickets?: number
+          updated_at?: string
+          vip_revenue?: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          note?: string | null
+          paid?: boolean
+          paid_at?: string | null
+          partner_id?: string | null
+          partner_name?: string
+          tickets?: number
+          updated_at?: string
+          vip_revenue?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_partner_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_partner_sales_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_settlements: {
+        Row: {
+          bar_revenue: number
+          drinks_cost: number
+          event_id: string
+          house_costs: number
+          notes: string | null
+          other_costs: number
+          ticket_revenue: number
+          updated_at: string
+          vip_revenue: number
+        }
+        Insert: {
+          bar_revenue?: number
+          drinks_cost?: number
+          event_id: string
+          house_costs?: number
+          notes?: string | null
+          other_costs?: number
+          ticket_revenue?: number
+          updated_at?: string
+          vip_revenue?: number
+        }
+        Update: {
+          bar_revenue?: number
+          drinks_cost?: number
+          event_id?: string
+          house_costs?: number
+          notes?: string | null
+          other_costs?: number
+          ticket_revenue?: number
+          updated_at?: string
+          vip_revenue?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_settlements_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_ticket_counts: {
+        Row: {
+          channel: string
+          event_id: string
+          id: string
+          note: string | null
+          recorded_at: string
+          revenue: number | null
+          source: string
+          tickets: number
+          vip_revenue: number | null
+          vip_tables: number
+        }
+        Insert: {
+          channel: string
+          event_id: string
+          id?: string
+          note?: string | null
+          recorded_at?: string
+          revenue?: number | null
+          source?: string
+          tickets?: number
+          vip_revenue?: number | null
+          vip_tables?: number
+        }
+        Update: {
+          channel?: string
+          event_id?: string
+          id?: string
+          note?: string | null
+          recorded_at?: string
+          revenue?: number | null
+          source?: string
+          tickets?: number
+          vip_revenue?: number | null
+          vip_tables?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_counts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          capacity: number | null
+          cofounder_share_pct: number
+          created_at: string
+          currency: string
+          door_price: number | null
+          edition: string | null
+          ends_at: string | null
+          id: string
+          name: string
+          neighborhood: string | null
+          notes: string | null
+          partner_ticket_commission: number
+          partner_vip_commission_pct: number
+          presale_target: number | null
+          starts_at: string
+          status: string
+          updated_at: string
+          venue: string | null
+          venue_share_pct: number
+        }
+        Insert: {
+          capacity?: number | null
+          cofounder_share_pct?: number
+          created_at?: string
+          currency?: string
+          door_price?: number | null
+          edition?: string | null
+          ends_at?: string | null
+          id?: string
+          name: string
+          neighborhood?: string | null
+          notes?: string | null
+          partner_ticket_commission?: number
+          partner_vip_commission_pct?: number
+          presale_target?: number | null
+          starts_at: string
+          status?: string
+          updated_at?: string
+          venue?: string | null
+          venue_share_pct?: number
+        }
+        Update: {
+          capacity?: number | null
+          cofounder_share_pct?: number
+          created_at?: string
+          currency?: string
+          door_price?: number | null
+          edition?: string | null
+          ends_at?: string | null
+          id?: string
+          name?: string
+          neighborhood?: string | null
+          notes?: string | null
+          partner_ticket_commission?: number
+          partner_vip_commission_pct?: number
+          presale_target?: number | null
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          venue?: string | null
+          venue_share_pct?: number
+        }
+        Relationships: []
+      }
       experiences: {
         Row: {
           category: string | null
@@ -1750,6 +1994,68 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      ota_listings: {
+        Row: {
+          bookings_count: number
+          created_at: string
+          experience_id: string | null
+          external_id: string | null
+          id: string
+          issue: string | null
+          last_checked_at: string | null
+          notes: string | null
+          platform: string
+          rating: number | null
+          reviews_count: number
+          status: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          bookings_count?: number
+          created_at?: string
+          experience_id?: string | null
+          external_id?: string | null
+          id?: string
+          issue?: string | null
+          last_checked_at?: string | null
+          notes?: string | null
+          platform?: string
+          rating?: number | null
+          reviews_count?: number
+          status?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          bookings_count?: number
+          created_at?: string
+          experience_id?: string | null
+          external_id?: string | null
+          id?: string
+          issue?: string | null
+          last_checked_at?: string | null
+          notes?: string | null
+          platform?: string
+          rating?: number | null
+          reviews_count?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ota_listings_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "experiences"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partners: {
         Row: {

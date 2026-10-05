@@ -14,6 +14,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as AuthenticatedAValiderRouteImport } from './routes/_authenticated/a-valider'
+import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
@@ -23,12 +25,16 @@ import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
+import { Route as AuthenticatedDistributionRouteImport } from './routes/_authenticated/distribution'
+import { Route as AuthenticatedEvenementsRouteImport } from './routes/_authenticated/evenements'
 import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
+import { Route as AuthenticatedManuelRouteImport } from './routes/_authenticated/manuel'
 import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
+import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as ApiCatalogRouteImport } from './routes/api/catalog'
 import { Route as ApiClientsRouteImport } from './routes/api/clients'
 import { Route as ApiLeadsRouteImport } from './routes/api/leads'
@@ -91,6 +97,16 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAValiderRoute = AuthenticatedAValiderRouteImport.update({
+  id: '/a-valider',
+  path: '/a-valider',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -137,12 +153,28 @@ const AuthenticatedDevisRoute = AuthenticatedDevisRouteImport.update({
   path: '/devis',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDistributionRoute =
+  AuthenticatedDistributionRouteImport.update({
+    id: '/distribution',
+    path: '/distribution',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEvenementsRoute = AuthenticatedEvenementsRouteImport.update({
+  id: '/evenements',
+  path: '/evenements',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedExperiencesRoute =
   AuthenticatedExperiencesRouteImport.update({
     id: '/experiences',
     path: '/experiences',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedManuelRoute = AuthenticatedManuelRouteImport.update({
+  id: '/manuel',
+  path: '/manuel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMediathequeRoute =
   AuthenticatedMediathequeRouteImport.update({
     id: '/mediatheque',
@@ -168,6 +200,11 @@ const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
 const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
   id: '/voyages',
   path: '/voyages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiCatalogRoute = ApiCatalogRouteImport.update({
@@ -371,6 +408,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/a-valider': typeof AuthenticatedAValiderRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -380,12 +419,16 @@ export interface FileRoutesByFullPath {
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devis': typeof AuthenticatedDevisRouteWithChildren
+  '/distribution': typeof AuthenticatedDistributionRoute
+  '/evenements': typeof AuthenticatedEvenementsRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/manuel': typeof AuthenticatedManuelRoute
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/partenaires': typeof AuthenticatedPartenairesRoute
   '/services': typeof AuthenticatedServicesRouteWithChildren
   '/voyages': typeof AuthenticatedVoyagesRouteWithChildren
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/catalog': typeof ApiCatalogRoute
   '/api/clients': typeof ApiClientsRoute
   '/api/leads': typeof ApiLeadsRoute
@@ -429,6 +472,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/a-valider': typeof AuthenticatedAValiderRoute
+  '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -438,12 +483,16 @@ export interface FileRoutesByTo {
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devis': typeof AuthenticatedDevisRouteWithChildren
+  '/distribution': typeof AuthenticatedDistributionRoute
+  '/evenements': typeof AuthenticatedEvenementsRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/manuel': typeof AuthenticatedManuelRoute
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/partenaires': typeof AuthenticatedPartenairesRoute
   '/services': typeof AuthenticatedServicesRouteWithChildren
   '/voyages': typeof AuthenticatedVoyagesRouteWithChildren
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/catalog': typeof ApiCatalogRoute
   '/api/clients': typeof ApiClientsRoute
   '/api/leads': typeof ApiLeadsRoute
@@ -489,6 +538,8 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/_authenticated/a-valider': typeof AuthenticatedAValiderRoute
+  '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -498,12 +549,16 @@ export interface FileRoutesById {
   '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/devis': typeof AuthenticatedDevisRouteWithChildren
+  '/_authenticated/distribution': typeof AuthenticatedDistributionRoute
+  '/_authenticated/evenements': typeof AuthenticatedEvenementsRoute
   '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
+  '/_authenticated/manuel': typeof AuthenticatedManuelRoute
   '/_authenticated/mediatheque': typeof AuthenticatedMediathequeRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/_authenticated/partenaires': typeof AuthenticatedPartenairesRoute
   '/_authenticated/services': typeof AuthenticatedServicesRouteWithChildren
   '/_authenticated/voyages': typeof AuthenticatedVoyagesRouteWithChildren
+  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/catalog': typeof ApiCatalogRoute
   '/api/clients': typeof ApiClientsRoute
   '/api/leads': typeof ApiLeadsRoute
@@ -549,6 +604,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
+    | '/a-valider'
+    | '/agents'
     | '/analytics'
     | '/billetterie'
     | '/blog'
@@ -558,12 +615,16 @@ export interface FileRouteTypes {
     | '/crm'
     | '/dashboard'
     | '/devis'
+    | '/distribution'
+    | '/evenements'
     | '/experiences'
+    | '/manuel'
     | '/mediatheque'
     | '/parametres'
     | '/partenaires'
     | '/services'
     | '/voyages'
+    | '/whatsapp'
     | '/api/catalog'
     | '/api/clients'
     | '/api/leads'
@@ -607,6 +668,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
+    | '/a-valider'
+    | '/agents'
     | '/analytics'
     | '/billetterie'
     | '/blog'
@@ -616,12 +679,16 @@ export interface FileRouteTypes {
     | '/crm'
     | '/dashboard'
     | '/devis'
+    | '/distribution'
+    | '/evenements'
     | '/experiences'
+    | '/manuel'
     | '/mediatheque'
     | '/parametres'
     | '/partenaires'
     | '/services'
     | '/voyages'
+    | '/whatsapp'
     | '/api/catalog'
     | '/api/clients'
     | '/api/leads'
@@ -666,6 +733,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/setup'
+    | '/_authenticated/a-valider'
+    | '/_authenticated/agents'
     | '/_authenticated/analytics'
     | '/_authenticated/billetterie'
     | '/_authenticated/blog'
@@ -675,12 +744,16 @@ export interface FileRouteTypes {
     | '/_authenticated/crm'
     | '/_authenticated/dashboard'
     | '/_authenticated/devis'
+    | '/_authenticated/distribution'
+    | '/_authenticated/evenements'
     | '/_authenticated/experiences'
+    | '/_authenticated/manuel'
     | '/_authenticated/mediatheque'
     | '/_authenticated/parametres'
     | '/_authenticated/partenaires'
     | '/_authenticated/services'
     | '/_authenticated/voyages'
+    | '/_authenticated/whatsapp'
     | '/api/catalog'
     | '/api/clients'
     | '/api/leads'
@@ -784,6 +857,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/a-valider': {
+      id: '/_authenticated/a-valider'
+      path: '/a-valider'
+      fullPath: '/a-valider'
+      preLoaderRoute: typeof AuthenticatedAValiderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agents': {
+      id: '/_authenticated/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/analytics': {
       id: '/_authenticated/analytics'
       path: '/analytics'
@@ -847,11 +934,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDevisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/distribution': {
+      id: '/_authenticated/distribution'
+      path: '/distribution'
+      fullPath: '/distribution'
+      preLoaderRoute: typeof AuthenticatedDistributionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/evenements': {
+      id: '/_authenticated/evenements'
+      path: '/evenements'
+      fullPath: '/evenements'
+      preLoaderRoute: typeof AuthenticatedEvenementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/experiences': {
       id: '/_authenticated/experiences'
       path: '/experiences'
       fullPath: '/experiences'
       preLoaderRoute: typeof AuthenticatedExperiencesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manuel': {
+      id: '/_authenticated/manuel'
+      path: '/manuel'
+      fullPath: '/manuel'
+      preLoaderRoute: typeof AuthenticatedManuelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mediatheque': {
@@ -887,6 +995,13 @@ declare module '@tanstack/react-router' {
       path: '/voyages'
       fullPath: '/voyages'
       preLoaderRoute: typeof AuthenticatedVoyagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/whatsapp': {
+      id: '/_authenticated/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/catalog': {
@@ -1293,6 +1408,8 @@ const AuthenticatedVoyagesRouteWithChildren =
   AuthenticatedVoyagesRoute._addFileChildren(AuthenticatedVoyagesRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAValiderRoute: typeof AuthenticatedAValiderRoute
+  AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedBilletterieRoute: typeof AuthenticatedBilletterieRouteWithChildren
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
@@ -1302,15 +1419,21 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDevisRoute: typeof AuthenticatedDevisRouteWithChildren
+  AuthenticatedDistributionRoute: typeof AuthenticatedDistributionRoute
+  AuthenticatedEvenementsRoute: typeof AuthenticatedEvenementsRoute
   AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
+  AuthenticatedManuelRoute: typeof AuthenticatedManuelRoute
   AuthenticatedMediathequeRoute: typeof AuthenticatedMediathequeRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
   AuthenticatedPartenairesRoute: typeof AuthenticatedPartenairesRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRouteWithChildren
   AuthenticatedVoyagesRoute: typeof AuthenticatedVoyagesRouteWithChildren
+  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAValiderRoute: AuthenticatedAValiderRoute,
+  AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedBilletterieRoute: AuthenticatedBilletterieRouteWithChildren,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
@@ -1320,12 +1443,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDevisRoute: AuthenticatedDevisRouteWithChildren,
+  AuthenticatedDistributionRoute: AuthenticatedDistributionRoute,
+  AuthenticatedEvenementsRoute: AuthenticatedEvenementsRoute,
   AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
+  AuthenticatedManuelRoute: AuthenticatedManuelRoute,
   AuthenticatedMediathequeRoute: AuthenticatedMediathequeRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,
   AuthenticatedPartenairesRoute: AuthenticatedPartenairesRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRouteWithChildren,
   AuthenticatedVoyagesRoute: AuthenticatedVoyagesRouteWithChildren,
+  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
