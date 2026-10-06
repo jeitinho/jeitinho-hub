@@ -177,6 +177,17 @@ function PostCard({
         <Badge variant={STATUS_VARIANT[post.status]}>{post.status}</Badge>
         {post.includes_manual_link && <Badge variant="outline">lien Manuel</Badge>}
       </div>
+      {post.notified_at && (
+        <p className="text-xs text-muted-foreground">
+          <MessageCircle className="mr-1 inline h-3 w-3" />
+          reçu sur WhatsApp à{" "}
+          {new Date(post.notified_at).toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "America/Sao_Paulo",
+          })}
+        </p>
+      )}
       {editing ? (
         <>
           <Textarea rows={8} value={content} onChange={(e) => setContent(e.target.value)} />

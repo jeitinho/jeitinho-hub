@@ -329,6 +329,7 @@ export type WhatsappPost = {
   includes_manual_link: boolean;
   source_url: string | null;
   sent_at: string | null;
+  notified_at: string | null;
 };
 
 export async function fetchWhatsappPosts(fromIso: string, toIso: string): Promise<WhatsappPost[]> {
@@ -336,7 +337,7 @@ export async function fetchWhatsappPosts(fromIso: string, toIso: string): Promis
     await db
       .from("whatsapp_posts")
       .select(
-        "id,week_id,scheduled_at,slot,category,content,status,includes_manual_link,source_url,sent_at",
+        "id,week_id,scheduled_at,slot,category,content,status,includes_manual_link,source_url,sent_at,notified_at",
       )
       .gte("scheduled_at", fromIso)
       .lt("scheduled_at", toIso)

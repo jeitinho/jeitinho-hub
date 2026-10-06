@@ -104,6 +104,90 @@ export type Database = {
         }
         Relationships: []
       }
+      audience_contacts: {
+        Row: {
+          added_at: string | null
+          age: number | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          engagement: string | null
+          events_count: number | null
+          external_ref: string | null
+          first_name: string | null
+          gender: string | null
+          id: string
+          last_name: string | null
+          last_purchase_at: string | null
+          newsletter_optin: boolean
+          notifications_optin: boolean
+          origin: string | null
+          phone: string | null
+          recency: string | null
+          score: number | null
+          segment: string
+          tags: string[]
+          tickets_count: number | null
+          total_spent: number | null
+          zone: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          age?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          engagement?: string | null
+          events_count?: number | null
+          external_ref?: string | null
+          first_name?: string | null
+          gender?: string | null
+          id?: string
+          last_name?: string | null
+          last_purchase_at?: string | null
+          newsletter_optin?: boolean
+          notifications_optin?: boolean
+          origin?: string | null
+          phone?: string | null
+          recency?: string | null
+          score?: number | null
+          segment?: string
+          tags?: string[]
+          tickets_count?: number | null
+          total_spent?: number | null
+          zone?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          age?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          engagement?: string | null
+          events_count?: number | null
+          external_ref?: string | null
+          first_name?: string | null
+          gender?: string | null
+          id?: string
+          last_name?: string | null
+          last_purchase_at?: string | null
+          newsletter_optin?: boolean
+          notifications_optin?: boolean
+          origin?: string | null
+          phone?: string | null
+          recency?: string | null
+          score?: number | null
+          segment?: string
+          tags?: string[]
+          tickets_count?: number | null
+          total_spent?: number | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
       authors: {
         Row: {
           bio: string | null
@@ -853,6 +937,7 @@ export type Database = {
           kind: string
           lead_id: string | null
           message_draft: string | null
+          partner_id: string | null
           prospect_id: string | null
           quote_id: string | null
           stage: number | null
@@ -872,6 +957,7 @@ export type Database = {
           kind?: string
           lead_id?: string | null
           message_draft?: string | null
+          partner_id?: string | null
           prospect_id?: string | null
           quote_id?: string | null
           stage?: number | null
@@ -891,6 +977,7 @@ export type Database = {
           kind?: string
           lead_id?: string | null
           message_draft?: string | null
+          partner_id?: string | null
           prospect_id?: string | null
           quote_id?: string | null
           stage?: number | null
@@ -911,6 +998,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
             referencedColumns: ["id"]
           },
           {
@@ -988,6 +1082,71 @@ export type Database = {
           villes_souhaitees?: string[] | null
         }
         Relationships: []
+      }
+      editorial_items: {
+        Row: {
+          channel: string | null
+          collection: string | null
+          created_at: string
+          deadline: string | null
+          experience_id: string | null
+          external_ref: string | null
+          id: string
+          kind: string
+          notes: string | null
+          owner: string | null
+          planned_at: string | null
+          priority: string | null
+          status: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          channel?: string | null
+          collection?: string | null
+          created_at?: string
+          deadline?: string | null
+          experience_id?: string | null
+          external_ref?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          owner?: string | null
+          planned_at?: string | null
+          priority?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          channel?: string | null
+          collection?: string | null
+          created_at?: string
+          deadline?: string | null
+          experience_id?: string | null
+          external_ref?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          owner?: string | null
+          planned_at?: string | null
+          priority?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorial_items_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "experiences"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_send_log: {
         Row: {
@@ -1109,6 +1268,63 @@ export type Database = {
           },
         ]
       }
+      event_promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_pct: number
+          event_id: string
+          id: string
+          paid: boolean
+          partner_id: string | null
+          platform: string
+          revenue: number
+          uses: number
+          vip_revenue: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_pct?: number
+          event_id: string
+          id?: string
+          paid?: boolean
+          partner_id?: string | null
+          platform?: string
+          revenue?: number
+          uses?: number
+          vip_revenue?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_pct?: number
+          event_id?: string
+          id?: string
+          paid?: boolean
+          partner_id?: string | null
+          platform?: string
+          revenue?: number
+          uses?: number
+          vip_revenue?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_promo_codes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_promo_codes_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_settlements: {
         Row: {
           bar_revenue: number
@@ -1193,6 +1409,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "event_ticket_counts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_ticket_lots: {
+        Row: {
+          event_id: string
+          id: string
+          name: string
+          notes: string | null
+          price: number
+          quantity: number | null
+          sales_end: string | null
+          sales_start: string | null
+          sort: number
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          price: number
+          quantity?: number | null
+          sales_end?: string | null
+          sales_start?: string | null
+          sort?: number
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          price?: number
+          quantity?: number | null
+          sales_end?: string | null
+          sales_start?: string | null
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_lots_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -1995,6 +2255,99 @@ export type Database = {
         }
         Relationships: []
       }
+      ota_bookings: {
+        Row: {
+          activity_language: string | null
+          activity_title: string | null
+          booking_ref: string
+          client_id: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          lead_email: string | null
+          lead_language: string | null
+          lead_name: string | null
+          lead_phone: string | null
+          listing_id: string | null
+          notes: string | null
+          participants: number | null
+          participants_detail: string | null
+          platform: string
+          price: number | null
+          review_requested: boolean
+          source_email_id: string | null
+          start_at: string | null
+          status: string
+          supplier_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          activity_language?: string | null
+          activity_title?: string | null
+          booking_ref: string
+          client_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          lead_email?: string | null
+          lead_language?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          listing_id?: string | null
+          notes?: string | null
+          participants?: number | null
+          participants_detail?: string | null
+          platform?: string
+          price?: number | null
+          review_requested?: boolean
+          source_email_id?: string | null
+          start_at?: string | null
+          status?: string
+          supplier_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activity_language?: string | null
+          activity_title?: string | null
+          booking_ref?: string
+          client_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          lead_email?: string | null
+          lead_language?: string | null
+          lead_name?: string | null
+          lead_phone?: string | null
+          listing_id?: string | null
+          notes?: string | null
+          participants?: number | null
+          participants_detail?: string | null
+          platform?: string
+          price?: number | null
+          review_requested?: boolean
+          source_email_id?: string | null
+          start_at?: string | null
+          status?: string
+          supplier_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ota_bookings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ota_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "ota_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ota_listings: {
         Row: {
           bookings_count: number
@@ -2059,46 +2412,208 @@ export type Database = {
       }
       partners: {
         Row: {
+          address: string | null
+          application: Json | null
           category: string | null
+          commission_rate: number | null
           contact_name: string | null
           created_at: string
           email: string | null
+          google_maps_url: string | null
           id: string
+          instagram: string | null
           is_active: boolean
+          kind: string
+          last_contact_at: string | null
           location: string | null
           name: string
+          next_action: string | null
+          next_action_at: string | null
           notes: string | null
           phone: string | null
+          source: string
+          status: string
+          submitted_at: string | null
+          terms: string | null
           updated_at: string
           website: string | null
+          whatsapp: string | null
         }
         Insert: {
+          address?: string | null
+          application?: Json | null
           category?: string | null
+          commission_rate?: number | null
           contact_name?: string | null
           created_at?: string
           email?: string | null
+          google_maps_url?: string | null
           id?: string
+          instagram?: string | null
           is_active?: boolean
+          kind?: string
+          last_contact_at?: string | null
           location?: string | null
           name: string
+          next_action?: string | null
+          next_action_at?: string | null
           notes?: string | null
           phone?: string | null
+          source?: string
+          status?: string
+          submitted_at?: string | null
+          terms?: string | null
           updated_at?: string
           website?: string | null
+          whatsapp?: string | null
         }
         Update: {
+          address?: string | null
+          application?: Json | null
           category?: string | null
+          commission_rate?: number | null
           contact_name?: string | null
           created_at?: string
           email?: string | null
+          google_maps_url?: string | null
           id?: string
+          instagram?: string | null
           is_active?: boolean
+          kind?: string
+          last_contact_at?: string | null
           location?: string | null
           name?: string
+          next_action?: string | null
+          next_action_at?: string | null
           notes?: string | null
           phone?: string | null
+          source?: string
+          status?: string
+          submitted_at?: string | null
+          terms?: string | null
           updated_at?: string
           website?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string
+          currency: string
+          event_id: string | null
+          id: string
+          kind: string
+          method: string | null
+          notes: string | null
+          paid_at: string
+          partner_id: string | null
+          quote_id: string | null
+          reference: string | null
+          trip_id: string | null
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          event_id?: string | null
+          id?: string
+          kind?: string
+          method?: string | null
+          notes?: string | null
+          paid_at: string
+          partner_id?: string | null
+          quote_id?: string | null
+          reference?: string | null
+          trip_id?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          event_id?: string | null
+          id?: string
+          kind?: string
+          method?: string | null
+          notes?: string | null
+          paid_at?: string
+          partner_id?: string | null
+          quote_id?: string | null
+          reference?: string | null
+          trip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      places: {
+        Row: {
+          created_at: string
+          external_ref: string | null
+          google_maps_url: string | null
+          id: string
+          name: string
+          neighborhood: string | null
+          notes: string | null
+          zone: string | null
+        }
+        Insert: {
+          created_at?: string
+          external_ref?: string | null
+          google_maps_url?: string | null
+          id?: string
+          name: string
+          neighborhood?: string | null
+          notes?: string | null
+          zone?: string | null
+        }
+        Update: {
+          created_at?: string
+          external_ref?: string | null
+          google_maps_url?: string | null
+          id?: string
+          name?: string
+          neighborhood?: string | null
+          notes?: string | null
+          zone?: string | null
         }
         Relationships: []
       }
@@ -2655,6 +3170,7 @@ export type Database = {
           amount_total: number
           channel_id: string | null
           commission_amount: number
+          commission_paid_at: string | null
           commission_rate: number
           created_at: string
           currency: string
@@ -2669,6 +3185,7 @@ export type Database = {
           amount_total?: number
           channel_id?: string | null
           commission_amount?: number
+          commission_paid_at?: string | null
           commission_rate?: number
           created_at?: string
           currency?: string
@@ -2683,6 +3200,7 @@ export type Database = {
           amount_total?: number
           channel_id?: string | null
           commission_amount?: number
+          commission_paid_at?: string | null
           commission_rate?: number
           created_at?: string
           currency?: string
@@ -3501,6 +4019,7 @@ export type Database = {
           error: string | null
           id: string
           includes_manual_link: boolean
+          notified_at: string | null
           photo_credit: string | null
           photo_source: string
           photo_url: string | null
@@ -3523,6 +4042,7 @@ export type Database = {
           error?: string | null
           id?: string
           includes_manual_link?: boolean
+          notified_at?: string | null
           photo_credit?: string | null
           photo_source?: string
           photo_url?: string | null
@@ -3545,6 +4065,7 @@ export type Database = {
           error?: string | null
           id?: string
           includes_manual_link?: boolean
+          notified_at?: string | null
           photo_credit?: string | null
           photo_source?: string
           photo_url?: string | null
@@ -3669,6 +4190,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      audience_breakdown: {
+        Args: never
+        Returns: {
+          dimension: string
+          n: number
+          value: string
+        }[]
+      }
       can_edit_content: { Args: { _user_id: string }; Returns: boolean }
       can_manage: { Args: { _user_id: string }; Returns: boolean }
       can_review_content: { Args: { _user_id: string }; Returns: boolean }
@@ -3699,6 +4228,10 @@ export type Database = {
       next_invoice_number: { Args: never; Returns: string }
       next_quote_number: { Args: never; Returns: string }
       next_trip_reference: { Args: { p_year?: number }; Returns: string }
+      notify_rafael: { Args: { msg: string }; Returns: number }
+      push_next_whatsapp_post: { Args: never; Returns: string }
+      submit_partner_application: { Args: { p: Json }; Returns: string }
+      urlencode: { Args: { t: string }; Returns: string }
       whatsapp_apply_action: {
         Args: {
           p_action: string
