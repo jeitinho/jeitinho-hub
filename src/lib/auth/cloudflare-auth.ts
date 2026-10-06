@@ -103,7 +103,7 @@ export function canAccessModule(module: string, roles: AppRole[]) {
     blog: ["admin","manager","redacteur_chef","redacteur","auteur"], mediatheque: ["admin","manager","redacteur_chef","redacteur"],
     partenaires: ["admin","manager","prestataire"], services: ["admin","manager"], billetterie: ["admin","manager"],
     calendrier: ["admin","manager","redacteur_chef","redacteur","auteur","guide"], analytics: ["admin","manager"], parametres: ["admin","manager"],
-    "a-valider": ["admin","manager"], agents: ["admin","manager"], evenements: ["admin","manager"], whatsapp: ["admin","manager"], manuel: ["admin","manager"], distribution: ["admin","manager"],
+    "a-valider": ["admin","manager"], agents: ["admin","manager"], evenements: ["admin","manager"], whatsapp: ["admin","manager"], manuel: ["admin","manager"], distribution: ["admin","manager"], audience: ["admin","manager"], finances: ["admin","manager"],
   };
   return (matrix[module] ?? []).some((role) => roles.includes(role));
 }

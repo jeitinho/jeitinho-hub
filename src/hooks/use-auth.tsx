@@ -104,6 +104,8 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   whatsapp: ["admin", "manager"],
   manuel: ["admin", "manager"],
   distribution: ["admin", "manager"],
+  audience: ["admin", "manager"],
+  finances: ["admin", "manager"],
 };
 
 export function canAccessModule(module: string, roles: AppRole[]) {
