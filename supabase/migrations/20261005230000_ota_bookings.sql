@@ -1,0 +1,5 @@
+-- Déjà appliquée en production le 05/10/2026 (via MCP). Ne pas ré-appliquer.
+-- Table public.ota_bookings (réservations GetYourGuide…, unique platform+booking_ref, RLS can_manage)
+-- + trigger before insert/update ota_bookings_crm → public.ota_bookings_to_crm() :
+--   upsert du client (par téléphone/e-mail) et tâche crm_tasks kind='ota_reservation'
+--   avec le message de bienvenue (RDV Rua Sá Ferreira 44, WhatsApp guide).

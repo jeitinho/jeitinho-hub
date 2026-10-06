@@ -24,6 +24,7 @@ import {
   saveOtaListing,
   type OtaListing,
 } from "@/lib/ops/ops";
+import { OtaBookingsList } from "@/components/ops/ota-bookings";
 
 export const Route = createFileRoute("/_authenticated/distribution")({
   component: DistributionPage,
@@ -103,6 +104,12 @@ function DistributionPage() {
           </p>
         </Card>
       </div>
+      <section className="mb-8">
+        <h2 className="mb-3 text-base font-semibold">Réservations clients</h2>
+        <OtaBookingsList />
+      </section>
+
+      <h2 className="mb-3 text-base font-semibold">Fiches</h2>
       {creating && (
         <ListingForm
           experiences={experiences}

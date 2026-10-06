@@ -13,6 +13,7 @@ import { FileDown, Trash2 } from "lucide-react";
 import { formatMoney, quoteStatusLabel } from "@/lib/quotes/status";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LEGAL_TYPES, type LegalType } from "@/lib/invoices/status";
+import { OtaBookingsList } from "@/components/ops/ota-bookings";
 
 export const Route = createFileRoute("/_authenticated/clients/$id")({
   component: ClientDetail,
@@ -118,6 +119,11 @@ function ClientDetail() {
           <Card className="p-5">
             <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>Devis</h2>
             {!quotes?.length ? <p className="text-sm text-muted-foreground">Aucun devis pour ce client.</p> : <div className="space-y-2">{quotes.map((q) => <Link key={q.id} to="/devis/$id" params={{ id: q.id }} className="flex items-center justify-between gap-4 rounded-md border border-border/60 p-3 hover:bg-muted/30"><div className="min-w-0"><div className="flex items-center gap-2"><span className="tracked text-[10px] text-muted-foreground">{q.number ?? q.reference}</span><span className="pill">{quoteStatusLabel(q.status)}</span></div><p className="truncate text-sm">{q.title}</p></div><span className="shrink-0 text-sm">{formatMoney(Number(q.total_amount ?? 0), q.currency)}</span></Link>)}</div>}
+          </Card>
+
+          <Card className="p-5">
+            <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>Réservations plateformes</h2>
+            <OtaBookingsList clientId={id} compact />
           </Card>
         </div>
       </div>

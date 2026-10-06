@@ -38,6 +38,10 @@ export const TASK_KIND_LABELS: Record<string, string> = {
   relance_revendeur: "Revendeur Réveillon",
   partenaire_afrolove: "Relais AFRO LOVE",
   upsell_manuel: "Suivi acheteur Manuel",
+  ota_reservation: "Réservation GetYourGuide",
+  reservation_en_attente: "Réservation en attente",
+  reservation_payee: "Réservation payée",
+  candidature_partenaire: "Candidature partenaire",
 };
 
 export async function fetchValidationQueue(): Promise<ValidationTask[]> {
@@ -113,8 +117,8 @@ export const AGENTS: AgentDefinition[] = [
   {
     key: "getyourguide",
     name: "GetYourGuide",
-    schedule: "Lundi et jeudi 10h52",
-    output: "Statuts des fiches, fiches prêtes à coller",
+    schedule: "Toutes les 2 h (8h52–22h52) · fiches lundi et jeudi",
+    output: "Réservations clients (Distribution + fiche client), alerte, statuts des fiches",
   },
   {
     key: "revendeurs-reveillon",
@@ -395,6 +399,50 @@ export async function saveOtaListing(row: Partial<OtaListing> & { title: string 
   const { id, ...rest } = row;
   if (id) return check(await db.from("ota_listings").update(rest).eq("id", id));
   return check(await db.from("ota_listings").insert(rest));
+}
+
+/* Réservations reçues via les plateformes (GetYourGuide…). Chaque insertion
+ * crée/relie le client et une tâche « préparer le tour » (trigger SQL). */
+export type OtaBooking = {
+  id: string;
+  platform: string;
+  booking_ref: string;
+  supplier_ref: string | null;
+  listing_id: string | null;
+  client_id: string | null;
+  activity_title: string | null;
+  start_at: string | null;
+  participants: number | null;
+  participants_detail: string | null;
+  lead_name: string | null;
+  lead_email: string | null;
+  lead_phone: string | null;
+  lead_language: string | null;
+  activity_language: string | null;
+  price: number | null;
+  currency: string | null;
+  status: "confirmee" | "realisee" | "annulee" | "no_show" | "modifiee";
+  review_requested: boolean;
+  notes: string | null;
+  created_at: string;
+};
+
+export const OTA_BOOKING_STATUS_LABELS: Record<OtaBooking["status"], string> = {
+  confirmee: "Confirmée",
+  modifiee: "Modifiée",
+  realisee: "Réalisée",
+  annulee: "Annulée",
+  no_show: "No-show",
+};
+
+export async function fetchOtaBookings(filter?: { clientId?: string }): Promise<OtaBooking[]> {
+  let q = db.from("ota_bookings").select("*").order("start_at", { ascending: false });
+  if (filter?.clientId) q = q.eq("client_id", filter.clientId);
+  return check(await q);
+}
+
+export async function updateOtaBooking(id: string, patch: Partial<OtaBooking>) {
+  check(await db.from("ota_bookings").update(patch).eq("id", id));
 }
 
 export async function fetchExperienceOptions(): Promise<{ id: string; title: string }[]> {
