@@ -30,6 +30,8 @@ export type ValidationTask = {
   quote_id: string | null;
   lead_id: string | null;
   prospect_id: string | null;
+  client_id: string | null;
+  partner_id: string | null;
 };
 
 export const TASK_KIND_LABELS: Record<string, string> = {
@@ -42,6 +44,10 @@ export const TASK_KIND_LABELS: Record<string, string> = {
   reservation_en_attente: "Réservation en attente",
   reservation_payee: "Réservation payée",
   candidature_partenaire: "Candidature partenaire",
+  nouveau_lead: "Nouvelle demande",
+  relance_paiement: "Relance paiement",
+  bienvenue_voyage: "Bienvenue voyage",
+  demande_avis: "Demande d'avis",
 };
 
 export async function fetchValidationQueue(): Promise<ValidationTask[]> {
@@ -49,7 +55,7 @@ export async function fetchValidationQueue(): Promise<ValidationTask[]> {
     await db
       .from("crm_tasks")
       .select(
-        "id,kind,channel,status,stage,title,message_draft,due_at,created_at,quote_id,lead_id,prospect_id",
+        "id,kind,channel,status,stage,title,message_draft,due_at,created_at,quote_id,lead_id,prospect_id,client_id,partner_id",
       )
       .in("status", ["a_valider", "valide"])
       .order("due_at"),
@@ -62,6 +68,24 @@ export async function setTaskStatus(id: string, status: "envoye" | "annule") {
       .from("crm_tasks")
       .update({ status, handled_at: new Date().toISOString() })
       .eq("id", id),
+  );
+}
+
+/** Message envoyé à un partenaire : trace le contact et fait avancer le pipeline. */
+export async function markPartnerContacted(partnerId: string) {
+  const now = new Date().toISOString();
+  check(
+    await db
+      .from("partners")
+      .update({ last_contact_at: now, next_action: "Attendre la réponse", next_action_at: null })
+      .eq("id", partnerId),
+  );
+  check(
+    await db
+      .from("partners")
+      .update({ status: "contacte" })
+      .eq("id", partnerId)
+      .in("status", ["nouveau", "a_contacter"]),
   );
 }
 
@@ -137,6 +161,12 @@ export const AGENTS: AgentDefinition[] = [
     name: "Ventes Manuel",
     schedule: "Lundi 9h22",
     output: "Rapport ventes, suivis acheteurs",
+  },
+  {
+    key: "suivi-clients",
+    name: "Suivi clients & encaissements",
+    schedule: "Tous les jours 17h43",
+    output: "Relances acompte/solde, bienvenue J-2, demandes d'avis",
   },
 ];
 

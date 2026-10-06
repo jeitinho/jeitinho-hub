@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Copy, Send, Clock, X, Pencil, Inbox } from "lucide-react";
+import { CheckCircle2, Copy, Send, Clock, X, Pencil, Inbox, ExternalLink } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   copyText,
   fetchValidationQueue,
   fmtDateTime,
+  markPartnerContacted,
   setTaskStatus,
   updateTaskDraft,
   type ValidationTask,
@@ -132,6 +133,7 @@ function TaskCard({
             </span>
           </div>
           <h3 className="text-sm font-medium">{task.title}</h3>
+          <SourceLink task={task} />
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
           <Button
@@ -150,13 +152,11 @@ function TaskCard({
           <Button
             size="sm"
             onClick={() =>
-              act(
-                () =>
-                  task.kind === "relance_devis"
-                    ? markTaskSent(task as unknown as CrmTask)
-                    : setTaskStatus(task.id, "envoye"),
-                "Marqué comme envoyé",
-              )
+              act(async () => {
+                if (task.kind === "relance_devis") await markTaskSent(task as unknown as CrmTask);
+                else await setTaskStatus(task.id, "envoye");
+                if (task.partner_id) await markPartnerContacted(task.partner_id);
+              }, "Marqué comme envoyé")
             }
           >
             <Send className="mr-1.5 h-3.5 w-3.5" />
@@ -204,4 +204,35 @@ function TaskCard({
       )}
     </Card>
   );
+}
+
+/** Lien vers l'objet d'origine de la tâche (client, devis, partenaire, demande). */
+function SourceLink({ task }: { task: ValidationTask }) {
+  const cls = "mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline";
+  const icon = <ExternalLink className="h-3 w-3" />;
+  if (task.quote_id)
+    return (
+      <Link to="/devis/$id" params={{ id: task.quote_id }} className={cls}>
+        {icon}Ouvrir le devis
+      </Link>
+    );
+  if (task.client_id)
+    return (
+      <Link to="/clients/$id" params={{ id: task.client_id }} className={cls}>
+        {icon}Ouvrir la fiche client
+      </Link>
+    );
+  if (task.partner_id)
+    return (
+      <Link to="/partenaires" search={{ id: task.partner_id }} className={cls}>
+        {icon}Ouvrir la fiche partenaire
+      </Link>
+    );
+  if (task.lead_id || task.prospect_id)
+    return (
+      <Link to="/crm" className={cls}>
+        {icon}Ouvrir la demande
+      </Link>
+    );
+  return null;
 }
