@@ -25,6 +25,9 @@ import {
   type SalesChannel,
 } from "@/lib/ops/ops";
 
+// Stripe : amount_total et commission_amount sont en centimes.
+const eur = (v: number | null | undefined) => Number(v ?? 0) / 100;
+
 export const Route = createFileRoute("/_authenticated/manuel")({
   component: ManuelPage,
   head: () => ({ meta: [{ title: "Manuel — JEITINHO" }] }),
@@ -44,9 +47,9 @@ function ManuelPage() {
 
   const paid = sales.filter((s) => Number(s.amount_total ?? 0) > 0);
   const weekAgo = Date.now() - 7 * 86_400_000;
-  const revenue = paid.reduce((sum, s) => sum + Number(s.amount_total ?? 0), 0);
+  const revenue = paid.reduce((sum, s) => sum + eur(s.amount_total), 0);
   const last7 = paid.filter((s) => new Date(s.created_at).getTime() >= weekAgo);
-  const commissions = sales.reduce((sum, s) => sum + Number(s.commission_amount ?? 0), 0);
+  const commissions = sales.reduce((sum, s) => sum + eur(s.commission_amount), 0);
   const currency = (sales[0]?.currency ?? "eur").toUpperCase();
 
   const byChannel = useMemo(() => {
@@ -55,8 +58,8 @@ function ManuelPage() {
       const k = s.channel_id ?? "direct";
       const cur = map.get(k) ?? { count: 0, revenue: 0, commission: 0 };
       cur.count += 1;
-      cur.revenue += Number(s.amount_total ?? 0);
-      cur.commission += Number(s.commission_amount ?? 0);
+      cur.revenue += eur(s.amount_total);
+      cur.commission += eur(s.commission_amount);
       map.set(k, cur);
     }
     return Array.from(map.entries()).sort((a, b) => b[1].revenue - a[1].revenue);
@@ -222,7 +225,7 @@ function ManuelPage() {
                   {s.channel_id ? (channelName.get(s.channel_id) ?? "—") : "Direct"}
                 </TableCell>
                 <TableCell>
-                  {fmtMoney(s.amount_total, (s.currency ?? currency).toUpperCase())}
+                  {fmtMoney(eur(s.amount_total), (s.currency ?? currency).toUpperCase())}
                 </TableCell>
               </TableRow>
             ))}
