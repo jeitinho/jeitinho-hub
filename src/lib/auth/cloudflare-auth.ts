@@ -98,11 +98,11 @@ export function clearSessionCookie() { return `${SESSION_COOKIE}=; Max-Age=0; Pa
 export function canAccessModule(module: string, roles: AppRole[]) {
   const matrix: Record<string, AppRole[]> = {
     dashboard: ["admin","manager","redacteur_chef","redacteur","auteur","guide","prestataire"],
-    crm: ["admin","manager"], clients: ["admin","manager"], voyages: ["admin","manager","guide"], devis: ["admin","manager"],
-    experiences: ["admin","manager","redacteur_chef","redacteur"], contenus: ["admin","manager","redacteur_chef","redacteur","auteur"],
+    crm: ["admin","manager"], clients: ["admin","manager"], voyages: ["admin","manager"], devis: ["admin","manager"],
+    experiences: ["admin","manager","redacteur_chef"], contenus: ["admin","manager","redacteur_chef","redacteur","auteur"],
     blog: ["admin","manager","redacteur_chef","redacteur","auteur"], mediatheque: ["admin","manager","redacteur_chef","redacteur"],
-    partenaires: ["admin","manager","prestataire"], services: ["admin","manager"], billetterie: ["admin","manager"],
-    calendrier: ["admin","manager","redacteur_chef","redacteur","auteur","guide"], analytics: ["admin","manager"], parametres: ["admin","manager"],
+    partenaires: ["admin","manager"], services: ["admin","manager"], billetterie: ["admin","manager"],
+    calendrier: ["admin","manager","redacteur_chef","redacteur","auteur","guide","prestataire"], analytics: ["admin","manager"], parametres: ["admin","manager"],
     "a-valider": ["admin","manager"], agents: ["admin","manager"], evenements: ["admin","manager"], whatsapp: ["admin","manager"], manuel: ["admin","manager"], distribution: ["admin","manager"], audience: ["admin","manager"], finances: ["admin","manager"],
   };
   return (matrix[module] ?? []).some((role) => roles.includes(role));

@@ -1,7 +1,7 @@
-import { createFileRoute, redirect, Outlet, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, redirect, Outlet, useRouterState, Link } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, canAccessModule, MODULE_ACCESS } from "@/hooks/use-auth";
 import { PendingValidationScreen } from "@/components/pending-validation-screen";
 import { GlobalSearch } from "@/components/global-search";
 import { MobileNav } from "@/components/mobile-nav";
@@ -19,7 +19,9 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const title = pathnameToTitle(pathname);
-  const { status, loading, isRejected } = useAuth();
+  const { status, loading, isRejected, roles } = useAuth();
+  const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
+  const allowed = loading || !(seg in MODULE_ACCESS) || canAccessModule(seg, roles);
 
   if (!loading && status && status !== "active") {
     return <PendingValidationScreen rejected={isRejected} />;
@@ -38,7 +40,22 @@ function AuthenticatedLayout() {
             </div>
           </header>
           <main className="flex-1 pb-20 md:pb-0">
-            <Outlet />
+            {allowed ? (
+              <Outlet />
+            ) : (
+              <div className="mx-auto max-w-xl px-4 py-16 text-center">
+                <p className="tracked mb-3 text-[10px] text-muted-foreground">Accès réservé</p>
+                <p className="text-sm text-muted-foreground">
+                  Cette page ne fait pas partie de ton espace.
+                </p>
+                <Link
+                  to="/dashboard"
+                  className="mt-4 inline-block text-sm text-primary underline-offset-2 hover:underline"
+                >
+                  Revenir à l'accueil
+                </Link>
+              </div>
+            )}
           </main>
         </div>
       </div>

@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
-  | "admin"
-  | "manager"
-  | "redacteur_chef"
-  | "redacteur"
-  | "auteur"
-  | "guide"
-  | "prestataire";
+  "admin" | "manager" | "redacteur_chef" | "redacteur" | "auteur" | "guide" | "prestataire";
 
 export type AccountStatus = "pending_validation" | "active" | "rejected" | "suspended";
 
@@ -16,6 +10,8 @@ export type AuthUser = {
   id: string;
   email: string;
   fullName: string | null;
+  /** Prénom d'usage (profiles.short_name), ex. « Lili ». Sert au bonjour et aux contenus attribués. */
+  shortName?: string | null;
   status: AccountStatus;
   roles: AppRole[];
 };
@@ -32,7 +28,10 @@ async function bridgeSupabaseSession() {
   if (!response?.ok) return;
   const body = await response.json().catch(() => null);
   if (body?.session?.access_token && body?.session?.refresh_token) {
-    await supabase.auth.setSession({ access_token: body.session.access_token, refresh_token: body.session.refresh_token });
+    await supabase.auth.setSession({
+      access_token: body.session.access_token,
+      refresh_token: body.session.refresh_token,
+    });
   }
 }
 
@@ -86,16 +85,16 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   dashboard: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide", "prestataire"],
   crm: ["admin", "manager"],
   clients: ["admin", "manager"],
-  voyages: ["admin", "manager", "guide"],
+  voyages: ["admin", "manager"],
   devis: ["admin", "manager"],
-  experiences: ["admin", "manager", "redacteur_chef", "redacteur"],
+  experiences: ["admin", "manager", "redacteur_chef"],
   contenus: ["admin", "manager", "redacteur_chef", "redacteur", "auteur"],
   blog: ["admin", "manager", "redacteur_chef", "redacteur", "auteur"],
   mediatheque: ["admin", "manager", "redacteur_chef", "redacteur"],
-  partenaires: ["admin", "manager", "prestataire"],
+  partenaires: ["admin", "manager"],
   services: ["admin", "manager"],
   billetterie: ["admin", "manager"],
-  calendrier: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide"],
+  calendrier: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide", "prestataire"],
   analytics: ["admin", "manager"],
   parametres: ["admin", "manager"],
   "a-valider": ["admin", "manager"],
@@ -110,4 +109,24 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
 
 export function canAccessModule(module: string, roles: AppRole[]) {
   return (MODULE_ACCESS[module] ?? []).some((role) => roles.includes(role));
+}
+
+/** Prénom affiché pour la personne connectée : jamais « Rafael » en dur. */
+export function displayName(
+  user: Pick<AuthUser, "shortName" | "fullName" | "email"> | null | undefined,
+) {
+  if (!user) return "";
+  return (
+    user.shortName?.trim() || user.fullName?.trim().split(/\s+/)[0] || user.email.split("@")[0]
+  );
+}
+
+/** Profil d'usage, qui décide de l'accueil et de la barre mobile. */
+export type ProfileKind = "pilotage" | "media" | "terrain" | "autre";
+export function profileKind(roles: AppRole[]): ProfileKind {
+  if (roles.includes("admin") || roles.includes("manager")) return "pilotage";
+  if (roles.some((r) => r === "redacteur_chef" || r === "redacteur" || r === "auteur"))
+    return "media";
+  if (roles.some((r) => r === "guide" || r === "prestataire")) return "terrain";
+  return "autre";
 }

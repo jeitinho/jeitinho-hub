@@ -41,7 +41,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { JeitinhoLogo } from "./jeitinho-logo";
-import { useAuth, canAccessModule } from "@/hooks/use-auth";
+import { useAuth, canAccessModule, displayName } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
@@ -152,7 +152,13 @@ export function AppSidebar() {
                         <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
                           <Link to={item.url}>
                             <item.icon className="h-4 w-4" />
-                            <span>{item.title}</span>
+                            <span>
+                              {!canManage && item.module === "contenus"
+                                ? "Mon planning"
+                                : !canManage && item.module === "dashboard"
+                                  ? "Accueil"
+                                  : item.title}
+                            </span>
                           </Link>
                         </SidebarMenuButton>
                         {badge > 0 && (
@@ -197,7 +203,8 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-border/60 p-3">
         {!collapsed && user && (
           <div className="mb-2 min-w-0 px-2">
-            <div className="truncate text-xs font-medium text-foreground">{user.email}</div>
+            <div className="truncate text-xs font-medium text-foreground">{displayName(user)}</div>
+            <div className="truncate text-[11px] text-muted-foreground">{user.email}</div>
             <div className="tracked text-[10px] text-muted-foreground">{roles[0] ?? "membre"}</div>
           </div>
         )}

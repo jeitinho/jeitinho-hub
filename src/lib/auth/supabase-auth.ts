@@ -7,7 +7,7 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
 type SessionPayload = { access_token: string; refresh_token: string; expires_at?: number };
 type SupabaseUser = { id: string; email?: string | null };
-type HubProfile = { id: string; email: string; full_name: string | null; status: AccountStatus; is_active: boolean };
+type HubProfile = { id: string; email: string; full_name: string | null; short_name?: string | null; status: AccountStatus; is_active: boolean };
 
 function headers(accessToken?: string) {
   return { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${accessToken ?? SUPABASE_PUBLISHABLE_KEY}`, "Content-Type": "application/json" };
@@ -61,7 +61,7 @@ async function resolveUser(startSession: SessionPayload): Promise<{ user: AuthUs
   if (!authUser?.id || !authUser.email) return null;
   const { profile, roles } = await getHubProfile(session.access_token, authUser.id);
   if (!profile || !profile.is_active || profile.status !== "active") return null;
-  return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, status: profile.status, roles } };
+  return { session, user: { id: profile.id, email: profile.email || authUser.email, fullName: profile.full_name, shortName: profile.short_name ?? null, status: profile.status, roles } };
 }
 export async function getCurrentUser(request: Request): Promise<{ user: AuthUser; session: SessionPayload } | null> {
   const session = getSession(request);

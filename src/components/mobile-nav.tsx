@@ -1,22 +1,46 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, ClipboardCheck, Inbox, Menu, Sun } from "lucide-react";
+import {
+  BookOpen,
+  Calendar,
+  ClipboardCheck,
+  Images,
+  Inbox,
+  Library,
+  Menu,
+  Sun,
+} from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useAuth } from "@/hooks/use-auth";
+import { profileKind, useAuth } from "@/hooks/use-auth";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
-const ITEMS = [
+type NavItem = { to: string; label: string; icon: typeof Sun; badge: string | null };
+
+const MEDIA_ITEMS: NavItem[] = [
+  { to: "/dashboard", label: "Mon plan", icon: Sun, badge: null },
+  { to: "/contenus", label: "Planning", icon: Library, badge: null },
+  { to: "/blog", label: "Blog", icon: BookOpen, badge: null },
+  { to: "/mediatheque", label: "Médias", icon: Images, badge: null },
+];
+
+const TERRAIN_ITEMS: NavItem[] = [
+  { to: "/dashboard", label: "Mes sorties", icon: Sun, badge: null },
+  { to: "/calendrier", label: "Agenda", icon: Calendar, badge: null },
+];
+
+const ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Aujourd'hui", icon: Sun, badge: null },
   { to: "/a-valider", label: "À envoyer", icon: ClipboardCheck, badge: "a-valider" },
   { to: "/crm", label: "Demandes", icon: Inbox, badge: "crm" },
   { to: "/calendrier", label: "Agenda", icon: Calendar, badge: null },
-] as const;
+];
 
 /** Barre d'onglets du téléphone : les 4 écrans du quotidien + le menu complet. */
 export function MobileNav() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { setOpenMobile } = useSidebar();
-  const { canManage } = useAuth();
+  const { canManage, roles } = useAuth();
+  const kind = profileKind(roles);
   const { data: badges = {} } = useQuery({
     queryKey: ["sidebar-badges"],
     queryFn: fetchSidebarBadges,
@@ -24,7 +48,14 @@ export function MobileNav() {
     refetchInterval: 120_000,
   });
 
-  if (!canManage) return null;
+  const items = canManage
+    ? ITEMS
+    : kind === "media"
+      ? MEDIA_ITEMS
+      : kind === "terrain"
+        ? TERRAIN_ITEMS
+        : [];
+  if (!items.length) return null;
 
   return (
     <nav
@@ -32,8 +63,11 @@ export function MobileNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Navigation principale"
     >
-      <ul className="grid grid-cols-5">
-        {ITEMS.map((item) => {
+      <ul
+        className="grid"
+        style={{ gridTemplateColumns: `repeat(${items.length + 1}, minmax(0, 1fr))` }}
+      >
+        {items.map((item) => {
           const active = path === item.to || path.startsWith(item.to + "/");
           const n = item.badge ? (badges[item.badge] ?? 0) : 0;
           return (

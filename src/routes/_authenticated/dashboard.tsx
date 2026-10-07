@@ -19,7 +19,9 @@ import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/hooks/use-auth";
+import { displayName, profileKind, useAuth } from "@/hooks/use-auth";
+import { MediaHome } from "@/components/home/media-home";
+import { TerrainHome } from "@/components/home/terrain-home";
 import { fetchCockpit, type AgentHealth } from "@/lib/ops/cockpit";
 import { fmtDateTime, fmtMoney } from "@/lib/ops/ops";
 
@@ -88,7 +90,9 @@ const AGENT_TONE: Record<AgentHealth["state"], string> = {
 };
 
 function CockpitPage() {
-  const { canManage } = useAuth();
+  const { canManage, user, roles } = useAuth();
+  const name = displayName(user);
+  const kind = profileKind(roles);
   const { data, isLoading, error } = useQuery({
     queryKey: ["cockpit"],
     queryFn: fetchCockpit,
@@ -119,12 +123,30 @@ function CockpitPage() {
     timeZone: TZ,
   });
 
+  const hello = name ? `${greet}, ${name}.` : `${greet}.`;
+
   if (!canManage)
     return (
-      <PageShell eyebrow={dateLabel} title={`${greet}.`}>
-        <Card className="p-6 text-sm text-muted-foreground">
-          Utilise le menu pour accéder à tes modules.
-        </Card>
+      <PageShell
+        eyebrow={dateLabel}
+        title={hello}
+        description={
+          kind === "media"
+            ? "Ton plan média : ce qu'il faut publier, produire et programmer."
+            : kind === "terrain"
+              ? "Tes prochaines sorties avec JEITINHO."
+              : undefined
+        }
+      >
+        {kind === "media" ? (
+          <MediaHome />
+        ) : kind === "terrain" ? (
+          <TerrainHome />
+        ) : (
+          <Card className="p-6 text-sm text-muted-foreground">
+            Utilise le menu pour accéder à tes modules.
+          </Card>
+        )}
       </PageShell>
     );
 
@@ -133,7 +155,7 @@ function CockpitPage() {
   return (
     <PageShell
       eyebrow={dateLabel}
-      title={`${greet}, Rafael.`}
+      title={hello}
       description="Ce qui demande ton attention maintenant. Tout est cliquable."
     >
       {(pendingUsers.data ?? 0) > 0 && (
