@@ -86,7 +86,7 @@ function NewLead() {
       </div>
       <Card className="h-fit border-border/60 p-6">
         <p className="tracked mb-4 text-[10px] text-muted-foreground">Enregistrement</p>
-        <p className="text-sm text-muted-foreground">Le lead sera créé dans Supabase avec le statut <strong>Nouveau</strong>. Il apparaîtra immédiatement dans l'onglet Leads du CRM.</p>
+        <p className="text-sm text-muted-foreground">Le lead sera créé dans Supabase avec le statut <strong>Nouveau</strong>. Elle apparaîtra immédiatement dans la colonne « Nouvelle » des Demandes.</p>
         <Button className="btn-primary mt-6 w-full" onClick={save} disabled={saving}><Save className="mr-2 h-4 w-4"/>{saving ? "Création…" : "Créer le lead"}</Button>
       </Card>
     </div>

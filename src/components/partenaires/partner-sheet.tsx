@@ -40,6 +40,7 @@ import {
   type PartnerLinks,
   type PartnerPatch,
 } from "@/lib/ops/partenaires";
+import { PartnerTimeline } from "@/components/client360/partner-timeline";
 import { ApplicationView } from "./application-view";
 import { ContactButtons, KindPill, NewBadge, StatusMenu, StatusPill } from "./shared";
 import { usePartnerUpdate } from "./use-partner-update";
@@ -488,6 +489,10 @@ function PartnerForm({
             )}
           </div>
         )}
+      </Section>
+
+      <Section title="Chronologie">
+        <PartnerTimeline partner={p} />
       </Section>
 
       {dirty && (

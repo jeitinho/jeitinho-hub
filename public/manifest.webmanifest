@@ -1,0 +1,22 @@
+{
+  "name": "JEITINHO Manager",
+  "short_name": "Jeitinho",
+  "description": "Le poste de pilotage de JEITINHO : à valider, demandes, calendrier, partenaires.",
+  "lang": "fr",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F2E9",
+  "theme_color": "#B15D36",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ],
+  "shortcuts": [
+    { "name": "À valider", "url": "/a-valider" },
+    { "name": "Demandes", "url": "/crm" },
+    { "name": "Calendrier", "url": "/calendrier" }
+  ]
+}

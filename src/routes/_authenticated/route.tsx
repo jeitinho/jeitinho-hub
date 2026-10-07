@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { PendingValidationScreen } from "@/components/pending-validation-screen";
 import { GlobalSearch } from "@/components/global-search";
+import { MobileNav } from "@/components/mobile-nav";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -36,11 +37,12 @@ function AuthenticatedLayout() {
               <GlobalSearch />
             </div>
           </header>
-          <main className="flex-1">
+          <main className="flex-1 pb-20 md:pb-0">
             <Outlet />
           </main>
         </div>
       </div>
+      <MobileNav />
     </SidebarProvider>
   );
 }
