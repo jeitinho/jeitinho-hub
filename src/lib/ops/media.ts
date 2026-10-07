@@ -93,7 +93,7 @@ export const EDITORIAL_KINDS: Record<string, string> = {
 };
 
 export const EDITORIAL_PRIORITIES = ["Haute", "Moyenne", "Basse"] as const;
-export const EDITORIAL_OWNERS = ["Rafael", "Charline", "Lindsay", "Nawal"] as const;
+export const EDITORIAL_OWNERS = ["Rafael", "Lili", "Vidéaste"] as const;
 
 export const PRIORITY_TONE: Record<string, string> = {
   Haute: "border-destructive/40 text-destructive",
