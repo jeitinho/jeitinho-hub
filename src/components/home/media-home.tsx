@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, ExternalLink, MessageCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { fetchWhatsappPosts } from "@/lib/ops/ops";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -147,6 +149,67 @@ function Section({
   );
 }
 
+const SLOT_LABEL: Record<string, string> = {
+  info_du_jour: "Conseil (lien blog)",
+  bon_plan: "Bons plans",
+  sortie: "Sorties du soir",
+};
+
+/** Les posts du jour du groupe « Le Jeitinho de Rio », que Lili publie. */
+function WhatsappToday() {
+  const { data = [] } = useQuery({
+    queryKey: ["wa-today"],
+    queryFn: () => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start.getTime() + 86_400_000 + 4 * 3_600_000);
+      return fetchWhatsappPosts(start.toISOString(), end.toISOString());
+    },
+    refetchInterval: 300_000,
+  });
+  const today = rioDay(new Date());
+  const posts = data.filter((p) => rioDay(p.scheduled_at) === today);
+  return (
+    <section className="space-y-3">
+      <div className="flex items-baseline gap-2">
+        <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+          Groupe WhatsApp
+        </h2>
+        {posts.length > 0 && <span className="pill">{posts.length}</span>}
+      </div>
+      <p className="-mt-2 text-xs text-muted-foreground">
+        Tu reçois chaque texte sur WhatsApp 10 min avant. Groupe d'entraide : accueille, réponds,
+        relance, pas de pub.
+      </p>
+      <Card className="divide-y divide-border/60">
+        {posts.length === 0 ? (
+          <p className="p-4 text-sm text-muted-foreground">Aucun post prévu aujourd'hui.</p>
+        ) : (
+          posts.map((p) => (
+            <div key={p.id} className="flex items-center gap-3 p-3 text-sm">
+              <span className="w-12 text-xs text-muted-foreground">
+                {new Date(p.scheduled_at).toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: TZ,
+                })}
+              </span>
+              <span className="flex-1">{SLOT_LABEL[p.slot ?? ""] ?? p.slot}</span>
+              <Badge variant="outline">{p.status === "envoye" ? "Posté" : "À poster"}</Badge>
+            </div>
+          ))
+        )}
+        <Link
+          to="/whatsapp"
+          className="flex items-center gap-2 p-3 text-xs text-primary hover:underline"
+        >
+          <MessageCircle className="h-3.5 w-3.5" /> Ouvrir les textes et marquer « posté »
+        </Link>
+      </Card>
+    </section>
+  );
+}
+
 /** Accueil des profils média (ex. Lili) : uniquement son travail, prêt à faire. */
 export function MediaHome() {
   const { data, isLoading, error } = useQuery({
@@ -176,6 +239,7 @@ export function MediaHome() {
         />
       </div>
       <div className="space-y-8">
+        <WhatsappToday />
         <Section
           title="Prêt, à programmer"
           items={plan.toSchedule}

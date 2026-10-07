@@ -100,7 +100,7 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   "a-valider": ["admin", "manager"],
   agents: ["admin", "manager"],
   evenements: ["admin", "manager"],
-  whatsapp: ["admin", "manager"],
+  whatsapp: ["admin", "manager", "redacteur_chef", "redacteur"],
   manuel: ["admin", "manager"],
   distribution: ["admin", "manager"],
   audience: ["admin", "manager"],

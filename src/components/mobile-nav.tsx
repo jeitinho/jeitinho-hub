@@ -4,10 +4,10 @@ import {
   BookOpen,
   Calendar,
   ClipboardCheck,
-  Images,
   Inbox,
   Library,
   Menu,
+  MessageCircle,
   Sun,
 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -20,7 +20,7 @@ const MEDIA_ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Mon plan", icon: Sun, badge: null },
   { to: "/contenus", label: "Planning", icon: Library, badge: null },
   { to: "/blog", label: "Blog", icon: BookOpen, badge: null },
-  { to: "/mediatheque", label: "Médias", icon: Images, badge: null },
+  { to: "/whatsapp", label: "Groupe", icon: MessageCircle, badge: null },
 ];
 
 const TERRAIN_ITEMS: NavItem[] = [
