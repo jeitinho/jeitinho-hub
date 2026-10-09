@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, ChevronUp, ExternalLink, MessageCircle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { fetchWhatsappPosts } from "@/lib/ops/ops";
+import { displayName, useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -212,19 +213,31 @@ function WhatsappToday() {
 
 /** Accueil des profils média (ex. Lili) : uniquement son travail, prêt à faire. */
 export function MediaHome() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["my-plan"],
-    queryFn: fetchMyPlan,
+  const { user } = useAuth();
+  // Prénom d'usage (profiles.short_name) = valeur du champ « Responsable ».
+  const owner = displayName(user);
+  const { data, error } = useQuery({
+    queryKey: ["my-plan", owner],
+    queryFn: () => fetchMyPlan(owner),
+    enabled: !!user,
     refetchInterval: 300_000,
   });
-  if (isLoading)
-    return <Card className="p-6 text-sm text-muted-foreground">Chargement de ton plan…</Card>;
   if (error)
     return <Card className="p-6 text-sm text-destructive">{(error as Error).message}</Card>;
-  const plan = data!;
+  if (!data)
+    return <Card className="p-6 text-sm text-muted-foreground">Chargement de ton plan…</Card>;
+  const plan = data;
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="space-y-8">
+        {plan.late.length > 0 && (
+          <Section
+            title="En retard"
+            hint="Prévu ces 7 derniers jours, pas encore publié. Publie-le ou préviens Rafael pour le reporter."
+            items={plan.late}
+            empty=""
+          />
+        )}
         <Section
           title="À publier aujourd'hui"
           hint="Heure de Rio. Programme-le dans Metricool (Instagram + TikTok) si ce n'est pas déjà fait."

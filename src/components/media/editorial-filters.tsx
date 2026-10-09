@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EDITORIAL_KINDS } from "@/lib/ops/media";
+import { EDITORIAL_KINDS, channelName } from "@/lib/ops/media";
 import { ALL, EMPTY_FILTERS, type EditorialFilterState } from "./editorial-filters-state";
 
 function FilterSelect({
@@ -44,15 +44,22 @@ export function EditorialFilters({
   owners,
   kinds,
   collections,
+  channels,
 }: {
   value: EditorialFilterState;
   onChange: (v: EditorialFilterState) => void;
   owners: string[];
   kinds: string[];
   collections: string[];
+  channels: string[];
 }) {
   const active =
-    value.owner !== ALL || value.kind !== ALL || value.collection !== ALL || value.lateOnly;
+    value.owner !== ALL ||
+    value.kind !== ALL ||
+    value.collection !== ALL ||
+    value.channel !== ALL ||
+    value.lateOnly ||
+    value.showAbandoned;
   return (
     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
       <FilterSelect
@@ -68,6 +75,12 @@ export function EditorialFilters({
         options={kinds.map((k) => ({ value: k, label: EDITORIAL_KINDS[k] ?? k }))}
       />
       <FilterSelect
+        value={value.channel}
+        onChange={(channel) => onChange({ ...value, channel })}
+        placeholder="Tous les comptes"
+        options={channels.map((c) => ({ value: c, label: channelName(c) }))}
+      />
+      <FilterSelect
         value={value.collection}
         onChange={(collection) => onChange({ ...value, collection })}
         placeholder="Toutes les collections"
@@ -80,6 +93,14 @@ export function EditorialFilters({
         onClick={() => onChange({ ...value, lateOnly: !value.lateOnly })}
       >
         En retard
+      </Button>
+      <Button
+        size="sm"
+        variant={value.showAbandoned ? "secondary" : "outline"}
+        className="h-9"
+        onClick={() => onChange({ ...value, showAbandoned: !value.showAbandoned })}
+      >
+        {value.showAbandoned ? "Masquer les abandonnés" : "Afficher les abandonnés"}
       </Button>
       {active && (
         <Button

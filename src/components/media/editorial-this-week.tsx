@@ -2,7 +2,6 @@ import { CalendarDays } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  DONE_STATUSES,
   addDays,
   dayKey,
   fmtDayKey,
@@ -15,14 +14,18 @@ import { OverdueBadge, StatusMenu } from "./editorial-item-card";
 
 /** Encart « Cette semaine » : contenus de la semaine en cours, retards d'abord. */
 export function EditorialThisWeek({
-  items,
+  items: allItems,
   onOpen,
   onShowLate,
+  showAbandoned = false,
 }: {
   items: EditorialItem[];
   onOpen: (item: EditorialItem) => void;
   onShowLate: () => void;
+  /** Par défaut, les contenus abandonnés n'apparaissent pas. */
+  showAbandoned?: boolean;
 }) {
+  const items = showAbandoned ? allItems : allItems.filter((i) => i.status !== "abandonne");
   const today = todayKey();
   const start = mondayKey(today);
   const end = addDays(start, 6);
@@ -41,7 +44,9 @@ export function EditorialThisWeek({
     });
   const weekIds = new Set(week.map((i) => i.id));
   const olderLate = items.filter((i) => !weekIds.has(i.id) && isOverdue(i, today)).length;
-  const done = week.filter((i) => DONE_STATUSES.includes(i.status)).length;
+  // Abandonné ≠ terminé : ni compté comme fait, ni dans le total.
+  const counted = week.filter((i) => i.status !== "abandonne");
+  const done = counted.filter((i) => i.status === "publie").length;
 
   return (
     <Card className="p-4">
@@ -51,7 +56,7 @@ export function EditorialThisWeek({
           <h2 className="text-base font-medium">Cette semaine</h2>
           <span className="text-xs text-muted-foreground">
             {fmtDayKey(start, { day: "numeric", month: "short" })} –{" "}
-            {fmtDayKey(end, { day: "numeric", month: "short" })} · {done}/{week.length} terminés
+            {fmtDayKey(end, { day: "numeric", month: "short" })} · {done}/{counted.length} publiés
           </span>
         </div>
         {olderLate > 0 && (
@@ -80,7 +85,7 @@ export function EditorialThisWeek({
                 {it.title}
               </button>
               <span className="text-xs text-muted-foreground">{it.owner ?? "Non attribué"}</span>
-              {isOverdue(it, today) && it.deadline && <OverdueBadge deadline={it.deadline} />}
+              {isOverdue(it, today) && <OverdueBadge item={it} />}
               <StatusMenu item={it} />
             </li>
           ))}

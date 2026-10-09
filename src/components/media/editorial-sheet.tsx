@@ -21,12 +21,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  EDITORIAL_CHANNELS,
   EDITORIAL_KINDS,
   EDITORIAL_OWNERS,
   EDITORIAL_PRIORITIES,
   EDITORIAL_STATUSES,
   deleteEditorialItem,
   fromLocalInput,
+  normalizeStatus,
   saveEditorialItem,
   toLocalInput,
   type EditorialInput,
@@ -56,7 +58,7 @@ function toForm(item: Partial<EditorialItem> | null): Form {
   return {
     title: item?.title ?? "",
     kind: item?.kind ?? "article",
-    status: item?.status ?? "idee",
+    status: normalizeStatus(item?.status ?? "idee"),
     owner: item?.owner ?? "",
     priority: item?.priority ?? "Moyenne",
     collection: item?.collection ?? "",
@@ -77,7 +79,6 @@ export function EditorialSheet({
   item,
   defaults,
   collections,
-  channels,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -86,7 +87,6 @@ export function EditorialSheet({
   /** Valeurs initiales pour une création (ex. jour cliqué). */
   defaults?: Partial<EditorialItem>;
   collections: string[];
-  channels: string[];
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Form>(() => toForm(item ?? defaults ?? null));
@@ -106,6 +106,10 @@ export function EditorialSheet({
 
   const kinds = { ...EDITORIAL_KINDS };
   if (form.kind && !kinds[form.kind]) kinds[form.kind] = form.kind;
+  // Liste fermée ; une valeur ancienne hors liste reste affichée telle quelle.
+  const channelOptions = [...EDITORIAL_CHANNELS];
+  if (form.channel && !channelOptions.some((c) => c.value === form.channel))
+    channelOptions.push({ value: form.channel, label: form.channel, short: form.channel });
   const owners: string[] = [...EDITORIAL_OWNERS];
   if (form.owner && !owners.includes(form.owner)) owners.push(form.owner);
 
@@ -278,21 +282,23 @@ export function EditorialSheet({
               </datalist>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ed-channel">Canal</Label>
-              <Input
-                id="ed-channel"
-                list="ed-channels"
-                value={form.channel}
-                onChange={(e) => set("channel", e.target.value)}
-                placeholder="Blog, Instagram, newsletter…"
-              />
-              <datalist id="ed-channels">
-                {["Blog", "Instagram", "Newsletter", "WhatsApp", ...channels]
-                  .filter((c, i, a) => a.indexOf(c) === i)
-                  .map((c) => (
-                    <option key={c} value={c} />
+              <Label>Compte / canal</Label>
+              <Select
+                value={form.channel || NONE}
+                onValueChange={(v) => set("channel", v === NONE ? "" : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>Aucun</SelectItem>
+                  {channelOptions.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
                   ))}
-              </datalist>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -344,7 +350,7 @@ export function EditorialSheet({
             <Label htmlFor="ed-notes">Notes</Label>
             <Textarea
               id="ed-notes"
-              rows={4}
+              rows={8}
               value={form.notes}
               onChange={(e) => set("notes", e.target.value)}
             />

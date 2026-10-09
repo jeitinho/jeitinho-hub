@@ -1,4 +1,9 @@
-import { EDITORIAL_STATUSES, isOverdue, type EditorialItem } from "@/lib/ops/media";
+import {
+  EDITORIAL_STATUSES,
+  isOverdue,
+  normalizeStatus,
+  type EditorialItem,
+} from "@/lib/ops/media";
 import { EditorialItemCard, StatusPill } from "./editorial-item-card";
 
 /** Vue Kanban : une colonne par statut ; retards en tête de colonne. */
@@ -11,17 +16,19 @@ export function EditorialKanban({
 }) {
   const known = new Set<string>(EDITORIAL_STATUSES.map((s) => s.value));
   const columns: string[] = EDITORIAL_STATUSES.map((s) => s.value).filter(
-    (s) => s !== "abandonne" || items.some((i) => i.status === s),
+    (s) => s !== "abandonne" || items.some((i) => normalizeStatus(i.status) === s),
   );
-  for (const i of items)
-    if (!known.has(i.status) && !columns.includes(i.status)) columns.push(i.status);
+  for (const i of items) {
+    const s = normalizeStatus(i.status);
+    if (!known.has(s) && !columns.includes(s)) columns.push(s);
+  }
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
       <div className="flex gap-3 lg:grid lg:auto-cols-fr lg:grid-flow-col">
         {columns.map((status) => {
           const list = items
-            .filter((i) => i.status === status)
+            .filter((i) => normalizeStatus(i.status) === status)
             .sort((a, b) => {
               const late = Number(isOverdue(b)) - Number(isOverdue(a));
               if (late) return late;
