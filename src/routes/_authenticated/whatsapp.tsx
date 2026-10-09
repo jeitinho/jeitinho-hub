@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   ChevronLeft,
@@ -9,6 +9,8 @@ import {
   Send,
   Pencil,
   X,
+  Check,
+  Undo2,
   ExternalLink,
   MessageCircle,
 } from "lucide-react";
@@ -18,11 +20,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   copyText,
   fetchWhatsappPosts,
+  rejectWhatsappPost,
   setWhatsappStatus,
   updateWhatsappContent,
+  WHATSAPP_REJECTION_LABELS,
+  WHATSAPP_STATUS_LABELS,
   type WhatsappPost,
+  type WhatsappRejectionReason,
 } from "@/lib/ops/ops";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
@@ -122,7 +135,7 @@ function WhatsappPage() {
       }
     >
       <p className="mb-4 text-sm text-muted-foreground">
-        {data.length} posts cette semaine · {sent} envoyés
+        {data.length} posts cette semaine · {sent} postés
       </p>
       {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
       {error && (
@@ -164,17 +177,35 @@ function PostCard({
 }) {
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(post.content);
+  // Le texte enregistré a changé (autre onglet, agent, rechargement) : on resynchronise.
+  useEffect(() => {
+    if (!editing) setContent(post.content);
+  }, [post.content, editing]);
+  const isSent = post.status === "envoye";
   const time = new Date(post.scheduled_at).toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "America/Sao_Paulo",
   });
+  const cancelEdit = () => {
+    setContent(post.content);
+    setEditing(false);
+  };
   return (
-    <Card className={`flex flex-col gap-3 p-4 ${post.status === "envoye" ? "opacity-60" : ""}`}>
+    <Card
+      className={`flex flex-col gap-3 p-4 ${isSent || post.status === "annule" ? "opacity-60" : ""}`}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-semibold">{time}</span>
         <Badge variant="secondary">{SLOT_LABEL[post.slot] ?? post.slot}</Badge>
-        <Badge variant={STATUS_VARIANT[post.status]}>{post.status}</Badge>
+        <Badge variant={STATUS_VARIANT[post.status]}>
+          {WHATSAPP_STATUS_LABELS[post.status] ?? post.status}
+        </Badge>
+        {post.status === "annule" && post.rejection_reason && (
+          <span className="text-xs text-muted-foreground">
+            ({WHATSAPP_REJECTION_LABELS[post.rejection_reason] ?? post.rejection_reason})
+          </span>
+        )}
         {post.includes_manual_link && <Badge variant="outline">lien Manuel</Badge>}
       </div>
       {post.notified_at && (
@@ -188,19 +219,24 @@ function PostCard({
           })}
         </p>
       )}
-      {editing ? (
+      {editing && !isSent ? (
         <>
           <Textarea rows={8} value={content} onChange={(e) => setContent(e.target.value)} />
-          <Button
-            size="sm"
-            onClick={() =>
-              act(() => updateWhatsappContent(post.id, content), "Post modifié").then(() =>
-                setEditing(false),
-              )
-            }
-          >
-            Enregistrer
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() =>
+                act(() => updateWhatsappContent(post.id, content), "Post modifié").then(() =>
+                  setEditing(false),
+                )
+              }
+            >
+              Enregistrer
+            </Button>
+            <Button size="sm" variant="ghost" onClick={cancelEdit}>
+              Annuler
+            </Button>
+          </div>
         </>
       ) : (
         <p className="whitespace-pre-wrap text-sm leading-relaxed">{content}</p>
@@ -221,28 +257,65 @@ function PostCard({
           <Copy className="mr-1.5 h-3.5 w-3.5" />
           Copier
         </Button>
-        <Button size="sm" variant="outline" onClick={() => setEditing((v) => !v)}>
-          <Pencil className="mr-1.5 h-3.5 w-3.5" />
-          Modifier
-        </Button>
-        {post.status !== "envoye" && (
+        {!isSent && !editing && (
+          <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+            <Pencil className="mr-1.5 h-3.5 w-3.5" />
+            Modifier
+          </Button>
+        )}
+        {post.status === "brouillon" && (
           <Button
             size="sm"
-            onClick={() => act(() => setWhatsappStatus(post.id, "envoye"), "Marqué envoyé")}
+            variant="outline"
+            onClick={() => act(() => setWhatsappStatus(post.id, "valide"), "Post validé")}
+          >
+            <Check className="mr-1.5 h-3.5 w-3.5" />
+            Valider
+          </Button>
+        )}
+        {!isSent && post.status !== "annule" && (
+          <Button
+            size="sm"
+            onClick={() => act(() => setWhatsappStatus(post.id, "envoye"), "Marqué posté")}
           >
             <Send className="mr-1.5 h-3.5 w-3.5" />
             Envoyé
           </Button>
         )}
-        {post.status !== "annule" && post.status !== "envoye" && (
+        {(post.status === "annule" || post.status === "valide") && (
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => act(() => setWhatsappStatus(post.id, "annule"), "Post écarté")}
+            onClick={() =>
+              act(() => setWhatsappStatus(post.id, "brouillon"), "Post remis en brouillon")
+            }
           >
-            <X className="mr-1.5 h-3.5 w-3.5" />
-            Écarter
+            <Undo2 className="mr-1.5 h-3.5 w-3.5" />
+            Remettre en brouillon
           </Button>
+        )}
+        {post.status !== "annule" && !isSent && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="ghost">
+                <X className="mr-1.5 h-3.5 w-3.5" />
+                Écarter
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Pourquoi écarter ce post ?</DropdownMenuLabel>
+              {(Object.keys(WHATSAPP_REJECTION_LABELS) as WhatsappRejectionReason[]).map(
+                (reason) => (
+                  <DropdownMenuItem
+                    key={reason}
+                    onSelect={() => act(() => rejectWhatsappPost(post.id, reason), "Post écarté")}
+                  >
+                    {WHATSAPP_REJECTION_LABELS[reason]}
+                  </DropdownMenuItem>
+                ),
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     </Card>

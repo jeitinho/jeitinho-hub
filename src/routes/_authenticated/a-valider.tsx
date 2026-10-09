@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import { Inbox, Zap } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
@@ -15,9 +16,13 @@ import {
   useValidationActions,
 } from "@/components/a-valider/use-validation-actions";
 
+/** ?task=<id> (depuis le cockpit) : la page descend sur cette tâche et la met en évidence. */
+const searchSchema = z.object({ task: z.string().optional().catch(undefined) });
+
 export const Route = createFileRoute("/_authenticated/a-valider")({
+  validateSearch: searchSchema,
   component: ValidationPage,
-  head: () => ({ meta: [{ title: "À valider — JEITINHO" }] }),
+  head: () => ({ meta: [{ title: "À envoyer — JEITINHO" }] }),
 });
 
 const BUCKET_LABELS: Record<ChannelBucket, string> = {
@@ -30,6 +35,7 @@ const BUCKET_LABELS: Record<ChannelBucket, string> = {
 
 function ValidationPage() {
   const actions = useValidationActions();
+  const { task: focusTask } = Route.useSearch();
   const [kind, setKind] = useState<string>("all");
   const [bucket, setBucket] = useState<ChannelBucket | "all">("all");
   const [langs, setLangs] = useState<Record<string, string>>({});
@@ -103,10 +109,17 @@ function ValidationPage() {
 
   const loading = queue.isLoading || (ids.length > 0 && recipients.isLoading);
 
+  useEffect(() => {
+    if (!focusTask || loading) return;
+    document
+      .getElementById(`task-${focusTask}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusTask, loading]);
+
   return (
     <PageShell
       eyebrow="Pilotage"
-      title="À valider"
+      title="À envoyer"
       description="Tout ce que les agents ont préparé : réponses aux leads, relances, pitchs partenaires, suivis acheteurs. Chaque message part en un clic, rien ne part sans validation."
       actions={
         <Button className="h-11" onClick={startBurst} disabled={loading || !visible.length}>
@@ -178,12 +191,17 @@ function ValidationPage() {
       {!loading && (
         <div className="space-y-3">
           {visible.map((i) => (
-            <TaskCard
+            <div
               key={i.task.id}
-              item={i}
-              actions={actions}
-              onLang={(k) => setLang(i.task.id, k)}
-            />
+              id={`task-${i.task.id}`}
+              className={
+                focusTask === i.task.id
+                  ? "scroll-mt-24 rounded-lg ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  : undefined
+              }
+            >
+              <TaskCard item={i} actions={actions} onLang={(k) => setLang(i.task.id, k)} />
+            </div>
           ))}
         </div>
       )}

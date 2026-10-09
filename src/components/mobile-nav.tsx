@@ -13,26 +13,28 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import { profileKind, useAuth } from "@/hooks/use-auth";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
+import { navLabel } from "@/lib/nav-labels";
 
-type NavItem = { to: string; label: string; icon: typeof Sun; badge: string | null };
+type NavItem = { to: string; module: string; icon: typeof Sun; badge: string | null };
 
+/* Noms : lib/nav-labels.ts (mêmes noms que le menu et le titre de page). */
 const MEDIA_ITEMS: NavItem[] = [
-  { to: "/dashboard", label: "Mon plan", icon: Sun, badge: null },
-  { to: "/contenus", label: "Planning", icon: Library, badge: null },
-  { to: "/blog", label: "Blog", icon: BookOpen, badge: null },
-  { to: "/whatsapp", label: "Groupe", icon: MessageCircle, badge: null },
+  { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/contenus", module: "contenus", icon: Library, badge: null },
+  { to: "/blog", module: "blog", icon: BookOpen, badge: null },
+  { to: "/whatsapp", module: "whatsapp", icon: MessageCircle, badge: null },
 ];
 
 const TERRAIN_ITEMS: NavItem[] = [
-  { to: "/dashboard", label: "Mes sorties", icon: Sun, badge: null },
-  { to: "/calendrier", label: "Agenda", icon: Calendar, badge: null },
+  { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
 ];
 
 const ITEMS: NavItem[] = [
-  { to: "/dashboard", label: "Aujourd'hui", icon: Sun, badge: null },
-  { to: "/a-valider", label: "À envoyer", icon: ClipboardCheck, badge: "a-valider" },
-  { to: "/crm", label: "Demandes", icon: Inbox, badge: "crm" },
-  { to: "/calendrier", label: "Agenda", icon: Calendar, badge: null },
+  { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/a-valider", module: "a-valider", icon: ClipboardCheck, badge: "a-valider" },
+  { to: "/crm", module: "crm", icon: Inbox, badge: "crm" },
+  { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
 ];
 
 /** Barre d'onglets du téléphone : les 4 écrans du quotidien + le menu complet. */
@@ -79,7 +81,9 @@ export function MobileNav() {
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="leading-none">{item.label}</span>
+                <span className="px-0.5 text-center leading-tight">
+                  {navLabel(item.module, { canManage, kind })}
+                </span>
                 {n > 0 && (
                   <span className="absolute right-[22%] top-2 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] font-semibold leading-4 text-primary-foreground">
                     {n > 99 ? "99+" : n}

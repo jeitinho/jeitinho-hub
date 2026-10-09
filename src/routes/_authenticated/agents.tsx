@@ -6,7 +6,13 @@ import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AGENTS, fetchAgentRuns, fmtDateTime, type AgentRun } from "@/lib/ops/ops";
+import {
+  AGENTS,
+  fetchAgentRuns,
+  fmtDateTime,
+  type AgentDefinition,
+  type AgentRun,
+} from "@/lib/ops/ops";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsPage,
@@ -37,6 +43,21 @@ function AgentsPage() {
     return map;
   }, [data]);
 
+  // Agents qui écrivent dans agent_runs sans figurer dans le registre : affichés « non déclaré ».
+  const list = useMemo<(AgentDefinition & { undeclared?: boolean })[]>(() => {
+    const known = new Set(AGENTS.map((a) => a.key));
+    const extra = [...byAgent.keys()]
+      .filter((k) => !known.has(k))
+      .map((k) => ({
+        key: k,
+        name: k,
+        schedule: "Non déclaré dans le registre de l'ERP",
+        output: "—",
+        undeclared: true,
+      }));
+    return [...AGENTS, ...extra];
+  }, [byAgent]);
+
   return (
     <PageShell
       eyebrow="Pilotage"
@@ -48,7 +69,7 @@ function AgentsPage() {
         <Card className="border-destructive/40 p-6 text-sm">{(error as Error).message}</Card>
       )}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {AGENTS.map((a) => {
+        {list.map((a) => {
           const runs = byAgent.get(a.key) ?? [];
           const last = runs[0];
           return (
@@ -57,6 +78,7 @@ function AgentsPage() {
                 <div className="flex items-center gap-2">
                   <Bot className="h-4 w-4 text-primary" />
                   <h3 className="text-sm font-semibold">{a.name}</h3>
+                  {a.undeclared && <Badge variant="outline">non déclaré</Badge>}
                 </div>
                 {last ? (
                   <span

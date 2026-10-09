@@ -1,7 +1,8 @@
 import { createFileRoute, redirect, Outlet, useRouterState, Link } from "@tanstack/react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { useAuth, canAccessModule, MODULE_ACCESS } from "@/hooks/use-auth";
+import { useAuth, canAccessModule, MODULE_ACCESS, profileKind } from "@/hooks/use-auth";
+import { pathnameToTitle } from "@/lib/nav-labels";
 import { PendingValidationScreen } from "@/components/pending-validation-screen";
 import { GlobalSearch } from "@/components/global-search";
 import { MobileNav } from "@/components/mobile-nav";
@@ -18,8 +19,8 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const title = pathnameToTitle(pathname);
-  const { status, loading, isRejected, roles } = useAuth();
+  const { status, loading, isRejected, roles, canManage } = useAuth();
+  const title = pathnameToTitle(pathname, { canManage, kind: profileKind(roles) });
   const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
   const allowed = loading || !(seg in MODULE_ACCESS) || canAccessModule(seg, roles);
 
@@ -62,34 +63,4 @@ function AuthenticatedLayout() {
       <MobileNav />
     </SidebarProvider>
   );
-}
-
-function pathnameToTitle(p: string): string {
-  const seg = p.split("/").filter(Boolean)[0] ?? "dashboard";
-  const map: Record<string, string> = {
-    dashboard: "Aujourd'hui",
-    crm: "Demandes",
-    clients: "Clients",
-    voyages: "Voyages",
-    devis: "Devis & Factures",
-    experiences: "Expériences",
-    contenus: "Planning éditorial",
-    blog: "Blog",
-    mediatheque: "Médiathèque",
-    partenaires: "Partenaires",
-    calendrier: "Calendrier",
-    analytics: "Analytics",
-    parametres: "Paramètres",
-    "a-valider": "À valider",
-    agents: "Agents",
-    evenements: "Événements",
-    whatsapp: "Groupe WhatsApp",
-    manuel: "Manuel",
-    distribution: "GetYourGuide",
-    audience: "Audience",
-    finances: "Finances",
-    services: "Services",
-    billetterie: "Billetterie",
-  };
-  return map[seg] ?? seg;
 }

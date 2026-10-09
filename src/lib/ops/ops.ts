@@ -48,6 +48,9 @@ export const TASK_KIND_LABELS: Record<string, string> = {
   relance_paiement: "Relance paiement",
   bienvenue_voyage: "Bienvenue voyage",
   demande_avis: "Demande d'avis",
+  campagne_consentement: "Campagne de consentement",
+  campagne_email: "Campagne e-mail",
+  reveillon_ancien_client: "Réveillon — ancien client",
 };
 
 export async function fetchValidationQueue(): Promise<ValidationTask[]> {
@@ -167,6 +170,18 @@ export const AGENTS: AgentDefinition[] = [
     name: "Suivi clients & encaissements",
     schedule: "Tous les jours 17h43",
     output: "Relances acompte/solde, bienvenue J-2, demandes d'avis",
+  },
+  {
+    key: "audience-voyages",
+    name: "Audience — voyages conciergerie",
+    schedule: "Tous les jours 10h47",
+    output: "Audience et campagnes voyages conciergerie",
+  },
+  {
+    key: "media-lili",
+    name: "Média — Lili",
+    schedule: "Planification à confirmer",
+    output: "Plan média de Lili (Instagram, TikTok, groupe WhatsApp)",
   },
 ];
 
@@ -330,6 +345,26 @@ export type WhatsappPost = {
   source_url: string | null;
   sent_at: string | null;
   notified_at: string | null;
+  rejection_reason: WhatsappRejectionReason | null;
+};
+
+export const WHATSAPP_STATUS_LABELS: Record<WhatsappPost["status"], string> = {
+  brouillon: "Brouillon",
+  valide: "Validé",
+  envoye: "Posté",
+  annule: "Écarté",
+  erreur: "Erreur",
+};
+
+export type WhatsappRejectionReason =
+  "info_fausse" | "pas_interessant" | "redaction" | "doublon" | "autre";
+
+export const WHATSAPP_REJECTION_LABELS: Record<WhatsappRejectionReason, string> = {
+  info_fausse: "Info fausse",
+  pas_interessant: "Pas intéressant",
+  redaction: "Mal rédigé",
+  doublon: "Doublon",
+  autre: "Autre",
 };
 
 export async function fetchWhatsappPosts(fromIso: string, toIso: string): Promise<WhatsappPost[]> {
@@ -337,7 +372,7 @@ export async function fetchWhatsappPosts(fromIso: string, toIso: string): Promis
     await db
       .from("whatsapp_posts")
       .select(
-        "id,week_id,scheduled_at,slot,category,content,status,includes_manual_link,source_url,sent_at,notified_at",
+        "id,week_id,scheduled_at,slot,category,content,status,includes_manual_link,source_url,sent_at,notified_at,rejection_reason",
       )
       .gte("scheduled_at", fromIso)
       .lt("scheduled_at", toIso)
@@ -348,7 +383,21 @@ export async function fetchWhatsappPosts(fromIso: string, toIso: string): Promis
 export async function setWhatsappStatus(id: string, status: WhatsappPost["status"]) {
   const patch: Record<string, unknown> = { status };
   if (status === "envoye") patch.sent_at = new Date().toISOString();
+  if (status === "brouillon" || status === "valide") {
+    patch.rejection_reason = null;
+    patch.rejected_at = null;
+  }
   check(await db.from("whatsapp_posts").update(patch).eq("id", id));
+}
+
+/** Écarter un post en gardant la raison (sert à améliorer l'agent Studio). */
+export async function rejectWhatsappPost(id: string, reason: WhatsappRejectionReason) {
+  check(
+    await db
+      .from("whatsapp_posts")
+      .update({ status: "annule", rejection_reason: reason, rejected_at: new Date().toISOString() })
+      .eq("id", id),
+  );
 }
 
 export async function updateWhatsappContent(id: string, content: string) {

@@ -1,10 +1,9 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
-import { BellRing, Flame, Inbox, Plus } from "lucide-react";
+import { BellRing, Inbox, Plus } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PriorityBoard } from "@/components/crm/priority-board";
 import { FollowupsPanel } from "@/components/crm/followups-panel";
 import { DemandesBoard } from "@/components/demandes/demandes-board";
 
@@ -20,12 +19,14 @@ function Layout() {
   return <CrmPage />;
 }
 
-type CrmTab = "demandes" | "priorites" | "relances";
+type CrmTab = "demandes" | "relances";
 
 /*
  * Les anciens onglets « Leads » et « Prospects » sont fusionnés dans « Demandes » :
  * marquer contacté, qualifier, spam, supprimer, créer un devis, convertir en client
  * et voir le client s'y retrouvent (carte, menu « Passer à… » et panneau latéral).
+ * L'ancien onglet « Priorités » est retiré : la priorité affichée sur les cartes
+ * Demandes fait référence. « Relances » ne montre que les relances de devis.
  */
 function CrmPage() {
   const [tab, setTab] = useState<CrmTab>("demandes");
@@ -49,10 +50,6 @@ function CrmPage() {
             <Inbox className="mr-1.5 h-3.5 w-3.5" />
             Demandes
           </TabsTrigger>
-          <TabsTrigger value="priorites">
-            <Flame className="mr-1.5 h-3.5 w-3.5" />
-            Priorités
-          </TabsTrigger>
           <TabsTrigger value="relances">
             <BellRing className="mr-1.5 h-3.5 w-3.5" />
             Relances
@@ -60,9 +57,6 @@ function CrmPage() {
         </TabsList>
         <TabsContent value="demandes" className="mt-6">
           <DemandesBoard onOpenRelances={() => setTab("relances")} />
-        </TabsContent>
-        <TabsContent value="priorites" className="mt-6">
-          <PriorityBoard />
         </TabsContent>
         <TabsContent value="relances" className="mt-6">
           <FollowupsPanel />

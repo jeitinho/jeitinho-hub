@@ -46,26 +46,36 @@ function when(iso: string | null) {
 
 function Tile({
   to,
+  search,
   icon: Icon,
   label,
   value,
   tone = "default",
   hint,
+  error,
 }: {
   to: string;
+  search?: Record<string, string>;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
   tone?: "default" | "alert";
   hint?: string;
+  /** Erreur de chargement de ce bloc : la tuile affiche « — » et l'erreur au survol. */
+  error?: string;
 }) {
-  const hot = tone === "alert" && value > 0;
+  const hot = !error && tone === "alert" && value > 0;
   return (
-    <Link to={to} className="group">
+    <Link
+      to={to}
+      search={search as never}
+      className="group"
+      title={error ? `Chargement impossible : ${error}` : undefined}
+    >
       <Card
         className={`flex h-full items-center gap-3 p-4 transition-colors group-hover:bg-muted/40 ${
           hot ? "border-primary/40 bg-primary/5" : ""
-        } ${value === 0 ? "opacity-60" : ""}`}
+        } ${value === 0 && !error ? "opacity-60" : ""}`}
       >
         <div
           className={`rounded-md p-2 ${hot ? "bg-primary text-primary-foreground" : "bg-muted"}`}
@@ -73,9 +83,13 @@ function Tile({
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-2xl font-semibold leading-none">{value}</p>
+          <p className="text-2xl font-semibold leading-none">{error ? "—" : value}</p>
           <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
-          {hint && <p className="truncate text-[11px] text-muted-foreground/80">{hint}</p>}
+          {error ? (
+            <p className="truncate text-[11px] text-destructive">Erreur de chargement</p>
+          ) : (
+            hint && <p className="truncate text-[11px] text-muted-foreground/80">{hint}</p>
+          )}
         </div>
         <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       </Card>
@@ -216,6 +230,7 @@ function CockpitPage() {
                 icon={ClipboardCheck}
                 label="Brouillons à valider"
                 value={data.tasks.length}
+                error={data.errors.tasks}
                 tone="alert"
                 hint={data.tasksByKind
                   .slice(0, 2)
@@ -227,13 +242,16 @@ function CockpitPage() {
                 icon={Inbox}
                 label="Nouvelles demandes clients"
                 value={data.newRequests}
+                error={data.errors.newRequests}
                 tone="alert"
               />
               <Tile
                 to="/devis"
+                search={{ statut: "relance" }}
                 icon={FileText}
                 label="Devis envoyés à relancer"
                 value={data.quotesToChase.length}
+                error={data.errors.quotesToChase}
                 tone="alert"
               />
               <Tile
@@ -241,32 +259,41 @@ function CockpitPage() {
                 icon={FileText}
                 label="Devis acceptés non soldés"
                 value={data.quotesUnpaid.length}
+                error={data.errors.quotesUnpaid}
               />
               <Tile
                 to="/partenaires"
+                search={{ focus: "candidatures" }}
                 icon={Handshake}
                 label="Candidatures partenaires"
                 value={data.newApplications}
+                error={data.errors.newApplications}
                 tone="alert"
               />
               <Tile
                 to="/partenaires"
+                search={{ focus: "relancer" }}
                 icon={Users}
                 label="Partenaires à relancer"
                 value={data.partnersToChase}
+                error={data.errors.partnersToChase}
               />
               <Tile
                 to="/distribution"
+                search={{ filtre: "a_corriger" }}
                 icon={Store}
                 label="Fiches GetYourGuide à corriger"
                 value={data.listingsToFix}
+                error={data.errors.listingsToFix}
                 tone="alert"
               />
               <Tile
                 to="/contenus"
+                search={{ retard: "1" }}
                 icon={Newspaper}
                 label="Contenus en retard"
                 value={data.editorialLate}
+                error={data.errors.editorialLate}
               />
             </div>
           </section>
@@ -307,6 +334,7 @@ function CockpitPage() {
                     <li key={t.id}>
                       <Link
                         to="/a-valider"
+                        search={{ task: t.id } as never}
                         className="flex items-center justify-between gap-3 py-2 text-sm hover:text-primary"
                       >
                         <span className="min-w-0 truncate">{t.title}</span>

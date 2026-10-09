@@ -20,7 +20,11 @@ export function FollowupsPanel() {
   const generated = useRef(false);
 
   const { data: quotes } = useQuery({ queryKey: ["crm", "sent-quotes"], queryFn: fetchSentQuotes });
-  const { data: tasks, isLoading, error } = useQuery({ queryKey: ["crm", "tasks"], queryFn: fetchOpenTasks });
+  const {
+    data: tasks,
+    isLoading,
+    error,
+  } = useQuery({ queryKey: ["crm", "tasks"], queryFn: fetchOpenTasks });
 
   // Génération idempotente des relances échues à l'ouverture de la vue.
   useEffect(() => {
@@ -60,15 +64,21 @@ export function FollowupsPanel() {
       </Card>
     );
 
-  const rows = (tasks ?? []).filter((t) => new Date(t.due_at).getTime() <= Date.now() + 86_400_000);
+  // Seules les relances de devis vivent ici ; les autres messages sont dans « À envoyer ».
+  const rows = (tasks ?? []).filter(
+    (t) => t.kind === "relance_devis" && new Date(t.due_at).getTime() <= Date.now() + 86_400_000,
+  );
 
   if (!rows.length) {
     return (
       <Card className="border-dashed p-16 text-center">
         <BellRing className="mx-auto mb-4 h-8 w-8 text-primary" />
-        <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>Aucune relance à traiter</h3>
+        <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+          Aucune relance à traiter
+        </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Les relances J+1 / J+3 / J+7 / J+14 apparaissent ici dès qu'un devis envoyé arrive à échéance. Rien n'est envoyé automatiquement.
+          Les relances J+1 / J+3 / J+7 / J+14 apparaissent ici dès qu'un devis envoyé arrive à
+          échéance. Rien n'est envoyé automatiquement.
         </p>
       </Card>
     );
@@ -83,7 +93,11 @@ export function FollowupsPanel() {
               <div className="mb-1 flex items-center gap-2">
                 <span className="pill">{t.channel}</span>
                 <span className="text-xs text-muted-foreground">
-                  échéance {new Date(t.due_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                  échéance{" "}
+                  {new Date(t.due_at).toLocaleString("fr-FR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
                 </span>
               </div>
               <h3 className="text-sm font-medium">{t.title}</h3>
@@ -97,16 +111,33 @@ export function FollowupsPanel() {
                   toast.success("Message copié.");
                 }}
               >
-                <Copy className="mr-1.5 h-3.5 w-3.5" />Copier
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                Copier
               </Button>
-              <Button size="sm" className="btn-primary" onClick={() => act(() => markTaskSent(t), "Relance marquée envoyée.")}>
-                <Send className="mr-1.5 h-3.5 w-3.5" />Marquer envoyé
+              <Button
+                size="sm"
+                className="btn-primary"
+                onClick={() => act(() => markTaskSent(t), "Relance marquée envoyée.")}
+              >
+                <Send className="mr-1.5 h-3.5 w-3.5" />
+                Marquer envoyé
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => act(() => snoozeTask(t.id), "Relance reportée de 2 jours.")}>
-                <Clock className="mr-1.5 h-3.5 w-3.5" />Reporter
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => act(() => snoozeTask(t.id), "Relance reportée de 2 jours.")}
+              >
+                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                Reporter
               </Button>
-              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => act(() => cancelTask(t.id), "Relance annulée.")}>
-                <X className="mr-1.5 h-3.5 w-3.5" />Annuler
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => act(() => cancelTask(t.id), "Relance annulée.")}
+              >
+                <X className="mr-1.5 h-3.5 w-3.5" />
+                Annuler
               </Button>
             </div>
           </div>
@@ -116,7 +147,11 @@ export function FollowupsPanel() {
             </p>
           )}
           {t.quote_id && (
-            <Link to="/devis/$id" params={{ id: t.quote_id }} className="text-xs text-primary underline-offset-4 hover:underline">
+            <Link
+              to="/devis/$id"
+              params={{ id: t.quote_id }}
+              className="text-xs text-primary underline-offset-4 hover:underline"
+            >
               Ouvrir le devis
             </Link>
           )}

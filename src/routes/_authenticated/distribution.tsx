@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 import { ExternalLink, Plus, Store } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
@@ -26,7 +27,13 @@ import {
 } from "@/lib/ops/ops";
 import { OtaBookingsList } from "@/components/ops/ota-bookings";
 
+/** ?filtre=a_corriger (depuis le cockpit) : n'affiche que les fiches à corriger. */
+const searchSchema = z.object({
+  filtre: z.enum(["a_corriger"]).optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/_authenticated/distribution")({
+  validateSearch: searchSchema,
   component: DistributionPage,
   head: () => ({ meta: [{ title: "Distribution — JEITINHO" }] }),
 });
@@ -60,6 +67,14 @@ function DistributionPage() {
     queryFn: fetchExperienceOptions,
   });
   const [creating, setCreating] = useState(false);
+  const { filtre } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setFiltre = (v?: "a_corriger") => navigate({ search: { filtre: v }, replace: true });
+  const listingsRef = useRef<HTMLHeadingElement>(null);
+  // Arrivée depuis le cockpit : on descend directement sur les fiches.
+  useEffect(() => {
+    if (filtre && !isLoading) listingsRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [filtre, isLoading]);
   const save = async (row: Partial<OtaListing> & { title: string }) => {
     try {
       await saveOtaListing({ ...row, last_checked_at: new Date().toISOString() });
@@ -69,9 +84,9 @@ function DistributionPage() {
       toast.error((e as Error).message);
     }
   };
-  const sorted = [...data].sort(
-    (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status),
-  );
+  const sorted = [...data]
+    .filter((l) => !filtre || l.status === filtre)
+    .sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status));
   const online = data.filter((l) => l.status === "en_ligne").length;
 
   return (
@@ -109,7 +124,23 @@ function DistributionPage() {
         <OtaBookingsList />
       </section>
 
-      <h2 className="mb-3 text-base font-semibold">Fiches</h2>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <h2 ref={listingsRef} className="scroll-mt-20 text-base font-semibold">
+          Fiches
+        </h2>
+        <Button
+          size="sm"
+          variant={filtre === "a_corriger" ? "default" : "outline"}
+          onClick={() => setFiltre(filtre === "a_corriger" ? undefined : "a_corriger")}
+        >
+          À corriger ({data.filter((l) => l.status === "a_corriger").length})
+        </Button>
+        {filtre && (
+          <Button size="sm" variant="ghost" onClick={() => setFiltre(undefined)}>
+            Voir toutes les fiches
+          </Button>
+        )}
+      </div>
       {creating && (
         <ListingForm
           experiences={experiences}
@@ -125,6 +156,11 @@ function DistributionPage() {
         {sorted.map((l) => (
           <ListingCard key={l.id} listing={l} experiences={experiences} onSave={save} />
         ))}
+        {!isLoading && data.length > 0 && sorted.length === 0 && (
+          <Card className="border-dashed p-8 text-center text-sm text-muted-foreground">
+            Aucune fiche à corriger.
+          </Card>
+        )}
         {!isLoading && data.length === 0 && (
           <Card className="border-dashed p-16 text-center">
             <Store className="mx-auto mb-4 h-8 w-8 text-primary" />

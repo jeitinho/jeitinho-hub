@@ -5,6 +5,8 @@ import {
   CalendarClock,
   FileText,
   Handshake,
+  Inbox,
+  Receipt,
   Palmtree,
   PartyPopper,
   Plane,
@@ -24,6 +26,8 @@ import { supabase } from "@/integrations/supabase/client";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
+type SearchResult = { hits: Hit[]; failed: string[] };
+
 type Hit = {
   key: string;
   group: string;
@@ -33,7 +37,12 @@ type Hit = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-/** Recherche globale (⌘K / Ctrl+K) : clients, devis, partenaires, expériences, voyages, événements, réservations GYG. */
+/**
+ * Recherche globale (⌘K / Ctrl+K) : clients, demandes, devis, factures, partenaires,
+ * expériences, voyages, soirées, réservations GYG. Le filtrage est fait côté base :
+ * la liste ne re-filtre pas (shouldFilter={false}), sinon un e-mail ou un téléphone
+ * trouvé en base disparaîtrait de l'affichage.
+ */
 export function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -56,41 +65,82 @@ export function GlobalSearch() {
     return () => clearTimeout(t);
   }, [q]);
 
-  const { data: hits = [], isFetching } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: ["global-search", term],
     enabled: open && term.length >= 2,
-    queryFn: async (): Promise<Hit[]> => {
+    queryFn: async (): Promise<SearchResult> => {
       const like = `%${term.replace(/[%,()]/g, " ")}%`;
       const go =
         (to: string, params?: Record<string, string>, search?: Record<string, string>) => () => {
           setOpen(false);
           void navigate({ to, params, search } as never);
         };
-      const [clients, quotes, partners, experiences, trips, events, bookings] = await Promise.all([
-        db
+      const sources = {
+        Clients: db
           .from("clients")
           .select("id,full_name,email,phone")
           .or(`full_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`)
           .limit(6),
-        db
+        Demandes: db
+          .from("prospects")
+          .select("id,name,email,phone,status,client_id")
+          .or(`name.ilike.${like},email.ilike.${like},phone.ilike.${like}`)
+          .limit(5),
+        "Demandes du site": db
+          .from("leads")
+          .select("id,name,email,phone,status,source")
+          .or(`name.ilike.${like},email.ilike.${like},phone.ilike.${like}`)
+          .limit(5),
+        Devis: db
           .from("quotes")
           .select("id,number,reference,title,status")
           .or(`number.ilike.${like},reference.ilike.${like},title.ilike.${like}`)
           .limit(6),
-        db
+        Factures: db
+          .from("invoices")
+          .select("id,number,title,billing_name,status")
+          .or(`number.ilike.${like},title.ilike.${like},billing_name.ilike.${like}`)
+          .limit(5),
+        Partenaires: db
           .from("partners")
           .select("id,name,kind,location")
           .or(`name.ilike.${like},instagram.ilike.${like},email.ilike.${like}`)
           .limit(6),
-        db.from("experiences").select("id,title,category").ilike("title", like).limit(6),
-        db.from("trips").select("id,title").ilike("title", like).limit(4),
-        db.from("events").select("id,name,starts_at").ilike("name", like).limit(4),
-        db
+        Expériences: db
+          .from("experiences")
+          .select("id,title,category")
+          .ilike("title", like)
+          .limit(6),
+        Voyages: db.from("trips").select("id,title").ilike("title", like).limit(4),
+        Soirées: db.from("events").select("id,name,starts_at").ilike("name", like).limit(4),
+        "Réservations GetYourGuide": db
           .from("ota_bookings")
           .select("id,booking_ref,lead_name,activity_title,client_id")
           .or(`booking_ref.ilike.${like},lead_name.ilike.${like}`)
           .limit(4),
-      ]);
+      } as const;
+      const names = Object.keys(sources) as (keyof typeof sources)[];
+      const settled = await Promise.allSettled(names.map((n) => sources[n]));
+      const failed: string[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rowsOf = (name: keyof typeof sources): any[] => {
+        const r = settled[names.indexOf(name)];
+        if (r.status === "rejected" || r.value?.error) {
+          failed.push(name);
+          return [];
+        }
+        return r.value.data ?? [];
+      };
+      const clients = { data: rowsOf("Clients") };
+      const prospects = rowsOf("Demandes");
+      const leads = rowsOf("Demandes du site");
+      const quotes = { data: rowsOf("Devis") };
+      const invoices = rowsOf("Factures");
+      const partners = { data: rowsOf("Partenaires") };
+      const experiences = { data: rowsOf("Expériences") };
+      const trips = { data: rowsOf("Voyages") };
+      const events = { data: rowsOf("Soirées") };
+      const bookings = { data: rowsOf("Réservations GetYourGuide") };
       const out: Hit[] = [];
       for (const c of clients.data ?? [])
         out.push({
@@ -101,6 +151,24 @@ export function GlobalSearch() {
           icon: UserRound,
           go: go("/clients/$id", { id: c.id }),
         });
+      for (const p of prospects)
+        out.push({
+          key: `pr${p.id}`,
+          group: "Demandes",
+          label: p.name ?? p.email ?? p.phone ?? "Demande",
+          sub: [p.email, p.phone].filter(Boolean).join(" · "),
+          icon: Inbox,
+          go: p.client_id ? go("/clients/$id", { id: p.client_id }) : go("/crm"),
+        });
+      for (const l of leads)
+        out.push({
+          key: `l${l.id}`,
+          group: "Demandes",
+          label: l.name ?? l.email ?? l.phone ?? "Demande du site",
+          sub: [l.email, l.phone].filter(Boolean).join(" · "),
+          icon: Inbox,
+          go: go("/crm"),
+        });
       for (const d of quotes.data ?? [])
         out.push({
           key: `q${d.id}`,
@@ -109,6 +177,15 @@ export function GlobalSearch() {
           sub: d.status,
           icon: FileText,
           go: go("/devis/$id", { id: d.id }),
+        });
+      for (const f of invoices)
+        out.push({
+          key: `f${f.id}`,
+          group: "Factures",
+          label: `${f.number ?? ""} ${f.title ?? ""}`.trim(),
+          sub: f.billing_name ?? "",
+          icon: Receipt,
+          go: go("/devis/factures/$id", { id: f.id }),
         });
       for (const p of partners.data ?? [])
         out.push({
@@ -139,7 +216,7 @@ export function GlobalSearch() {
       for (const e of events.data ?? [])
         out.push({
           key: `e${e.id}`,
-          group: "Événements",
+          group: "Soirées",
           label: e.name,
           sub: new Date(e.starts_at).toLocaleDateString("fr-FR"),
           icon: PartyPopper,
@@ -154,10 +231,12 @@ export function GlobalSearch() {
           icon: CalendarClock,
           go: b.client_id ? go("/clients/$id", { id: b.client_id }) : go("/distribution"),
         });
-      return out;
+      return { hits: out, failed };
     },
   });
 
+  const hits = data?.hits ?? [];
+  const failed = data?.failed ?? [];
   const groups = [...new Set(hits.map((h) => h.group))];
 
   return (
@@ -172,13 +251,19 @@ export function GlobalSearch() {
           ⌘K
         </kbd>
       </button>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
         <CommandInput
-          placeholder="Client, devis, partenaire, expérience, réf. GYG…"
+          placeholder="Nom, e-mail, téléphone, devis, facture, réf. GYG…"
           value={q}
           onValueChange={setQ}
         />
         <CommandList>
+          {failed.length > 0 && (
+            <p className="px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+              Recherche incomplète : {failed.join(", ")} indisponible
+              {failed.length > 1 ? "s" : ""} pour le moment.
+            </p>
+          )}
           <CommandEmpty>
             {term.length < 2
               ? "Tape au moins 2 lettres."
@@ -191,7 +276,7 @@ export function GlobalSearch() {
               {hits
                 .filter((h) => h.group === g)
                 .map((h) => (
-                  <CommandItem key={h.key} value={h.key + h.label} onSelect={h.go}>
+                  <CommandItem key={h.key} value={h.key} onSelect={h.go}>
                     <h.icon className="mr-2 h-4 w-4" />
                     <span className="truncate">{h.label}</span>
                     {h.sub && (

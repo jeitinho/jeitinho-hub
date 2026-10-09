@@ -64,8 +64,6 @@ import { Route as ApiAuthRequestResetRouteImport } from './routes/api/auth/reque
 import { Route as ApiAuthResetPasswordRouteImport } from './routes/api/auth/reset-password'
 import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
 import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
-import { Route as ApiDbQueryRouteImport } from './routes/api/db/query'
-import { Route as ApiDbRpcRouteImport } from './routes/api/db/rpc'
 import { Route as ApiInternalCatalogRouteImport } from './routes/api/internal/catalog'
 import { Route as ApiInternalHealthRouteImport } from './routes/api/internal/health'
 import { Route as ApiStorageFileRouteImport } from './routes/api/storage/file'
@@ -361,16 +359,6 @@ const ApiAuthSignupRoute = ApiAuthSignupRouteImport.update({
   path: '/api/auth/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiDbQueryRoute = ApiDbQueryRouteImport.update({
-  id: '/api/db/query',
-  path: '/api/db/query',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiDbRpcRoute = ApiDbRpcRouteImport.update({
-  id: '/api/db/rpc',
-  path: '/api/db/rpc',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiInternalCatalogRoute = ApiInternalCatalogRouteImport.update({
   id: '/api/internal/catalog',
   path: '/api/internal/catalog',
@@ -470,8 +458,6 @@ export interface FileRoutesByFullPath {
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
-  '/api/db/query': typeof ApiDbQueryRoute
-  '/api/db/rpc': typeof ApiDbRpcRoute
   '/api/internal/catalog': typeof ApiInternalCatalogRoute
   '/api/internal/health': typeof ApiInternalHealthRoute
   '/api/storage/file': typeof ApiStorageFileRoute
@@ -536,8 +522,6 @@ export interface FileRoutesByTo {
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
-  '/api/db/query': typeof ApiDbQueryRoute
-  '/api/db/rpc': typeof ApiDbRpcRoute
   '/api/internal/catalog': typeof ApiInternalCatalogRoute
   '/api/internal/health': typeof ApiInternalHealthRoute
   '/api/storage/file': typeof ApiStorageFileRoute
@@ -604,8 +588,6 @@ export interface FileRoutesById {
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
-  '/api/db/query': typeof ApiDbQueryRoute
-  '/api/db/rpc': typeof ApiDbRpcRoute
   '/api/internal/catalog': typeof ApiInternalCatalogRoute
   '/api/internal/health': typeof ApiInternalHealthRoute
   '/api/storage/file': typeof ApiStorageFileRoute
@@ -672,8 +654,6 @@ export interface FileRouteTypes {
     | '/api/auth/reset-password'
     | '/api/auth/session'
     | '/api/auth/signup'
-    | '/api/db/query'
-    | '/api/db/rpc'
     | '/api/internal/catalog'
     | '/api/internal/health'
     | '/api/storage/file'
@@ -738,8 +718,6 @@ export interface FileRouteTypes {
     | '/api/auth/reset-password'
     | '/api/auth/session'
     | '/api/auth/signup'
-    | '/api/db/query'
-    | '/api/db/rpc'
     | '/api/internal/catalog'
     | '/api/internal/health'
     | '/api/storage/file'
@@ -805,8 +783,6 @@ export interface FileRouteTypes {
     | '/api/auth/reset-password'
     | '/api/auth/session'
     | '/api/auth/signup'
-    | '/api/db/query'
-    | '/api/db/rpc'
     | '/api/internal/catalog'
     | '/api/internal/health'
     | '/api/storage/file'
@@ -834,8 +810,6 @@ export interface RootRouteChildren {
   ApiAuthResetPasswordRoute: typeof ApiAuthResetPasswordRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiAuthSignupRoute: typeof ApiAuthSignupRoute
-  ApiDbQueryRoute: typeof ApiDbQueryRoute
-  ApiDbRpcRoute: typeof ApiDbRpcRoute
   ApiInternalCatalogRoute: typeof ApiInternalCatalogRoute
   ApiInternalHealthRoute: typeof ApiInternalHealthRoute
   ApiStorageFileRoute: typeof ApiStorageFileRoute
@@ -1231,20 +1205,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/db/query': {
-      id: '/api/db/query'
-      path: '/api/db/query'
-      fullPath: '/api/db/query'
-      preLoaderRoute: typeof ApiDbQueryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/db/rpc': {
-      id: '/api/db/rpc'
-      path: '/api/db/rpc'
-      fullPath: '/api/db/rpc'
-      preLoaderRoute: typeof ApiDbRpcRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/internal/catalog': {
       id: '/api/internal/catalog'
       path: '/api/internal/catalog'
@@ -1517,8 +1477,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthResetPasswordRoute: ApiAuthResetPasswordRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiAuthSignupRoute: ApiAuthSignupRoute,
-  ApiDbQueryRoute: ApiDbQueryRoute,
-  ApiDbRpcRoute: ApiDbRpcRoute,
   ApiInternalCatalogRoute: ApiInternalCatalogRoute,
   ApiInternalHealthRoute: ApiInternalHealthRoute,
   ApiStorageFileRoute: ApiStorageFileRoute,

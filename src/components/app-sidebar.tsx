@@ -9,10 +9,8 @@ import {
   Palmtree,
   Library,
   BookOpen,
-  Images,
   Handshake,
   Calendar,
-  BarChart3,
   Wrench,
   Ticket,
   Settings,
@@ -41,67 +39,69 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { JeitinhoLogo } from "./jeitinho-logo";
-import { useAuth, canAccessModule, displayName } from "@/hooks/use-auth";
+import { useAuth, canAccessModule, displayName, profileKind } from "@/hooks/use-auth";
+import { NAV_LABELS, navLabel } from "@/lib/nav-labels";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
 type Item = {
-  title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   module: string;
 };
 
-/* Menu rangé par pôle : le quotidien d'abord, puis chaque activité. */
+/*
+ * Menu rangé par pôle : le quotidien d'abord, puis chaque activité.
+ * Les noms viennent de NAV_LABELS (lib/nav-labels.ts), partagés avec le mobile et le titre.
+ * Analytics et Médiathèque (pas encore construits) sont masqués du menu ; leurs pages restent.
+ */
 const GROUPS: { label: string; items: Item[] }[] = [
   {
     label: "Aujourd'hui",
     items: [
-      { title: "Cockpit", url: "/dashboard", icon: Sun, module: "dashboard" },
-      { title: "À valider", url: "/a-valider", icon: ClipboardCheck, module: "a-valider" },
-      { title: "Calendrier", url: "/calendrier", icon: Calendar, module: "calendrier" },
+      { url: "/dashboard", icon: Sun, module: "dashboard" },
+      { url: "/a-valider", icon: ClipboardCheck, module: "a-valider" },
+      { url: "/calendrier", icon: Calendar, module: "calendrier" },
     ],
   },
   {
     label: "Conciergerie",
     items: [
-      { title: "Demandes", url: "/crm", icon: Users, module: "crm" },
-      { title: "Clients", url: "/clients", icon: UserRound, module: "clients" },
-      { title: "Devis & factures", url: "/devis", icon: FileText, module: "devis" },
-      { title: "Voyages", url: "/voyages", icon: Plane, module: "voyages" },
-      { title: "GetYourGuide", url: "/distribution", icon: Store, module: "distribution" },
-      { title: "Expériences", url: "/experiences", icon: Palmtree, module: "experiences" },
-      { title: "Services", url: "/services", icon: Wrench, module: "services" },
+      { url: "/crm", icon: Users, module: "crm" },
+      { url: "/clients", icon: UserRound, module: "clients" },
+      { url: "/devis", icon: FileText, module: "devis" },
+      { url: "/voyages", icon: Plane, module: "voyages" },
+      { url: "/distribution", icon: Store, module: "distribution" },
+      { url: "/experiences", icon: Palmtree, module: "experiences" },
+      { url: "/services", icon: Wrench, module: "services" },
+      { url: "/billetterie", icon: Ticket, module: "billetterie" },
     ],
   },
   {
     label: "Média",
     items: [
-      { title: "Planning éditorial", url: "/contenus", icon: Library, module: "contenus" },
-      { title: "Blog", url: "/blog", icon: BookOpen, module: "blog" },
-      { title: "Groupe WhatsApp", url: "/whatsapp", icon: MessageCircle, module: "whatsapp" },
-      { title: "Manuel", url: "/manuel", icon: BookMarked, module: "manuel" },
-      { title: "Médiathèque", url: "/mediatheque", icon: Images, module: "mediatheque" },
+      { url: "/contenus", icon: Library, module: "contenus" },
+      { url: "/blog", icon: BookOpen, module: "blog" },
+      { url: "/whatsapp", icon: MessageCircle, module: "whatsapp" },
+      { url: "/manuel", icon: BookMarked, module: "manuel" },
     ],
   },
   {
     label: "Événements",
     items: [
-      { title: "Soirées", url: "/evenements", icon: PartyPopper, module: "evenements" },
-      { title: "Billetterie", url: "/billetterie", icon: Ticket, module: "billetterie" },
-      { title: "Audience", url: "/audience", icon: Contact, module: "audience" },
+      { url: "/evenements", icon: PartyPopper, module: "evenements" },
+      { url: "/audience", icon: Contact, module: "audience" },
     ],
   },
   {
     label: "Réseau",
-    items: [{ title: "Partenaires", url: "/partenaires", icon: Handshake, module: "partenaires" }],
+    items: [{ url: "/partenaires", icon: Handshake, module: "partenaires" }],
   },
   {
     label: "Pilotage",
     items: [
-      { title: "Finances", url: "/finances", icon: Wallet, module: "finances" },
-      { title: "Agents", url: "/agents", icon: Bot, module: "agents" },
-      { title: "Analytics", url: "/analytics", icon: BarChart3, module: "analytics" },
+      { url: "/finances", icon: Wallet, module: "finances" },
+      { url: "/agents", icon: Bot, module: "agents" },
     ],
   },
 ];
@@ -111,6 +111,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { roles, user, canManage } = useAuth();
+  const kind = profileKind(roles);
   const { data: badges = {} } = useQuery({
     queryKey: ["sidebar-badges"],
     queryFn: fetchSidebarBadges,
@@ -147,18 +148,13 @@ export function AppSidebar() {
                   {visible.map((item) => {
                     const active = path === item.url || path.startsWith(item.url + "/");
                     const badge = badges[item.module] ?? 0;
+                    const title = navLabel(item.module, { canManage, kind });
                     return (
                       <SidebarMenuItem key={item.url}>
-                        <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                        <SidebarMenuButton asChild isActive={active} tooltip={title}>
                           <Link to={item.url}>
                             <item.icon className="h-4 w-4" />
-                            <span>
-                              {!canManage && item.module === "contenus"
-                                ? "Mon planning"
-                                : !canManage && item.module === "dashboard"
-                                  ? "Accueil"
-                                  : item.title}
-                            </span>
+                            <span>{title}</span>
                           </Link>
                         </SidebarMenuButton>
                         {badge > 0 && (
@@ -187,11 +183,11 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={path.startsWith("/parametres")}
-                    tooltip="Paramètres"
+                    tooltip={NAV_LABELS.parametres}
                   >
                     <Link to="/parametres">
                       <Settings className="h-4 w-4" />
-                      <span>Paramètres</span>
+                      <span>{NAV_LABELS.parametres}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
