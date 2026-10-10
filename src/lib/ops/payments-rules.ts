@@ -36,7 +36,7 @@ export function paymentSign(kind: string | null | undefined): 1 | -1 | 0 {
   return 0;
 }
 
-/** Taux exprimés en « unités de la devise pour 1 EUR » (EUR: 1, BRL: 5.92…). */
+/** Taux exprimés en « unités de la devise pour 1 EUR » (EUR: 1, BRL: 5.5…). */
 export type Rates = Record<string, number>;
 
 export function convertAmount(amount: number, from: string, to: string, rates: Rates) {

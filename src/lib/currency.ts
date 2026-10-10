@@ -9,7 +9,7 @@ export type DisplayCurrency = "EUR" | "BRL";
 // Same rates as jeitinho.fr's currency.ts — keep both in sync if refreshed.
 export const RATES: Record<DisplayCurrency, number> = {
   EUR: 1,
-  BRL: 5.92,
+  BRL: 5.5,
 };
 
 const LOCALES: Record<DisplayCurrency, string> = {
