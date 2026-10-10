@@ -18,12 +18,17 @@ import {
 } from "@/components/ui/table";
 import {
   copyText,
-  fetchManualSales,
   fmtDateTime,
   fmtMoney,
   saveSalesChannel,
   type SalesChannel,
 } from "@/lib/ops/ops";
+import {
+  fetchManuelSales,
+  parseCommissionPercent,
+  setSaleCommissionPaid,
+  unpaidCommission,
+} from "@/lib/ops/finances";
 
 // Stripe : amount_total et commission_amount sont en centimes.
 const eur = (v: number | null | undefined) => Number(v ?? 0) / 100;
@@ -39,27 +44,31 @@ function ManuelPage() {
   const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ["ops", "manuel"],
-    queryFn: fetchManualSales,
+    queryFn: fetchManuelSales,
   });
-  const sales = data?.sales ?? [];
-  const channels = data?.channels ?? [];
+  const sales = useMemo(() => data?.sales ?? [], [data]);
+  const channels = useMemo(() => data?.channels ?? [], [data]);
   const channelName = useMemo(() => new Map(channels.map((c) => [c.id, c.name])), [channels]);
 
   const paid = sales.filter((s) => Number(s.amount_total ?? 0) > 0);
   const weekAgo = Date.now() - 7 * 86_400_000;
   const revenue = paid.reduce((sum, s) => sum + eur(s.amount_total), 0);
   const last7 = paid.filter((s) => new Date(s.created_at).getTime() >= weekAgo);
-  const commissions = sales.reduce((sum, s) => sum + eur(s.commission_amount), 0);
+  const commissions = unpaidCommission(sales);
   const currency = (sales[0]?.currency ?? "eur").toUpperCase();
 
   const byChannel = useMemo(() => {
-    const map = new Map<string, { count: number; revenue: number; commission: number }>();
+    const map = new Map<
+      string,
+      { count: number; revenue: number; commission: number; due: number }
+    >();
     for (const s of sales) {
       const k = s.channel_id ?? "direct";
-      const cur = map.get(k) ?? { count: 0, revenue: 0, commission: 0 };
+      const cur = map.get(k) ?? { count: 0, revenue: 0, commission: 0, due: 0 };
       cur.count += 1;
       cur.revenue += eur(s.amount_total);
       cur.commission += eur(s.commission_amount);
+      if (!s.commission_paid_at) cur.due += eur(s.commission_amount);
       map.set(k, cur);
     }
     return Array.from(map.entries()).sort((a, b) => b[1].revenue - a[1].revenue);
@@ -71,6 +80,19 @@ function ManuelPage() {
       await saveSalesChannel(row);
       toast.success("Canal enregistré");
       qc.invalidateQueries({ queryKey: ["ops", "manuel"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  const togglePaid = async (id: string, paid: boolean) => {
+    try {
+      await setSaleCommissionPaid(id, paid);
+      toast.success(paid ? "Commission marquée versée" : "Commission à nouveau due");
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["ops", "manuel"] }),
+        qc.invalidateQueries({ queryKey: ["finances"] }),
+      ]);
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -102,6 +124,7 @@ function ManuelPage() {
               <TableHead>Ventes</TableHead>
               <TableHead>CA</TableHead>
               <TableHead>Commission</TableHead>
+              <TableHead>Reste dû</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -111,11 +134,12 @@ function ManuelPage() {
                 <TableCell>{v.count}</TableCell>
                 <TableCell>{fmtMoney(v.revenue, currency)}</TableCell>
                 <TableCell>{fmtMoney(v.commission, currency)}</TableCell>
+                <TableCell>{fmtMoney(v.due, currency)}</TableCell>
               </TableRow>
             ))}
             {byChannel.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-sm text-muted-foreground">
+                <TableCell colSpan={5} className="text-sm text-muted-foreground">
                   Aucune vente.
                 </TableCell>
               </TableRow>
@@ -127,8 +151,8 @@ function ManuelPage() {
       <Card className="mb-6 p-5">
         <h2 className="mb-1 text-base font-semibold">Canaux de vente</h2>
         <p className="mb-3 text-xs text-muted-foreground">
-          Chaque canal a son lien {MANUEL_URL}?ref=slug. La commission s'applique automatiquement au
-          paiement.
+          Chaque canal a son lien {MANUEL_URL}?ref=slug. La commission (en %, ex. 10 pour 10 %)
+          s'applique automatiquement au paiement.
         </p>
         <div className="mb-4 grid gap-2 sm:grid-cols-4">
           <Input
@@ -141,20 +165,31 @@ function ManuelPage() {
             value={nc.slug}
             onChange={(e) => setNc({ ...nc, slug: e.target.value })}
           />
-          <Input
-            type="number"
-            step="0.01"
-            placeholder="Commission (0.10 = 10 %)"
-            value={nc.commission_rate}
-            onChange={(e) => setNc({ ...nc, commission_rate: e.target.value })}
-          />
+          <div className="relative">
+            <Input
+              type="number"
+              step="0.5"
+              min={0}
+              max={100}
+              inputMode="decimal"
+              className="pr-8"
+              placeholder="Commission (ex. 10)"
+              value={nc.commission_rate}
+              onChange={(e) => setNc({ ...nc, commission_rate: e.target.value })}
+            />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+              %
+            </span>
+          </div>
           <Button
             onClick={() => {
               if (!nc.name || !nc.slug) return toast.error("Nom et slug obligatoires");
+              const rate = parseCommissionPercent(nc.commission_rate);
+              if (rate == null) return toast.error("Commission : un pourcentage entre 0 et 100");
               void save({
                 name: nc.name,
                 slug: nc.slug,
-                commission_rate: Number(nc.commission_rate || 0),
+                commission_rate: rate,
                 active: true,
               });
               setNc({ name: "", slug: "", commission_rate: "" });
@@ -191,7 +226,9 @@ function ManuelPage() {
                       </Button>
                     )}
                   </TableCell>
-                  <TableCell>{(Number(c.commission_rate) * 100).toFixed(0)} %</TableCell>
+                  <TableCell>
+                    {(Math.round(Number(c.commission_rate) * 1000) / 10).toLocaleString("fr-FR")} %
+                  </TableCell>
                   <TableCell>
                     <Switch
                       checked={c.active}
@@ -214,6 +251,8 @@ function ManuelPage() {
               <TableHead>Client</TableHead>
               <TableHead>Canal</TableHead>
               <TableHead>Montant</TableHead>
+              <TableHead>Commission</TableHead>
+              <TableHead>Commission versée</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -226,6 +265,29 @@ function ManuelPage() {
                 </TableCell>
                 <TableCell>
                   {fmtMoney(eur(s.amount_total), (s.currency ?? currency).toUpperCase())}
+                </TableCell>
+                <TableCell>
+                  {Number(s.commission_amount ?? 0) > 0
+                    ? fmtMoney(eur(s.commission_amount), (s.currency ?? currency).toUpperCase())
+                    : "—"}
+                </TableCell>
+                <TableCell>
+                  {Number(s.commission_amount ?? 0) > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={!!s.commission_paid_at}
+                        aria-label="Commission versée"
+                        onCheckedChange={(v) => void togglePaid(s.id, v)}
+                      />
+                      {s.commission_paid_at && (
+                        <span className="text-xs text-muted-foreground">
+                          {fmtDateTime(s.commission_paid_at)}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

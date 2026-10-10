@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { RATES } from "@/lib/currency";
+import { paymentBalance } from "./payments-rules";
 
 /*
  * Module Finances : CA encaissé par pôle, séparé par devise (pas de conversion
@@ -409,9 +410,10 @@ export type OpenQuote = {
   client_name: string | null;
   currency: string;
   total: number;
-  paid: number; // encaissé dans la devise du devis
+  paid: number; // encaissé, dans la devise du devis (autres devises converties au taux indicatif)
   remaining: number;
-  otherCurrencyPayments: CurrencyTotals; // encaissements dans une autre devise (non déduits)
+  otherCurrencyPayments: CurrencyTotals; // encaissements dans une autre devise (convertis et déduits)
+  unconvertedPayments: CurrencyTotals; // devises sans taux connu (non déduites, à vérifier)
   accepted_at: string | null;
   deposit_pct: number;
 };
@@ -440,41 +442,42 @@ export async function fetchOpenQuotes(): Promise<OpenQuote[]> {
       .order("accepted_at", { ascending: true, nullsFirst: false }),
   );
   if (!quotes.length) return [];
-  const pays = check<{ quote_id: string; amount: number; currency: string }[]>(
+  const pays = check<{ quote_id: string; amount: number; currency: string; kind: string }[]>(
     await db
       .from("payments")
-      .select("quote_id,amount,currency")
+      .select("quote_id,amount,currency,kind")
       .in(
         "quote_id",
         quotes.map((q) => q.id),
       ),
   );
-  return quotes.map((q) => {
-    const cur = q.currency.toUpperCase();
-    let paid = 0;
-    const other: CurrencyTotals = {};
-    for (const p of pays) {
-      if (p.quote_id !== q.id) continue;
-      const pc = p.currency.toUpperCase();
-      if (pc === cur) paid += Number(p.amount);
-      else other[pc] = (other[pc] ?? 0) + Number(p.amount);
-    }
-    const total = Number(q.total_amount);
-    return {
-      id: q.id,
-      label: q.number ?? q.reference,
-      title: q.title,
-      client_id: q.client_id,
-      client_name: q.client?.full_name ?? null,
-      currency: cur,
-      total,
-      paid,
-      remaining: Math.max(0, total - paid),
-      otherCurrencyPayments: other,
-      accepted_at: q.accepted_at,
-      deposit_pct: q.deposit_pct,
-    };
-  });
+  // Acompte / solde / total moins remboursements ; autres devises converties au taux fixe.
+  // Un devis déjà soldé (reste 0) n'est plus « à encaisser ».
+  return quotes
+    .map((q) => {
+      const b = paymentBalance(
+        Number(q.total_amount),
+        q.currency,
+        pays.filter((p) => p.quote_id === q.id),
+        RATES,
+      );
+      return {
+        id: q.id,
+        label: q.number ?? q.reference,
+        title: q.title,
+        client_id: q.client_id,
+        client_name: q.client?.full_name ?? null,
+        currency: b.currency,
+        total: b.total,
+        paid: b.paid,
+        remaining: b.remaining,
+        otherCurrencyPayments: b.otherCurrencies,
+        unconvertedPayments: b.unconverted,
+        accepted_at: q.accepted_at,
+        deposit_pct: q.deposit_pct,
+      };
+    })
+    .filter((q) => q.remaining > 0.01);
 }
 
 /* ---------- Commissions dues ---------- */
@@ -502,8 +505,8 @@ export type RelayCommission = {
 };
 
 /**
- * Manuel : commissions cumulées par canal revendeur (sales.commission_amount). La table
- * ne trace pas le versement : tout ce qui est calculé est considéré comme dû.
+ * Manuel : commissions non versées par canal revendeur (sales.commission_amount dont
+ * commission_paid_at est vide — le versement se coche sur la page Manuel).
  * Événements : relais non payés (event_partner_sales.paid = false).
  */
 export async function fetchCommissions(firstMonth: string, lastMonth: string) {
@@ -513,7 +516,8 @@ export async function fetchCommissions(firstMonth: string, lastMonth: string) {
     db
       .from("sales")
       .select("channel_id,amount_total,currency,commission_amount,created_at")
-      .gt("commission_amount", 0),
+      .gt("commission_amount", 0)
+      .is("commission_paid_at", null),
     db.from("sales_channels").select("id,name,commission_rate"),
     db
       .from("event_partner_sales")
@@ -598,4 +602,77 @@ export async function fetchCommissions(firstMonth: string, lastMonth: string) {
     channels: [...byKey.values()].sort((a, b) => b.commission - a.commission),
     relays: relayRows.sort((a, b) => b.amount - a.amount),
   };
+}
+
+/* ---------- Manuel : ventes et versement des commissions ---------- */
+
+export type ManuelSale = {
+  id: string;
+  channel_id: string | null;
+  customer_email: string | null;
+  amount_total: number | null;
+  currency: string | null;
+  commission_rate: number | null;
+  commission_amount: number | null;
+  commission_paid_at: string | null;
+  created_at: string;
+};
+
+export type ManuelChannel = {
+  id: string;
+  name: string;
+  slug: string | null;
+  commission_rate: number;
+  active: boolean;
+};
+
+export async function fetchManuelSales() {
+  const [sales, channels] = await Promise.all([
+    db
+      .from("sales")
+      .select(
+        "id,channel_id,customer_email,amount_total,currency,commission_rate,commission_amount,commission_paid_at,created_at",
+      )
+      .order("created_at", { ascending: false }),
+    db.from("sales_channels").select("id,name,slug,commission_rate,active").order("name"),
+  ]);
+  return { sales: check<ManuelSale[]>(sales), channels: check<ManuelChannel[]>(channels) };
+}
+
+/**
+ * Coche / décoche « Commission versée » sur une vente du Manuel.
+ * Passe par la RPC set_sale_commission_paid (la table sales n'est pas modifiable en direct).
+ */
+export async function setSaleCommissionPaid(id: string, paid: boolean) {
+  const res = await db.rpc("set_sale_commission_paid", { p_sale_id: id, p_paid: paid });
+  if (res.error) {
+    if (/set_sale_commission_paid|function/i.test(res.error.message))
+      throw new Error(
+        "Action pas encore disponible : la mise à jour de la base (lot 3) n'est pas appliquée.",
+      );
+    throw new Error(res.error.message);
+  }
+}
+
+/** Commissions encore dues (centimes Stripe → unités), ventes dont la commission n'est pas versée. */
+export function unpaidCommission(
+  sales: Pick<ManuelSale, "commission_amount" | "commission_paid_at">[],
+) {
+  return sales.reduce(
+    (sum, s) =>
+      s.commission_paid_at ? sum : sum + Number(s.commission_amount ?? 0) / SALES_MINOR_UNIT,
+    0,
+  );
+}
+
+/**
+ * Taux de commission saisi en pourcentage (« 10 » ou « 10 % » ou « 12,5 ») → fraction stockée
+ * dans sales_channels.commission_rate (0.10). Retourne null si la saisie est invalide.
+ */
+export function parseCommissionPercent(input: string): number | null {
+  const t = input.replace("%", "").replace(",", ".").trim();
+  if (!t) return 0;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < 0 || n > 100) return null;
+  return Math.round(n * 100) / 10000;
 }

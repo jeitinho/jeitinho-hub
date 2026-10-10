@@ -19,6 +19,7 @@ import {
 import { Plus, Trash2, FileDown, Save } from "lucide-react";
 import { QUOTE_STATUSES, formatMoney, type QuoteStatus } from "@/lib/quotes/status";
 import { downloadQuotePdf } from "@/lib/quotes/download-quote-pdf";
+import { fetchQuoteMeta, quoteMetaKey } from "@/lib/quotes/quote-actions";
 import type { QuotePdfData } from "@/components/quotes/quote-pdf";
 import {
   CatalogLinePicker,
@@ -98,6 +99,8 @@ export function QuoteForm({
   const [depositPct, setDepositPct] = useState("30");
   const [validityDays, setValidityDays] = useState("30");
   const [status, setStatus] = useState<QuoteStatus>("draft");
+  // Statut tel qu'en base : les dates (envoi, acceptation, paiement) ne sont posées qu'au changement.
+  const [loadedStatus, setLoadedStatus] = useState<QuoteStatus | null>(null);
   const [notes, setNotes] = useState("");
   const [number, setNumber] = useState("");
   const [lines, setLines] = useState<LineDraft[]>([emptyLine()]);
@@ -172,6 +175,7 @@ export function QuoteForm({
     setDepositPct(String(q.deposit_pct ?? 30));
     setValidityDays(String(q.validity_days ?? 30));
     setStatus(q.status);
+    setLoadedStatus(q.status);
     setNotes(q.notes ?? "");
     setEquipmentRaw(
       q.equipment && Object.keys(q.equipment).length ? JSON.stringify(q.equipment, null, 2) : "",
@@ -208,6 +212,20 @@ export function QuoteForm({
         : [emptyLine()],
     );
   }, [existing]);
+  // Le statut peut changer hors du formulaire (paiement enregistré → « Payé » par la base) :
+  // on le reprend sans toucher aux autres champs en cours de saisie.
+  const { data: meta } = useQuery({
+    queryKey: quoteMetaKey(quoteId ?? ""),
+    enabled: !!quoteId,
+    queryFn: () => fetchQuoteMeta(quoteId!),
+  });
+  useEffect(() => {
+    const dbStatus = meta?.status as QuoteStatus | undefined;
+    if (!dbStatus || loadedStatus === null || dbStatus === loadedStatus) return;
+    setStatus((current) => (current === loadedStatus ? dbStatus : current));
+    setLoadedStatus(dbStatus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seulement quand la base change
+  }, [meta?.status]);
   const selectedClient = (clients as any[]).find((c: any) => c.id === clientId);
   const applyProspect = (id: string) => {
     setProspectId(id);
@@ -362,6 +380,7 @@ export function QuoteForm({
         setClientId(resolvedClientId as string);
       }
       const now = new Date().toISOString();
+      const statusChanged = !quoteId || status !== loadedStatus;
       const payload: any = {
         title: title.trim(),
         number: number.trim() || undefined,
@@ -381,11 +400,13 @@ export function QuoteForm({
         language,
         deposit_pct: Number(depositPct) || 0,
         validity_days: Number(validityDays) || 30,
-        status,
+        // Statut envoyé seulement s'il a changé : ne pas écraser un « Payé » posé par la base.
+        ...(statusChanged ? { status } : {}),
         notes: notes.trim() || null,
         total_amount: total,
-        ...(status === "sent" ? { sent_at: now, followup_anchor_at: now } : {}),
-        ...(status === "accepted" ? { accepted_at: now } : {}),
+        ...(statusChanged && status === "sent" ? { sent_at: now, followup_anchor_at: now } : {}),
+        ...(statusChanged && status === "accepted" ? { accepted_at: now } : {}),
+        ...(statusChanged && status === "paid" ? { paid_at: now } : {}),
       };
       let id = quoteId;
       if (!id) {
@@ -442,8 +463,18 @@ export function QuoteForm({
         })) as any,
       );
       if (lineError) throw new Error(lineError.message);
-      await qc.invalidateQueries({ queryKey: ["quotes"] });
-      await qc.invalidateQueries({ queryKey: ["quote", id] });
+      setLoadedStatus(status);
+      await Promise.all(
+        [
+          ["quotes"],
+          ["quote", id],
+          ["quote-meta", id],
+          ["quote-trip-link", id],
+          ["quote-invoice-link", id],
+          ["demandes"],
+          ["finances"],
+        ].map((queryKey) => qc.invalidateQueries({ queryKey })),
+      );
       toast.success(quoteId ? "Devis enregistré." : "Devis créé.");
       if (!quoteId) navigate({ to: "/devis/$id", params: { id: id! } });
     } catch (error) {

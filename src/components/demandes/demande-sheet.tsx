@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { ClipboardCheck, ExternalLink, FileText, Trash2, UserPlus, X } from "lucide-react";
+import { ClipboardCheck, ExternalLink, FileText, Pencil, Trash2, UserPlus, X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -29,6 +29,7 @@ import {
   TemperatureBadge,
 } from "./shared";
 import { useDemandeActions } from "./use-demande-actions";
+import { DeleteDemandeButton, DemandeEditForm } from "./demande-edit";
 
 export function DemandeSheet({
   demande,
@@ -90,6 +91,8 @@ function DemandeDetail({
   const { moveTo, qualify, convert, remove, busy } = useDemandeActions();
   const pending = busy === d.key;
   const range = fmtTravelRange(d.travelStart, d.travelEnd);
+  const [editing, setEditing] = useState(false);
+  const closed = d.stage === "gagnee" || d.stage === "perdue";
 
   return (
     <div className="space-y-5">
@@ -119,7 +122,7 @@ function DemandeDetail({
       <div className="flex flex-wrap gap-2">
         <ContactButtons demande={d} />
         {d.kind === "prospect" ? (
-          <CreateQuoteButton prospectId={d.id} className="text-xs" />
+          !closed && <CreateQuoteButton prospectId={d.id} className="text-xs" />
         ) : (
           <Button
             size="sm"
@@ -147,7 +150,19 @@ function DemandeDetail({
             Perdue
           </Button>
         )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => setEditing((v) => !v)}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+          {editing ? "Fermer" : "Modifier"}
+        </Button>
+        <DeleteDemandeButton demande={d} onDeleted={onClose} />
       </div>
+
+      {editing && <DemandeEditForm demande={d} onDone={() => setEditing(false)} />}
 
       <Section title="Contact">
         <div className="space-y-1.5">

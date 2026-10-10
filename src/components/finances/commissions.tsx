@@ -6,8 +6,8 @@ import { fetchCommissions } from "@/lib/ops/finances";
 import { SectionError } from "./finance-bits";
 
 /**
- * Commissions dues aux revendeurs du Manuel (cumul, la base ne trace pas les
- * versements) et aux relais AFRO LOVE non payés.
+ * Commissions dues aux revendeurs du Manuel (ventes dont la commission n'est pas
+ * cochée « versée » sur la page Manuel) et aux relais AFRO LOVE non payés.
  */
 export function Commissions({
   firstMonth,
@@ -29,8 +29,8 @@ export function Commissions({
     <Card className="p-4">
       <h2 className="text-base font-semibold">Commissions dues</h2>
       <p className="mb-3 text-xs text-muted-foreground">
-        Revendeurs du Manuel (cumul depuis le début, aucun versement n'est enregistré) et relais
-        événements non payés.
+        Revendeurs du Manuel (commissions pas encore cochées « versée » sur la page Manuel) et
+        relais événements non payés.
       </p>
       <SectionError error={error} />
       {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}

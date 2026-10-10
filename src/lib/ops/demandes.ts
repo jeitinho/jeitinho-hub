@@ -146,3 +146,97 @@ export async function convertProspectToClient(prospectId: string) {
 export async function removeLead(id: string) {
   await deleteLead(id);
 }
+
+/* ---------- Modification / suppression d'une demande ---------- */
+
+/** Champs modifiables d'une demande (prospect, ou lead non qualifié). */
+export type DemandeEditable = {
+  name: string;
+  email: string | null;
+  phone: string | null;
+  travel_start: string | null;
+  travel_end: string | null;
+  party_size: number | null;
+  activities: string[];
+  message: string | null;
+  /** Prospects uniquement (la table leads n'a pas de notes). */
+  notes: string | null;
+  next_action: string | null;
+  next_action_at: string | null;
+};
+
+const EDIT_SELECT_PROSPECT =
+  "name,email,phone,travel_start,travel_end,party_size,activities,message,notes,next_action,next_action_at";
+const EDIT_SELECT_LEAD =
+  "name,email,phone,travel_start,travel_end,party_size,activities,message,next_action,next_action_at";
+
+/** Relit la ligne en base (prospects ou leads) pour le formulaire « Modifier ». */
+export async function fetchDemandeEditable(d: Pick<Demande, "kind" | "id">) {
+  const isProspect = d.kind === "prospect";
+  const row = check<Partial<DemandeEditable>>(
+    await db
+      .from(isProspect ? "prospects" : "leads")
+      .select(isProspect ? EDIT_SELECT_PROSPECT : EDIT_SELECT_LEAD)
+      .eq("id", d.id)
+      .single(),
+  );
+  return {
+    name: row.name ?? "",
+    email: row.email ?? null,
+    phone: row.phone ?? null,
+    travel_start: row.travel_start ?? null,
+    travel_end: row.travel_end ?? null,
+    party_size: row.party_size ?? null,
+    activities: row.activities ?? [],
+    message: row.message ?? null,
+    notes: row.notes ?? null,
+    next_action: row.next_action ?? null,
+    next_action_at: row.next_action_at ?? null,
+  } satisfies DemandeEditable;
+}
+
+export async function updateDemande(d: Pick<Demande, "kind" | "id">, values: DemandeEditable) {
+  if (!values.name.trim()) throw new Error("Le nom est obligatoire.");
+  if (values.travel_start && values.travel_end && values.travel_end < values.travel_start)
+    throw new Error("La date de départ doit être après la date d'arrivée.");
+  const { notes, ...common } = values;
+  const patch = { ...common, name: values.name.trim() };
+  if (d.kind === "prospect") {
+    check(
+      await db
+        .from("prospects")
+        .update({ ...patch, notes })
+        .eq("id", d.id),
+    );
+  } else {
+    check(await db.from("leads").update(patch).eq("id", d.id));
+  }
+}
+
+/**
+ * Supprime une demande.
+ * - lead non qualifié : le lead et ses tâches (via /api/leads)
+ * - prospect : refusé s'il a des devis (sinon les devis perdraient leur demande d'origine) ;
+ *   sinon supprime ses tâches, les leads reçus rattachés, puis le prospect.
+ */
+export async function deleteDemande(d: Pick<Demande, "kind" | "id">) {
+  if (d.kind === "lead") {
+    await deleteLead(d.id);
+    return;
+  }
+  const quotes = check<{ id: string; number: string | null; reference: string }[]>(
+    await db.from("quotes").select("id,number,reference").eq("prospect_id", d.id),
+  );
+  if (quotes.length) {
+    const list = quotes.map((q) => q.number ?? q.reference).join(", ");
+    throw new Error(
+      `Cette demande a ${quotes.length} devis (${list}). Supprimez ou rattachez ailleurs ces devis d'abord, ou passez la demande en « Perdue ».`,
+    );
+  }
+  const leads = check<{ id: string }[]>(
+    await db.from("leads").select("id").eq("prospect_id", d.id),
+  );
+  check(await db.from("crm_tasks").delete().eq("prospect_id", d.id));
+  for (const l of leads) await deleteLead(l.id);
+  check(await db.from("prospects").delete().eq("id", d.id));
+}

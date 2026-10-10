@@ -171,7 +171,8 @@ export function DemandeCard({
       <div className="flex items-center gap-1.5 pt-1">
         <ContactButtons demande={d} compact />
         {d.kind === "prospect" ? (
-          <CreateQuoteButton prospectId={d.id} className="min-w-0 flex-1" />
+          d.stage !== "gagnee" &&
+          d.stage !== "perdue" && <CreateQuoteButton prospectId={d.id} className="min-w-0 flex-1" />
         ) : (
           <Button
             size="sm"
