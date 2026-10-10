@@ -1,11 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import { BookOpen, CalendarRange, Columns3, Plus } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EDITORIAL_OWNERS, mondayKey, todayKey, type EditorialItem } from "@/lib/ops/media";
+import {
+  EDITORIAL_CHANNELS,
+  EDITORIAL_OWNERS,
+  mondayKey,
+  todayKey,
+  type EditorialItem,
+} from "@/lib/ops/media";
 import { useEditorialItems } from "@/components/media/use-media";
 import { EditorialSheet } from "@/components/media/editorial-sheet";
 import { EditorialWeek } from "@/components/media/editorial-week";
@@ -18,7 +25,17 @@ import {
   type EditorialFilterState,
 } from "@/components/media/editorial-filters-state";
 
+/** ?id=<uuid> ouvre la fiche du contenu ; ?retard=1 n'affiche que les retards. */
+const searchSchema = z.object({
+  id: z.string().uuid().optional().catch(undefined),
+  retard: z
+    .union([z.literal(1), z.literal("1")])
+    .optional()
+    .catch(undefined),
+});
+
 export const Route = createFileRoute("/_authenticated/contenus")({
+  validateSearch: searchSchema,
   component: PlanningPage,
   head: () => ({ meta: [{ title: "Planning éditorial — JEITINHO" }] }),
 });
@@ -27,9 +44,21 @@ const uniq = (xs: (string | null)[]) =>
   Array.from(new Set(xs.filter((x): x is string => !!x))).sort((a, b) => a.localeCompare(b, "fr"));
 
 function PlanningPage() {
+  const { id: openId, retard } = Route.useSearch();
+  const navigate = useNavigate({ from: "/contenus" });
   const { data: items = [], isLoading, error, refetch } = useEditorialItems();
-  const [view, setView] = useState("semaine");
-  const [filters, setFilters] = useState<EditorialFilterState>(EMPTY_FILTERS);
+  const late = retard !== undefined;
+  const [view, setView] = useState(late ? "kanban" : "semaine");
+  const [filters, setFilters] = useState<EditorialFilterState>(() =>
+    late ? { ...EMPTY_FILTERS, lateOnly: true } : EMPTY_FILTERS,
+  );
+  // Lien « En retard » suivi alors que la page est déjà ouverte.
+  useEffect(() => {
+    if (late) {
+      setFilters((f) => ({ ...f, lateOnly: true }));
+      setView("kanban");
+    }
+  }, [late]);
   const [weekStart, setWeekStart] = useState(() => mondayKey(todayKey()));
   const [sheet, setSheet] = useState<{
     open: boolean;
@@ -42,13 +71,25 @@ function PlanningPage() {
       owners: uniq([...EDITORIAL_OWNERS, ...items.map((i) => i.owner)]),
       kinds: uniq(items.map((i) => i.kind)),
       collections: uniq(items.map((i) => i.collection)),
-      channels: uniq(items.map((i) => i.channel)),
+      channels: uniq([...EDITORIAL_CHANNELS.map((c) => c.value), ...items.map((i) => i.channel)]),
     }),
     [items],
   );
   const filtered = useMemo(() => applyFilters(items, filters), [items, filters]);
 
   const open = (item: EditorialItem) => setSheet({ open: true, item });
+
+  // ?id=… (lien depuis le calendrier ou l'accueil) : ouvre directement la fiche.
+  useEffect(() => {
+    if (!openId) return;
+    const target = items.find((i) => i.id === openId);
+    if (target) setSheet({ open: true, item: target });
+  }, [openId, items]);
+
+  const onSheetChange = (o: boolean) => {
+    setSheet((s) => ({ ...s, open: o }));
+    if (!o && openId) navigate({ search: (prev) => ({ ...prev, id: undefined }), replace: true });
+  };
   // 12:00 UTC = 9 h à Rio.
   const create = (day?: string) =>
     setSheet({
@@ -59,9 +100,9 @@ function PlanningPage() {
 
   return (
     <PageShell
-      eyebrow="Média · blog.jeitinho.fr"
+      eyebrow="Média · Instagram, TikTok, blog"
       title="Planning éditorial"
-      description="Articles, reportages, newsletters et prospection partenaires : qui fait quoi, pour quand."
+      description="Stories, posts, carrousels, reels et articles des trois comptes : qui fait quoi, pour quand."
       actions={
         <>
           <Link to="/blog">
@@ -97,6 +138,7 @@ function PlanningPage() {
         <div className="space-y-6">
           <EditorialThisWeek
             items={items}
+            showAbandoned={filters.showAbandoned}
             onOpen={open}
             onShowLate={() => {
               setFilters({ ...EMPTY_FILTERS, lateOnly: true });
@@ -122,6 +164,7 @@ function PlanningPage() {
                 owners={options.owners}
                 kinds={options.kinds}
                 collections={options.collections}
+                channels={options.channels}
               />
             </div>
             {filtered.length === 0 && (
@@ -147,11 +190,10 @@ function PlanningPage() {
 
       <EditorialSheet
         open={sheet.open}
-        onOpenChange={(o) => setSheet((s) => ({ ...s, open: o }))}
+        onOpenChange={onSheetChange}
         item={sheet.item}
         defaults={sheet.defaults}
         collections={options.collections}
-        channels={options.channels}
       />
     </PageShell>
   );

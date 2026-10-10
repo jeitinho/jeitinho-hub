@@ -18,6 +18,7 @@ const LINK_LABEL: Record<SourceLink["kind"], string> = {
   trip: "Ouvrir le voyage",
   quote: "Ouvrir le devis",
   event: "Ouvrir l'événement",
+  editorial: "Ouvrir le contenu",
   page: "Ouvrir",
 };
 
@@ -57,6 +58,14 @@ export function SourceLinkButton({ link }: { link: SourceLink }) {
       return (
         <Button asChild>
           <Link to="/evenements" search={{ id: link.id }}>
+            {inner}
+          </Link>
+        </Button>
+      );
+    case "editorial":
+      return (
+        <Button asChild>
+          <Link to="/contenus" search={{ id: link.id }}>
             {inner}
           </Link>
         </Button>

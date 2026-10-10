@@ -43,18 +43,18 @@ export type EditorialInput = Partial<Omit<EditorialItem, "created_at" | "updated
   title: string;
 };
 
+/** Un seul flux partout : idée → en production → prêt à poster → publié (+ abandonné). */
 export const EDITORIAL_STATUSES = [
   { value: "idee", label: "Idée", tone: "bg-muted text-muted-foreground" },
-  { value: "planifie", label: "Planifié", tone: "bg-sky-500/15 text-sky-700 dark:text-sky-300" },
   {
     value: "en_production",
     label: "En production",
     tone: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
   },
   {
-    value: "a_relire",
-    label: "À relire",
-    tone: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
+    value: "planifie",
+    label: "Prêt à poster",
+    tone: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
   },
   {
     value: "publie",
@@ -67,30 +67,62 @@ export const EDITORIAL_STATUSES = [
 /** Statuts terminés : pas de retard possible, pas d'étape suivante. */
 export const DONE_STATUSES = ["publie", "abandonne"];
 
+/** Anciens statuts encore présents en base, affichés dans le flux actuel. */
+export function normalizeStatus(status: string): string {
+  return status === "a_relire" ? "en_production" : status;
+}
+
 export function statusMeta(status: string) {
+  const s = normalizeStatus(status);
   return (
-    EDITORIAL_STATUSES.find((s) => s.value === status) ?? {
-      value: status,
-      label: status,
+    EDITORIAL_STATUSES.find((x) => x.value === s) ?? {
+      value: s,
+      label: s,
       tone: "bg-muted text-muted-foreground",
     }
   );
 }
 
-/** Étape suivante du flux idée → planifié → production → relecture → publié. */
+/**
+ * Étape suivante : idée → en production → prêt à poster → publié.
+ * Même ordre que nextStep (accueil média), qui saute directement à « prêt ».
+ */
 export function nextStatus(status: string): string | null {
-  const flow = ["idee", "planifie", "en_production", "a_relire", "publie"];
-  const i = flow.indexOf(status);
+  const flow = ["idee", "en_production", "planifie", "publie"];
+  const i = flow.indexOf(normalizeStatus(status));
   return i >= 0 && i < flow.length - 1 ? flow[i + 1] : null;
 }
 
 export const EDITORIAL_KINDS: Record<string, string> = {
+  story: "Story",
+  post: "Post",
+  carrousel: "Carrousel",
+  reel: "Reel",
   article: "Article",
   reportage: "Reportage",
   newsletter: "Newsletter",
   partenaire: "Partenaire",
   reseaux: "Réseaux sociaux",
 };
+
+/** Comptes / canaux de publication (liste fermée). */
+export const EDITORIAL_CHANNELS: { value: string; label: string; short: string }[] = [
+  { value: "ig_afrolove", label: "AFRO LOVE · @afrolove.brasil", short: "@afrolove.brasil" },
+  {
+    value: "ig_conciergerie",
+    label: "Conciergerie · @jeitinho.conciergerie",
+    short: "@jeitinho.conciergerie",
+  },
+  { value: "ig_media", label: "Média · @jeitinho.fr + TikTok", short: "@jeitinho.fr" },
+  { value: "blog", label: "Blog", short: "Blog" },
+  { value: "whatsapp", label: "WhatsApp", short: "WhatsApp" },
+];
+
+export function channelName(channel: string | null | undefined, short = false): string {
+  if (!channel) return "";
+  const c = EDITORIAL_CHANNELS.find((x) => x.value === channel);
+  return c ? (short ? c.short : c.label) : channel;
+}
 
 export const EDITORIAL_PRIORITIES = ["Haute", "Moyenne", "Basse"] as const;
 export const EDITORIAL_OWNERS = ["Rafael", "Lili", "Vidéaste"] as const;
@@ -121,8 +153,34 @@ export async function saveEditorialItem(row: EditorialInput): Promise<EditorialI
   return check(await q.select(EDITORIAL_COLUMNS).single());
 }
 
+/**
+ * Mise à jour contrôlée : erreur Supabase OU aucune ligne modifiée (droits, id
+ * inconnu) = échec explicite, jamais un faux succès.
+ */
+async function updateChecked(table: string, id: string, patch: Record<string, unknown>) {
+  const { data, error } = await db.from(table).update(patch).eq("id", id).select("id");
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0)
+    throw new Error("Rien n'a été modifié (contenu introuvable ou droits insuffisants).");
+}
+
 export async function setEditorialStatus(id: string, status: string) {
-  check(await db.from("editorial_items").update({ status }).eq("id", id));
+  await updateChecked("editorial_items", id, { status });
+}
+
+export async function rescheduleEditorial(id: string, plannedAt: string) {
+  await updateChecked("editorial_items", id, { planned_at: plannedAt });
+}
+
+/** Groupe WhatsApp : posté (avec l'heure), annulé ou reporté. */
+export async function setWhatsappPostStatus(id: string, status: "envoye" | "annule") {
+  const patch: Record<string, unknown> = { status };
+  if (status === "envoye") patch.sent_at = new Date().toISOString();
+  await updateChecked("whatsapp_posts", id, patch);
+}
+
+export async function rescheduleWhatsapp(id: string, scheduledAt: string) {
+  await updateChecked("whatsapp_posts", id, { scheduled_at: scheduledAt });
 }
 
 export async function linkEditorialToArticle(id: string, url: string) {
@@ -187,8 +245,64 @@ export function fromLocalInput(v: string): string | null {
   return v ? new Date(`${v}:00-03:00`).toISOString() : null;
 }
 
-export function isOverdue(item: Pick<EditorialItem, "deadline" | "status">, today = todayKey()) {
-  return !!item.deadline && item.deadline < today && !DONE_STATUSES.includes(item.status);
+/**
+ * En retard : pas terminé ET (deadline dépassée OU publication prévue déjà passée).
+ */
+export function isOverdue(
+  item: Pick<EditorialItem, "deadline" | "status"> & { planned_at?: string | null },
+  today = todayKey(),
+  now = new Date(),
+) {
+  if (DONE_STATUSES.includes(item.status)) return false;
+  if (item.deadline && item.deadline < today) return true;
+  return !!item.planned_at && new Date(item.planned_at).getTime() < now.getTime();
+}
+
+/** Date à afficher dans le badge « En retard ». */
+export function overdueSince(
+  item: Pick<EditorialItem, "deadline"> & { planned_at?: string | null },
+  today = todayKey(),
+): string | null {
+  if (item.deadline && item.deadline < today) return item.deadline;
+  return item.planned_at ? dayKey(item.planned_at) : item.deadline;
+}
+
+const CAPTION_START = /^\s*L[ÉE]GENDES?\b[^:\n]*:\s*(.*)$/i;
+const CAPTION_STOP =
+  /^\s*(PROMPT|Collab\b|Source\b|NOTES\b|PROCESS\b|FORMAT\b|DÉJÀ PRODUIT|À faire\b|Article\s*:|Slide\s*\d|CARROUSEL\b|— —|---)/i;
+
+/**
+ * Extrait la ou les légendes des notes (bloc après « LÉGENDE : » jusqu'au
+ * prochain repère : PROMPT, Collab, Source…). Null si aucune légende repérée.
+ */
+export function extractCaption(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const lines = notes.split(/\r?\n/);
+  const blocks: string[] = [];
+  let cur: string[] | null = null;
+  const flush = () => {
+    if (cur) {
+      const t = cur.join("\n").trim();
+      if (t) blocks.push(t);
+    }
+    cur = null;
+  };
+  for (const line of lines) {
+    const m = line.match(CAPTION_START);
+    if (m) {
+      flush();
+      cur = m[1] ? [m[1]] : [];
+      continue;
+    }
+    if (!cur) continue;
+    if (CAPTION_STOP.test(line)) {
+      flush();
+      continue;
+    }
+    cur.push(line);
+  }
+  flush();
+  return blocks.length ? blocks.join("\n\n") : null;
 }
 
 /* ---------- Articles en ligne (RSS blog.jeitinho.fr) ---------- */

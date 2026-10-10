@@ -153,6 +153,7 @@ export type SourceLink =
   | { kind: "trip"; id: string }
   | { kind: "quote"; id: string }
   | { kind: "event"; id: string }
+  | { kind: "editorial"; id: string }
   | { kind: "page"; to: "/distribution" | "/contenus" | "/whatsapp" | "/a-valider" };
 
 export type CalendarItem = {
@@ -213,15 +214,28 @@ const EVENT_STATUS: Record<string, string> = {
 };
 const EDITORIAL_STATUS: Record<string, string> = {
   idee: "Idée",
-  planifie: "Planifié",
   en_production: "En production",
+  a_relire: "En production",
+  planifie: "Prêt à poster",
   publie: "Publié",
 };
 const EDITORIAL_KIND: Record<string, string> = {
+  story: "Story",
+  post: "Post",
+  carrousel: "Carrousel",
+  reel: "Reel",
   article: "Article",
   newsletter: "Newsletter",
   partenaire: "Partenaire",
   reportage: "Reportage",
+  reseaux: "Réseaux sociaux",
+};
+const EDITORIAL_CHANNEL: Record<string, string> = {
+  ig_afrolove: "@afrolove.brasil",
+  ig_conciergerie: "@jeitinho.conciergerie",
+  ig_media: "@jeitinho.fr + TikTok",
+  blog: "Blog",
+  whatsapp: "WhatsApp",
 };
 const WA_STATUS: Record<string, string> = {
   brouillon: "Brouillon",
@@ -609,6 +623,7 @@ async function fetchEditorial(b: Bounds): Promise<CalendarItem[]> {
           `and(planned_at.is.null,deadline.gte.${b.from},deadline.lte.${b.last})`,
         ].join(","),
       )
+      .neq("status", "abandonne")
       .order("planned_at"),
   );
   return rows.map((r) => {
@@ -617,7 +632,13 @@ async function fetchEditorial(b: Bounds): Promise<CalendarItem[]> {
       key: `editorial:${r.id}`,
       source: "editorial",
       title: r.title,
-      subtitle: [lbl(EDITORIAL_KIND, r.kind), r.owner].filter(Boolean).join(" · "),
+      subtitle: [
+        lbl(EDITORIAL_KIND, r.kind),
+        r.channel ? lbl(EDITORIAL_CHANNEL, r.channel) : null,
+        r.owner,
+      ]
+        .filter(Boolean)
+        .join(" · "),
       start: day,
       end: day,
       time: r.planned_at ? timeOf(r.planned_at) : null,
@@ -626,12 +647,12 @@ async function fetchEditorial(b: Bounds): Promise<CalendarItem[]> {
       details: compact([
         { label: "Type", value: lbl(EDITORIAL_KIND, r.kind) },
         { label: "Responsable", value: r.owner },
-        { label: "Canal", value: r.channel },
+        { label: "Canal", value: r.channel ? lbl(EDITORIAL_CHANNEL, r.channel) : null },
         { label: "Collection", value: r.collection },
         { label: "Priorité", value: r.priority },
         { label: "Échéance", value: r.deadline ? fmtDayShort(r.deadline) : null },
       ]),
-      link: { kind: "page", to: "/contenus" },
+      link: { kind: "editorial", id: r.id },
     } satisfies CalendarItem;
   });
 }
@@ -706,7 +727,7 @@ async function fetchTasks(b: Bounds): Promise<CalendarItem[]> {
         sortAt: r.due_at,
         status: lbl(TASK_STATUS, r.status),
         details: compact([
-          { label: "Canal", value: r.channel },
+          { label: "Canal", value: r.channel ? lbl(EDITORIAL_CHANNEL, r.channel) : null },
           { label: "Échéance", value: `${fmtDayShort(dayKey(r.due_at))} ${timeOf(r.due_at)}` },
         ]),
         link: { kind: "page", to: "/a-valider" },
