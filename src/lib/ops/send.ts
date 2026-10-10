@@ -446,8 +446,9 @@ export function gmailComposeUrl(p: {
   ].join("&")}`;
 }
 
+/** Profil Instagram (sur téléphone, ouvert dans l'appli par src/lib/open-links.ts). */
 export function instagramDmUrl(handle: string | null): string {
-  return handle ? `https://ig.me/m/${handle}` : "https://www.instagram.com/";
+  return handle ? `https://www.instagram.com/${handle}/` : "https://www.instagram.com/";
 }
 
 /* ---------- Plan d'envoi d'une tâche ---------- */

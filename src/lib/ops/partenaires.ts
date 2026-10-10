@@ -327,7 +327,7 @@ export function instagramUrl(handle: string | null) {
   if (!handle) return null;
   const h = handle.trim();
   if (/^https?:\/\//i.test(h)) return h;
-  return `https://instagram.com/${h.replace(/^@/, "").replace(/^instagram\.com\//i, "")}`;
+  return `https://www.instagram.com/${h.replace(/^@/, "").replace(/^(www\.)?instagram\.com\//i, "").replace(/\/+$/, "")}/`;
 }
 
 export function mapsUrl(p: Pick<Partner, "google_maps_url" | "address" | "name" | "location">) {
