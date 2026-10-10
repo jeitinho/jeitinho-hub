@@ -2,10 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { fmtDateTime, fmtMoney } from "@/lib/ops/ops";
-import { fetchOpenQuotes, sortedCurrencies, type CurrencyTotals } from "@/lib/ops/finances";
+import {
+  BRL_PER_EUR,
+  fetchOpenQuotes,
+  sortedCurrencies,
+  type CurrencyTotals,
+} from "@/lib/ops/finances";
 import { Amounts, SectionError } from "./finance-bits";
 
-/** Devis acceptés (statut accepted) dont le solde n'est pas encore encaissé. */
+/** Devis acceptés (statut accepted) dont il reste quelque chose à encaisser. */
 export function OpenQuotes() {
   const {
     data = [],
@@ -74,16 +79,13 @@ export function OpenQuotes() {
                   </p>
                 </div>
               </div>
-              {q.remaining === 0 && (
-                <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
-                  Entièrement encaissé : passer le devis en « payé ».
-                </p>
-              )}
               {other.length > 0 && (
                 <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                  Encaissé aussi{" "}
-                  {other.map((c) => fmtMoney(q.otherCurrencyPayments[c], c)).join(" + ")} dans une
-                  autre devise que le devis ({q.currency}) : non déduit du reste, à vérifier.
+                  Dont {other.map((c) => fmtMoney(q.otherCurrencyPayments[c], c)).join(" + ")} payé
+                  dans une autre devise que le devis ({q.currency}) :{" "}
+                  {Object.keys(q.unconvertedPayments).length
+                    ? `pas de taux connu pour ${Object.keys(q.unconvertedPayments).join(", ")}, non déduit du reste — à vérifier.`
+                    : `converti au taux indicatif (1 EUR = ${String(BRL_PER_EUR).replace(".", ",")} BRL).`}
                 </p>
               )}
             </li>
