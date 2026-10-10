@@ -22,6 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { displayName, profileKind, useAuth } from "@/hooks/use-auth";
 import { MediaHome } from "@/components/home/media-home";
 import { TerrainHome } from "@/components/home/terrain-home";
+import { TodayPosts } from "@/components/home/today-posts";
 import { fetchCockpit, type AgentHealth } from "@/lib/ops/cockpit";
 import { fmtDateTime, fmtMoney } from "@/lib/ops/ops";
 
@@ -184,6 +185,9 @@ function CockpitPage() {
           <ArrowRight className="h-4 w-4" />
         </Link>
       )}
+      <div className="mb-6">
+        <TodayPosts />
+      </div>
       {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
       {error && (
         <Card className="border-destructive/40 p-4 text-sm">{(error as Error).message}</Card>
