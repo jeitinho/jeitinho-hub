@@ -1,6 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
-export type AppRole = "admin" | "manager" | "redacteur_chef" | "redacteur" | "auteur" | "guide" | "prestataire";
+export type AppRole = "admin" | "manager" | "redacteur_chef" | "redacteur" | "auteur" | "guide" | "prestataire" | "community_manager";
 export type AccountStatus = "pending_validation" | "active" | "rejected" | "suspended";
 export type AuthUser = { id: string; email: string; fullName: string | null; status: AccountStatus; roles: AppRole[] };
 
@@ -97,10 +97,10 @@ export function clearSessionCookie() { return `${SESSION_COOKIE}=; Max-Age=0; Pa
 
 export function canAccessModule(module: string, roles: AppRole[]) {
   const matrix: Record<string, AppRole[]> = {
-    dashboard: ["admin","manager","redacteur_chef","redacteur","auteur","guide","prestataire"],
+    dashboard: ["admin","manager","redacteur_chef","redacteur","auteur","guide","prestataire","community_manager"], demandes: ["admin","manager","community_manager"],
     crm: ["admin","manager"], clients: ["admin","manager"], voyages: ["admin","manager"], devis: ["admin","manager"],
-    experiences: ["admin","manager","redacteur_chef"], contenus: ["admin","manager","redacteur_chef","redacteur","auteur"],
-    blog: ["admin","manager","redacteur_chef","redacteur","auteur"], mediatheque: ["admin","manager","redacteur_chef","redacteur"],
+    experiences: ["admin","manager","redacteur_chef"], contenus: ["admin","manager","redacteur_chef","redacteur","auteur","community_manager"],
+    blog: ["admin","manager","redacteur_chef","redacteur","auteur"], mediatheque: ["admin","manager","redacteur_chef","redacteur","community_manager"],
     partenaires: ["admin","manager"], services: ["admin","manager"], billetterie: ["admin","manager"],
     calendrier: ["admin","manager","redacteur_chef","redacteur","auteur","guide","prestataire"], analytics: ["admin","manager"], parametres: ["admin","manager"],
     "a-valider": ["admin","manager"], agents: ["admin","manager"], evenements: ["admin","manager"], whatsapp: ["admin","manager","redacteur_chef","redacteur"], manuel: ["admin","manager"], distribution: ["admin","manager"], audience: ["admin","manager"], finances: ["admin","manager"],

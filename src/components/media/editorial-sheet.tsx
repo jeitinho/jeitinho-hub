@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ExternalLink, Link2, Trash2 } from "lucide-react";
 import {
@@ -35,6 +35,8 @@ import {
   type EditorialItem,
 } from "@/lib/ops/media";
 import { EDITORIAL_KEY } from "./use-media";
+import { displayName, useAuth } from "@/hooks/use-auth";
+import { fetchMyChannels } from "@/lib/ops/cm";
 import { ArticlePicker } from "./article-picker";
 
 const NONE = "__none";
@@ -89,28 +91,48 @@ export function EditorialSheet({
   collections: string[];
 }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState<Form>(() => toForm(item ?? defaults ?? null));
+  const { user, hasRole, canManage } = useAuth();
+  // Community manager : seulement les comptes de ses pôles, pas de suppression.
+  const isCm = !canManage && hasRole("community_manager");
+  const { data: myChannels = [] } = useQuery({
+    queryKey: ["my-channels", user?.id],
+    queryFn: () => fetchMyChannels(user!.id),
+    enabled: isCm && !!user,
+    staleTime: 600_000,
+  });
+  const cmDefaults: Partial<EditorialItem> | null =
+    isCm && !item
+      ? { kind: "post", owner: displayName(user) || null, channel: myChannels[0] ?? null }
+      : null;
+  const initial = () =>
+    toForm(item ?? (cmDefaults ? { ...cmDefaults, ...defaults } : (defaults ?? null)));
+  const [form, setForm] = useState<Form>(initial);
   const [picking, setPicking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setForm(toForm(item ?? defaults ?? null));
+      setForm(initial());
       setPicking(false);
       setConfirmDelete(false);
     }
-  }, [open, item, defaults]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, item, defaults, isCm, myChannels.join(",")]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const kinds = { ...EDITORIAL_KINDS };
   if (form.kind && !kinds[form.kind]) kinds[form.kind] = form.kind;
   // Liste fermée ; une valeur ancienne hors liste reste affichée telle quelle.
-  const channelOptions = [...EDITORIAL_CHANNELS];
+  const channelOptions = isCm
+    ? EDITORIAL_CHANNELS.filter((c) => myChannels.includes(c.value))
+    : [...EDITORIAL_CHANNELS];
   if (form.channel && !channelOptions.some((c) => c.value === form.channel))
     channelOptions.push({ value: form.channel, label: form.channel, short: form.channel });
   const owners: string[] = [...EDITORIAL_OWNERS];
+  const me = displayName(user);
+  if (isCm && me && !owners.includes(me)) owners.push(me);
   if (form.owner && !owners.includes(form.owner)) owners.push(form.owner);
 
   const submit = async (e: React.FormEvent) => {
@@ -367,7 +389,7 @@ export function EditorialSheet({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-4">
-            {item ? (
+            {item && !isCm ? (
               confirmDelete ? (
                 <div className="flex items-center gap-2">
                   <Button type="button" size="sm" variant="destructive" onClick={remove}>

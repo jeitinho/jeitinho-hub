@@ -5,9 +5,11 @@ import {
   Calendar,
   ClipboardCheck,
   Inbox,
+  Images,
   Library,
   Menu,
   MessageCircle,
+  Send,
   Sun,
 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -23,6 +25,13 @@ const MEDIA_ITEMS: NavItem[] = [
   { to: "/contenus", module: "contenus", icon: Library, badge: null },
   { to: "/blog", module: "blog", icon: BookOpen, badge: null },
   { to: "/whatsapp", module: "whatsapp", icon: MessageCircle, badge: null },
+];
+
+const CM_ITEMS: NavItem[] = [
+  { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/contenus", module: "contenus", icon: Library, badge: null },
+  { to: "/mediatheque", module: "mediatheque", icon: Images, badge: null },
+  { to: "/demandes", module: "demandes", icon: Send, badge: null },
 ];
 
 const TERRAIN_ITEMS: NavItem[] = [
@@ -54,9 +63,11 @@ export function MobileNav() {
     ? ITEMS
     : kind === "media"
       ? MEDIA_ITEMS
-      : kind === "terrain"
-        ? TERRAIN_ITEMS
-        : [];
+      : kind === "cm"
+        ? CM_ITEMS
+        : kind === "terrain"
+          ? TERRAIN_ITEMS
+          : [];
   if (!items.length) return null;
 
   return (

@@ -4276,6 +4276,7 @@ export type Database = {
         | "prestataire"
         | "redacteur_chef"
         | "auteur"
+        | "community_manager"
       lead_status:
         | "new"
         | "contacted"
@@ -4440,6 +4441,7 @@ export const Constants = {
         "prestataire",
         "redacteur_chef",
         "auteur",
+        "community_manager",
       ],
       lead_status: [
         "new",

@@ -25,6 +25,7 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticated/contenus'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDemandesRouteImport } from './routes/_authenticated/demandes'
 import { Route as AuthenticatedDevisRouteImport } from './routes/_authenticated/devis'
 import { Route as AuthenticatedDistributionRouteImport } from './routes/_authenticated/distribution'
 import { Route as AuthenticatedEvenementsRouteImport } from './routes/_authenticated/evenements'
@@ -151,6 +152,11 @@ const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDemandesRoute = AuthenticatedDemandesRouteImport.update({
+  id: '/demandes',
+  path: '/demandes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDevisRoute = AuthenticatedDevisRouteImport.update({
@@ -419,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/contenus': typeof AuthenticatedContenusRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/demandes': typeof AuthenticatedDemandesRoute
   '/devis': typeof AuthenticatedDevisRouteWithChildren
   '/distribution': typeof AuthenticatedDistributionRoute
   '/evenements': typeof AuthenticatedEvenementsRoute
@@ -483,6 +490,7 @@ export interface FileRoutesByTo {
   '/contenus': typeof AuthenticatedContenusRoute
   '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/demandes': typeof AuthenticatedDemandesRoute
   '/devis': typeof AuthenticatedDevisRouteWithChildren
   '/distribution': typeof AuthenticatedDistributionRoute
   '/evenements': typeof AuthenticatedEvenementsRoute
@@ -549,6 +557,7 @@ export interface FileRoutesById {
   '/_authenticated/contenus': typeof AuthenticatedContenusRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/demandes': typeof AuthenticatedDemandesRoute
   '/_authenticated/devis': typeof AuthenticatedDevisRouteWithChildren
   '/_authenticated/distribution': typeof AuthenticatedDistributionRoute
   '/_authenticated/evenements': typeof AuthenticatedEvenementsRoute
@@ -615,6 +624,7 @@ export interface FileRouteTypes {
     | '/contenus'
     | '/crm'
     | '/dashboard'
+    | '/demandes'
     | '/devis'
     | '/distribution'
     | '/evenements'
@@ -679,6 +689,7 @@ export interface FileRouteTypes {
     | '/contenus'
     | '/crm'
     | '/dashboard'
+    | '/demandes'
     | '/devis'
     | '/distribution'
     | '/evenements'
@@ -744,6 +755,7 @@ export interface FileRouteTypes {
     | '/_authenticated/contenus'
     | '/_authenticated/crm'
     | '/_authenticated/dashboard'
+    | '/_authenticated/demandes'
     | '/_authenticated/devis'
     | '/_authenticated/distribution'
     | '/_authenticated/evenements'
@@ -930,6 +942,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/demandes': {
+      id: '/_authenticated/demandes'
+      path: '/demandes'
+      fullPath: '/demandes'
+      preLoaderRoute: typeof AuthenticatedDemandesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/devis': {
@@ -1417,6 +1436,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContenusRoute: typeof AuthenticatedContenusRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDemandesRoute: typeof AuthenticatedDemandesRoute
   AuthenticatedDevisRoute: typeof AuthenticatedDevisRouteWithChildren
   AuthenticatedDistributionRoute: typeof AuthenticatedDistributionRoute
   AuthenticatedEvenementsRoute: typeof AuthenticatedEvenementsRoute
@@ -1443,6 +1463,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContenusRoute: AuthenticatedContenusRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDemandesRoute: AuthenticatedDemandesRoute,
   AuthenticatedDevisRoute: AuthenticatedDevisRouteWithChildren,
   AuthenticatedDistributionRoute: AuthenticatedDistributionRoute,
   AuthenticatedEvenementsRoute: AuthenticatedEvenementsRoute,

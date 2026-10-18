@@ -22,6 +22,7 @@ export const NAV_LABELS: Record<string, string> = {
   whatsapp: "Groupe WhatsApp",
   manuel: "Manuel",
   mediatheque: "Médiathèque",
+  demandes: "Demandes équipe",
   evenements: "Soirées",
   audience: "Audience",
   partenaires: "Partenaires",
@@ -43,9 +44,11 @@ export function navLabel(
     if (module === "dashboard") {
       if (opts.kind === "media") return "Mon plan";
       if (opts.kind === "terrain") return "Mes sorties";
+      if (opts.kind === "cm") return "Mon espace";
       return "Accueil";
     }
-    if (module === "contenus") return "Mon planning";
+    if (module === "contenus") return opts.kind === "cm" ? "Mes postages" : "Mon planning";
+    if (module === "demandes") return "Mes demandes";
   }
   return NAV_LABELS[module] ?? module;
 }

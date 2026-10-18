@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { displayName, profileKind, useAuth } from "@/hooks/use-auth";
 import { MediaHome } from "@/components/home/media-home";
+import { CmHome } from "@/components/home/cm-home";
 import { TerrainHome } from "@/components/home/terrain-home";
 import { TodayPosts } from "@/components/home/today-posts";
 import { fetchCockpit, type AgentHealth } from "@/lib/ops/cockpit";
@@ -148,13 +149,17 @@ function CockpitPage() {
         description={
           kind === "media"
             ? "Ton plan média : ce qu'il faut publier, produire et programmer."
-            : kind === "terrain"
-              ? "Tes prochaines sorties avec JEITINHO."
-              : undefined
+            : kind === "cm"
+              ? "Tes postages, les soirées et ce que tu attends de Rafael."
+              : kind === "terrain"
+                ? "Tes prochaines sorties avec JEITINHO."
+                : undefined
         }
       >
         {kind === "media" ? (
           <MediaHome />
+        ) : kind === "cm" ? (
+          <CmHome />
         ) : kind === "terrain" ? (
           <TerrainHome />
         ) : (

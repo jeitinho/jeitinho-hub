@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole =
-  "admin" | "manager" | "redacteur_chef" | "redacteur" | "auteur" | "guide" | "prestataire";
+  | "admin"
+  | "manager"
+  | "redacteur_chef"
+  | "redacteur"
+  | "auteur"
+  | "guide"
+  | "prestataire"
+  | "community_manager";
 
 export type AccountStatus = "pending_validation" | "active" | "rejected" | "suspended";
 
@@ -82,15 +89,26 @@ export function useAuth() {
 }
 
 export const MODULE_ACCESS: Record<string, AppRole[]> = {
-  dashboard: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide", "prestataire"],
+  dashboard: [
+    "admin",
+    "manager",
+    "redacteur_chef",
+    "redacteur",
+    "auteur",
+    "guide",
+    "prestataire",
+    "community_manager",
+  ],
   crm: ["admin", "manager"],
   clients: ["admin", "manager"],
   voyages: ["admin", "manager"],
   devis: ["admin", "manager"],
   experiences: ["admin", "manager", "redacteur_chef"],
-  contenus: ["admin", "manager", "redacteur_chef", "redacteur", "auteur"],
+  contenus: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "community_manager"],
   blog: ["admin", "manager", "redacteur_chef", "redacteur", "auteur"],
-  mediatheque: ["admin", "manager", "redacteur_chef", "redacteur"],
+  mediatheque: ["admin", "manager", "redacteur_chef", "redacteur", "community_manager"],
+  /** Demandes de l'équipe à Rafael (community manager : les siennes ; gestionnaires : toutes). */
+  demandes: ["admin", "manager", "community_manager"],
   partenaires: ["admin", "manager"],
   services: ["admin", "manager"],
   billetterie: ["admin", "manager"],
@@ -122,9 +140,10 @@ export function displayName(
 }
 
 /** Profil d'usage, qui décide de l'accueil et de la barre mobile. */
-export type ProfileKind = "pilotage" | "media" | "terrain" | "autre";
+export type ProfileKind = "pilotage" | "media" | "cm" | "terrain" | "autre";
 export function profileKind(roles: AppRole[]): ProfileKind {
   if (roles.includes("admin") || roles.includes("manager")) return "pilotage";
+  if (roles.includes("community_manager")) return "cm";
   if (roles.some((r) => r === "redacteur_chef" || r === "redacteur" || r === "auteur"))
     return "media";
   if (roles.some((r) => r === "guide" || r === "prestataire")) return "terrain";

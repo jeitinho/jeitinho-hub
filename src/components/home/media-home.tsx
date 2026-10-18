@@ -59,7 +59,7 @@ function deadlineBadge(it: MyItem) {
   );
 }
 
-function ItemCard({ it }: { it: MyItem }) {
+export function ItemCard({ it }: { it: MyItem }) {
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
   const step = nextStep(it.status);
@@ -121,7 +121,7 @@ function ItemCard({ it }: { it: MyItem }) {
   );
 }
 
-function Section({
+export function Section({
   title,
   hint,
   items,

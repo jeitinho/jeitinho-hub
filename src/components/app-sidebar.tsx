@@ -23,6 +23,8 @@ import {
   Store,
   Contact,
   Wallet,
+  Send,
+  Images,
 } from "lucide-react";
 import {
   Sidebar,
@@ -53,7 +55,7 @@ type Item = {
 /*
  * Menu rangé par pôle : le quotidien d'abord, puis chaque activité.
  * Les noms viennent de NAV_LABELS (lib/nav-labels.ts), partagés avec le mobile et le titre.
- * Analytics et Médiathèque (pas encore construits) sont masqués du menu ; leurs pages restent.
+ * Analytics (pas encore construit) est masqué du menu ; sa page reste.
  */
 const GROUPS: { label: string; items: Item[] }[] = [
   {
@@ -62,6 +64,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { url: "/dashboard", icon: Sun, module: "dashboard" },
       { url: "/a-valider", icon: ClipboardCheck, module: "a-valider" },
       { url: "/calendrier", icon: Calendar, module: "calendrier" },
+      { url: "/demandes", icon: Send, module: "demandes" },
     ],
   },
   {
@@ -84,6 +87,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { url: "/blog", icon: BookOpen, module: "blog" },
       { url: "/whatsapp", icon: MessageCircle, module: "whatsapp" },
       { url: "/manuel", icon: BookMarked, module: "manuel" },
+      { url: "/mediatheque", icon: Images, module: "mediatheque" },
     ],
   },
   {
