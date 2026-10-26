@@ -27,6 +27,7 @@ import {
   Sparkles,
   Compass,
   Luggage,
+  CalendarDays,
 } from "lucide-react";
 import { toast } from "sonner";
 import { TripExperiencePicker } from "@/components/trips/experience-picker-v2";
@@ -34,6 +35,7 @@ import { TripServicePicker } from "@/components/trips/service-picker";
 import { TripTicketPicker } from "@/components/trips/ticket-picker";
 import { TripActivityEditor } from "@/components/trips/activity-editor";
 import { TripLogisticsTab } from "@/components/trips/trip-logistics-tab";
+import { TripPlanningTab, type PlanningActivity } from "@/components/trips/trip-planning-tab";
 import { PaymentsBlock } from "@/components/payments/payments-block";
 import { attachMatchedActivities } from "@/lib/trips/create-trip-from-prospect";
 import {
@@ -471,6 +473,10 @@ function TripDetail() {
             <Luggage className="mr-1.5 h-3.5 w-3.5" />
             Logistique
           </TabsTrigger>
+          <TabsTrigger value="planning">
+            <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
+            Planning
+          </TabsTrigger>
           <TabsTrigger value="programme">
             <ClipboardList className="mr-1.5 h-3.5 w-3.5" />
             Programme
@@ -846,6 +852,17 @@ function TripDetail() {
 
         <TabsContent value="logistique" className="mt-6">
           <TripLogisticsTab tripId={id} />
+        </TabsContent>
+
+        <TabsContent value="planning" className="mt-6">
+          <TripPlanningTab
+            tripId={id}
+            startDate={trip.start_date}
+            endDate={trip.end_date}
+            partySize={trip.party_size}
+            currency={trip.currency ?? "EUR"}
+            activities={activities as unknown as PlanningActivity[]}
+          />
         </TabsContent>
       </Tabs>
       <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>

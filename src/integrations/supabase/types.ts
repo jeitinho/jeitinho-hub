@@ -4227,14 +4227,19 @@ export type Database = {
       trip_activities: {
         Row: {
           activity_type: string
+          category: string | null
           client_informed_at: string | null
           commission_amount: number
           completed_at: string | null
           created_at: string
           created_by: string | null
           currency: string
+          day: string | null
+          display_time: string | null
           experience_id: string | null
           id: string
+          is_offered: boolean
+          kind: string
           margin_amount: number
           metadata: Json
           notes: string | null
@@ -4247,6 +4252,8 @@ export type Database = {
           scheduled_end: string | null
           scheduled_start: string | null
           service_id: string | null
+          slot: string | null
+          slot_span: number
           status: string
           supplier_cost: number
           ticket_offer_id: string | null
@@ -4256,14 +4263,19 @@ export type Database = {
         }
         Insert: {
           activity_type?: string
+          category?: string | null
           client_informed_at?: string | null
           commission_amount?: number
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
+          day?: string | null
+          display_time?: string | null
           experience_id?: string | null
           id?: string
+          is_offered?: boolean
+          kind?: string
           margin_amount?: number
           metadata?: Json
           notes?: string | null
@@ -4276,6 +4288,8 @@ export type Database = {
           scheduled_end?: string | null
           scheduled_start?: string | null
           service_id?: string | null
+          slot?: string | null
+          slot_span?: number
           status?: string
           supplier_cost?: number
           ticket_offer_id?: string | null
@@ -4285,14 +4299,19 @@ export type Database = {
         }
         Update: {
           activity_type?: string
+          category?: string | null
           client_informed_at?: string | null
           commission_amount?: number
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string
+          day?: string | null
+          display_time?: string | null
           experience_id?: string | null
           id?: string
+          is_offered?: boolean
+          kind?: string
           margin_amount?: number
           metadata?: Json
           notes?: string | null
@@ -4305,6 +4324,8 @@ export type Database = {
           scheduled_end?: string | null
           scheduled_start?: string | null
           service_id?: string | null
+          slot?: string | null
+          slot_span?: number
           status?: string
           supplier_cost?: number
           ticket_offer_id?: string | null
