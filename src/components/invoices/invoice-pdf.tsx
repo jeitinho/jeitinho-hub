@@ -60,7 +60,12 @@ const s = StyleSheet.create({
 });
 
 function money(v: number, currency: string, locale: string) {
-  return `${v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+  // fr-FR sépare les milliers par une espace fine insécable (U+202F), absente de la police Inter
+  // embarquée dans le PDF : elle s'affichait « 1/440,00 ». On la remplace par une espace insécable classique.
+  const amount = v
+    .toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    .replace(/[\u202F\u2009]/g, "\u00A0");
+  return `${amount} ${currency}`;
 }
 function frDate(v?: string | null) {
   if (!v) return "—";
