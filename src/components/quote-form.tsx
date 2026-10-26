@@ -55,10 +55,12 @@ function parseJsonOrNull(raw: string): unknown {
 function emptyLine(): LineDraft {
   return { label: "", unit: "Forfait", quantity: 1, unit_price: 0, catalogValue: "" };
 }
-function catalogLinePatch(selection: CatalogLineSelection): Partial<LineDraft> {
+function catalogLinePatch(selection: CatalogLineSelection, partySize?: number): Partial<LineDraft> {
   return {
     label: selection.label,
     unit: selection.unit,
+    // Prix par personne : la quantité suit le nombre de voyageurs (sinon 50 €/pers × 4 pax sortait à 50 €).
+    ...(selection.perPerson && partySize && partySize > 0 ? { quantity: partySize } : {}),
     unit_price: selection.unitPrice,
     catalogValue: `${selection.sourceType}:${selection.sourceId}`,
     experience_id: selection.sourceType === "experience" ? selection.sourceId : null,
@@ -96,7 +98,7 @@ export function QuoteForm({
   const [partySize, setPartySize] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [language, setLanguage] = useState("fr");
-  const [depositPct, setDepositPct] = useState("30");
+  const [depositPct, setDepositPct] = useState("50");
   const [validityDays, setValidityDays] = useState("30");
   const [status, setStatus] = useState<QuoteStatus>("draft");
   // Statut tel qu'en base : les dates (envoi, acceptation, paiement) ne sont posées qu'au changement.
@@ -172,7 +174,7 @@ export function QuoteForm({
     setPartySize(q.party_size ? String(q.party_size) : "");
     setCurrency(q.currency ?? "EUR");
     setLanguage(q.language ?? "fr");
-    setDepositPct(String(q.deposit_pct ?? 30));
+    setDepositPct(String(q.deposit_pct ?? 50));
     setValidityDays(String(q.validity_days ?? 30));
     setStatus(q.status);
     setLoadedStatus(q.status);
@@ -268,7 +270,10 @@ export function QuoteForm({
     setLines((current) =>
       current.some((l) => l.label.trim())
         ? current
-        : matches.map((o) => ({ ...emptyLine(), ...catalogLinePatch(o) })),
+        : matches.map((o) => ({
+            ...emptyLine(),
+            ...catalogLinePatch(o, Number(p?.party_size) || undefined),
+          })),
     );
     toast.info(
       `${matches.length} prestation${matches.length > 1 ? "s" : ""} reprise${matches.length > 1 ? "s" : ""} de la demande — vérifiez quantités et prix.`,
@@ -294,7 +299,7 @@ export function QuoteForm({
   const updateLine = (index: number, patch: Partial<LineDraft>) =>
     setLines((current) => current.map((line, i) => (i === index ? { ...line, ...patch } : line)));
   const applyCatalogSelection = (index: number, selection: CatalogLineSelection) =>
-    updateLine(index, catalogLinePatch(selection));
+    updateLine(index, catalogLinePatch(selection, Number(partySize) || undefined));
   const resolveClientForPdf = async (): Promise<QuotePdfData["client"]> => {
     if (clientId !== NEW_CLIENT) {
       const { data, error } = await supabase
