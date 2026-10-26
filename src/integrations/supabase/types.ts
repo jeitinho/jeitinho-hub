@@ -3154,6 +3154,8 @@ export type Database = {
           icon: string | null
           id: string
           inclusions: string[]
+          is_offered: boolean
+          is_optional: boolean
           label: string
           position: number
           quantity: number
@@ -3161,6 +3163,7 @@ export type Database = {
           service_id: string | null
           ticket_offer_id: string | null
           ticket_offer_variant_id: string | null
+          trip_activity_id: string | null
           unit: string
           unit_price: number
           updated_at: string
@@ -3175,6 +3178,8 @@ export type Database = {
           icon?: string | null
           id?: string
           inclusions?: string[]
+          is_offered?: boolean
+          is_optional?: boolean
           label: string
           position?: number
           quantity?: number
@@ -3182,6 +3187,7 @@ export type Database = {
           service_id?: string | null
           ticket_offer_id?: string | null
           ticket_offer_variant_id?: string | null
+          trip_activity_id?: string | null
           unit?: string
           unit_price?: number
           updated_at?: string
@@ -3196,6 +3202,8 @@ export type Database = {
           icon?: string | null
           id?: string
           inclusions?: string[]
+          is_offered?: boolean
+          is_optional?: boolean
           label?: string
           position?: number
           quantity?: number
@@ -3203,6 +3211,7 @@ export type Database = {
           service_id?: string | null
           ticket_offer_id?: string | null
           ticket_offer_variant_id?: string | null
+          trip_activity_id?: string | null
           unit?: string
           unit_price?: number
           updated_at?: string
@@ -3241,6 +3250,13 @@ export type Database = {
             columns: ["ticket_offer_variant_id"]
             isOneToOne: false
             referencedRelation: "ticket_offer_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_lines_trip_activity_id_fkey"
+            columns: ["trip_activity_id"]
+            isOneToOne: false
+            referencedRelation: "trip_activities"
             referencedColumns: ["id"]
           },
         ]
@@ -3292,6 +3308,7 @@ export type Database = {
           party_size: number | null
           period_end: string | null
           period_start: string | null
+          planning_synced_at: string | null
           project_label: string | null
           prospect_id: string | null
           reference: string
@@ -3299,9 +3316,11 @@ export type Database = {
           status: Database["public"]["Enums"]["quote_status"]
           title: string
           total_amount: number
+          trip_id: string | null
           updated_at: string
           valid_until: string | null
           validity_days: number
+          version: number
         }
         Insert: {
           accepted_at?: string | null
@@ -3331,6 +3350,7 @@ export type Database = {
           party_size?: number | null
           period_end?: string | null
           period_start?: string | null
+          planning_synced_at?: string | null
           project_label?: string | null
           prospect_id?: string | null
           reference: string
@@ -3338,9 +3358,11 @@ export type Database = {
           status?: Database["public"]["Enums"]["quote_status"]
           title: string
           total_amount?: number
+          trip_id?: string | null
           updated_at?: string
           valid_until?: string | null
           validity_days?: number
+          version?: number
         }
         Update: {
           accepted_at?: string | null
@@ -3370,6 +3392,7 @@ export type Database = {
           party_size?: number | null
           period_end?: string | null
           period_start?: string | null
+          planning_synced_at?: string | null
           project_label?: string | null
           prospect_id?: string | null
           reference?: string
@@ -3377,9 +3400,11 @@ export type Database = {
           status?: Database["public"]["Enums"]["quote_status"]
           title?: string
           total_amount?: number
+          trip_id?: string | null
           updated_at?: string
           valid_until?: string | null
           validity_days?: number
+          version?: number
         }
         Relationships: [
           {
@@ -3394,6 +3419,13 @@ export type Database = {
             columns: ["prospect_id"]
             isOneToOne: false
             referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]

@@ -14,6 +14,10 @@ export type QuotePdfLine = {
   unit: string;
   quantity: number;
   unit_price: number;
+  /** « Offert » : affiché 0 €, exclu du total. */
+  is_offered?: boolean;
+  /** « En option » : hors total principal, inclus dans le total « avec options ». */
+  is_optional?: boolean;
 };
 
 export type QuotePdfEquipmentGroup = { label: string; items: string[] };
@@ -53,8 +57,21 @@ const BRAND = {
 };
 
 const s = StyleSheet.create({
-  page: { backgroundColor: BRAND.cream, paddingTop: 48, paddingBottom: 56, paddingHorizontal: 44, fontSize: 9.5, color: BRAND.ink, fontFamily: "Inter" },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 },
+  page: {
+    backgroundColor: BRAND.cream,
+    paddingTop: 48,
+    paddingBottom: 56,
+    paddingHorizontal: 44,
+    fontSize: 9.5,
+    color: BRAND.ink,
+    fontFamily: "Inter",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 28,
+  },
   brand: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 20, letterSpacing: 1 },
   brandSub: { fontSize: 7, letterSpacing: 2, color: BRAND.inkSoft, marginTop: 3 },
   refBox: { alignItems: "flex-end" },
@@ -62,24 +79,71 @@ const s = StyleSheet.create({
   eyebrow: { fontSize: 7, letterSpacing: 2, color: BRAND.terracotta, marginBottom: 6 },
   title: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 24, marginBottom: 6 },
   subtitle: { fontSize: 9.5, color: BRAND.inkSoft, marginBottom: 12 },
-  description: { fontSize: 9, color: BRAND.inkSoft, lineHeight: 1.5, marginBottom: 24, maxWidth: 420 },
+  description: {
+    fontSize: 9,
+    color: BRAND.inkSoft,
+    lineHeight: 1.5,
+    marginBottom: 24,
+    maxWidth: 420,
+  },
   cols: { flexDirection: "row", gap: 18, marginBottom: 24 },
   darkBox: { flex: 1, backgroundColor: BRAND.ink, borderRadius: 4, padding: 12 },
-  darkBoxTitle: { fontSize: 7, fontWeight: 700, color: "#F7CA98", letterSpacing: 1, marginBottom: 6 },
+  darkBoxTitle: {
+    fontSize: 7,
+    fontWeight: 700,
+    color: "#F7CA98",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
   darkBoxRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 4 },
   darkBoxIcon: { width: 10, marginRight: 6, marginTop: 1.5 },
   darkBoxText: { fontSize: 8.5, color: BRAND.cream, flex: 1, lineHeight: 1.4 },
   equipmentGroup: { width: "50%", marginBottom: 8, paddingRight: 8 },
-  equipmentGroupLabel: { fontSize: 7.5, fontWeight: 700, color: BRAND.ink, marginBottom: 3, letterSpacing: 0.4 },
+  equipmentGroupLabel: {
+    fontSize: 7.5,
+    fontWeight: 700,
+    color: BRAND.ink,
+    marginBottom: 3,
+    letterSpacing: 0.4,
+  },
   equipmentItem: { fontSize: 8, color: BRAND.inkSoft, marginBottom: 1.5 },
   itineraryStep: { flexDirection: "row", alignItems: "flex-start", marginBottom: 7 },
-  itineraryBadge: { width: 14, height: 14, borderRadius: 7, backgroundColor: BRAND.terracotta, color: "#FFFFFF", fontSize: 7, fontWeight: 700, textAlign: "center", paddingTop: 3, marginRight: 8 },
+  itineraryBadge: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: BRAND.terracotta,
+    color: "#FFFFFF",
+    fontSize: 7,
+    fontWeight: 700,
+    textAlign: "center",
+    paddingTop: 3,
+    marginRight: 8,
+  },
   itineraryText: { fontSize: 8.5, color: BRAND.ink, marginTop: 1, flex: 1 },
-  card: { flex: 1, backgroundColor: "#FFFFFF", borderRadius: 4, padding: 12, borderWidth: 1, borderColor: BRAND.border },
+  card: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 4,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: BRAND.border,
+  },
   label: { fontSize: 7, letterSpacing: 1.5, color: BRAND.inkSoft, marginBottom: 5 },
   value: { fontSize: 10 },
-  tableHead: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: BRAND.ink, paddingBottom: 5, marginBottom: 2 },
-  row: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: BRAND.border, paddingVertical: 7 },
+  tableHead: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: BRAND.ink,
+    paddingBottom: 5,
+    marginBottom: 2,
+  },
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: BRAND.border,
+    paddingVertical: 7,
+  },
   cLabel: { flex: 4 },
   cQty: { flex: 1, textAlign: "right" },
   cUnit: { flex: 1.6, textAlign: "right" },
@@ -87,11 +151,36 @@ const s = StyleSheet.create({
   th: { fontSize: 7, letterSpacing: 1.2, color: BRAND.inkSoft },
   totals: { marginTop: 16, alignSelf: "flex-end", width: 220 },
   totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 },
-  grand: { flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: BRAND.ink },
+  grand: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 6,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: BRAND.ink,
+  },
   grandLabel: { fontFamily: "Inter", fontWeight: 700, fontSize: 11 },
   grandValue: { fontFamily: "Inter", fontWeight: 700, fontSize: 14, color: BRAND.terracotta },
-  notes: { marginTop: 26, padding: 12, backgroundColor: "#FFFFFF", borderRadius: 4, borderLeftWidth: 3, borderLeftColor: BRAND.terracotta },
-  footer: { position: "absolute", bottom: 24, left: 44, right: 44, borderTopWidth: 1, borderTopColor: BRAND.border, paddingTop: 8, fontSize: 7, color: BRAND.inkSoft, textAlign: "center" },
+  notes: {
+    marginTop: 26,
+    padding: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: BRAND.terracotta,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 24,
+    left: 44,
+    right: 44,
+    borderTopWidth: 1,
+    borderTopColor: BRAND.border,
+    paddingTop: 8,
+    fontSize: 7,
+    color: BRAND.inkSoft,
+    textAlign: "center",
+  },
 });
 
 function money(v: number, currency: string, locale: string) {
@@ -110,14 +199,23 @@ function safeStrings(v: unknown): string[] {
 
 function safeEquipment(v: QuotePdfData["equipment"]): QuotePdfEquipmentGroup[] {
   if (!Array.isArray(v)) return [];
-  return v.filter((g): g is QuotePdfEquipmentGroup => !!g && typeof g.label === "string" && Array.isArray(g.items));
+  return v.filter(
+    (g): g is QuotePdfEquipmentGroup =>
+      !!g && typeof g.label === "string" && Array.isArray(g.items),
+  );
 }
 
 export function QuotePdf({ quote }: { quote: QuotePdfData }) {
   const lang = normalizePdfLanguage(quote.language);
   const t = QUOTE_I18N[lang];
   const locale = PDF_LOCALE_MAP[lang];
-  const total = quote.lines.reduce((acc, l) => acc + l.quantity * l.unit_price, 0);
+  const lineAmount = (l: QuotePdfLine) => (l.is_offered ? 0 : l.quantity * l.unit_price);
+  const total = quote.lines
+    .filter((l) => !l.is_optional)
+    .reduce((acc, l) => acc + lineAmount(l), 0);
+  const totalWithOptions = quote.lines.reduce((acc, l) => acc + lineAmount(l), 0);
+  const hasOptionalLines = quote.lines.some((l) => l.is_optional);
+  const perPerson = quote.party_size && quote.party_size > 0 ? total / quote.party_size : null;
   const deposit = (total * quote.deposit_pct) / 100;
   const equipmentGroups = safeEquipment(quote.equipment);
   const included = safeStrings(quote.highlights?.included);
@@ -150,8 +248,12 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
           <View style={s.card}>
             <Text style={s.label}>{t.clientLabel}</Text>
             <Text style={s.value}>{quote.client.name}</Text>
-            {quote.client.email ? <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{quote.client.email}</Text> : null}
-            {quote.client.phone ? <Text style={{ color: BRAND.inkSoft, marginTop: 2 }}>{quote.client.phone}</Text> : null}
+            {quote.client.email ? (
+              <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{quote.client.email}</Text>
+            ) : null}
+            {quote.client.phone ? (
+              <Text style={{ color: BRAND.inkSoft, marginTop: 2 }}>{quote.client.phone}</Text>
+            ) : null}
           </View>
           <View style={s.card}>
             <Text style={s.label}>{t.stayLabel}</Text>
@@ -171,11 +273,17 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
               {equipmentGroups.map((g) => (
                 <View key={g.label} style={s.equipmentGroup}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}>
-                    <View style={{ marginRight: 5 }}><IconPackage size={9} color={BRAND.terracotta} /></View>
-                    <Text style={[s.equipmentGroupLabel, { marginBottom: 0 }]}>{g.label.toUpperCase()}</Text>
+                    <View style={{ marginRight: 5 }}>
+                      <IconPackage size={9} color={BRAND.terracotta} />
+                    </View>
+                    <Text style={[s.equipmentGroupLabel, { marginBottom: 0 }]}>
+                      {g.label.toUpperCase()}
+                    </Text>
                   </View>
                   {g.items.map((it, idx) => (
-                    <Text key={idx} style={s.equipmentItem}>• {it}</Text>
+                    <Text key={idx} style={s.equipmentItem}>
+                      • {it}
+                    </Text>
                   ))}
                 </View>
               ))}
@@ -192,7 +300,9 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
                     <Text style={s.darkBoxTitle}>{t.includedLabel}</Text>
                     {included.map((it, idx) => (
                       <View key={idx} style={s.darkBoxRow}>
-                        <View style={s.darkBoxIcon}><IconCheck size={8} color="#F7CA98" /></View>
+                        <View style={s.darkBoxIcon}>
+                          <IconCheck size={8} color="#F7CA98" />
+                        </View>
                         <Text style={s.darkBoxText}>{it}</Text>
                       </View>
                     ))}
@@ -200,10 +310,14 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
                 )}
                 {excluded.length > 0 && (
                   <>
-                    <Text style={[s.darkBoxTitle, { marginTop: included.length > 0 ? 8 : 0 }]}>{t.excludedLabel}</Text>
+                    <Text style={[s.darkBoxTitle, { marginTop: included.length > 0 ? 8 : 0 }]}>
+                      {t.excludedLabel}
+                    </Text>
                     {excluded.map((it, idx) => (
                       <View key={idx} style={s.darkBoxRow}>
-                        <View style={s.darkBoxIcon}><IconX size={8} color={BRAND.terracotta} /></View>
+                        <View style={s.darkBoxIcon}>
+                          <IconX size={8} color={BRAND.terracotta} />
+                        </View>
                         <Text style={s.darkBoxText}>{it}</Text>
                       </View>
                     ))}
@@ -238,11 +352,22 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
           <View key={i} style={s.row} wrap={false}>
             <View style={s.cLabel}>
               <Text>{l.label}</Text>
-              {l.unit ? <Text style={{ fontSize: 7.5, color: BRAND.inkSoft, marginTop: 2 }}>{l.unit}</Text> : null}
+              {l.unit ? (
+                <Text style={{ fontSize: 7.5, color: BRAND.inkSoft, marginTop: 2 }}>{l.unit}</Text>
+              ) : null}
+              {l.is_optional ? (
+                <Text style={{ fontSize: 7.5, color: BRAND.terracotta, marginTop: 2 }}>
+                  EN OPTION
+                </Text>
+              ) : null}
             </View>
             <Text style={s.cQty}>{l.quantity}</Text>
-            <Text style={s.cUnit}>{money(l.unit_price, quote.currency, locale)}</Text>
-            <Text style={s.cTotal}>{money(l.quantity * l.unit_price, quote.currency, locale)}</Text>
+            <Text style={s.cUnit}>
+              {l.is_offered ? "—" : money(l.unit_price, quote.currency, locale)}
+            </Text>
+            <Text style={s.cTotal}>
+              {l.is_offered ? "Offert" : money(l.quantity * l.unit_price, quote.currency, locale)}
+            </Text>
           </View>
         ))}
 
@@ -251,6 +376,12 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
             <Text style={s.grandLabel}>{t.totalLabel}</Text>
             <Text style={s.grandValue}>{money(total, quote.currency, locale)}</Text>
           </View>
+          {perPerson != null && (
+            <View style={s.totalRow}>
+              <Text style={{ color: BRAND.inkSoft }}>{t.totalLabel} / pers.</Text>
+              <Text>{money(perPerson, quote.currency, locale)}</Text>
+            </View>
+          )}
           <View style={s.totalRow}>
             <Text style={{ color: BRAND.inkSoft }}>{t.depositLabel(quote.deposit_pct)}</Text>
             <Text>{money(deposit, quote.currency, locale)}</Text>
@@ -259,6 +390,17 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
             <Text style={{ color: BRAND.inkSoft }}>{t.balanceLabel}</Text>
             <Text>{money(total - deposit, quote.currency, locale)}</Text>
           </View>
+          {hasOptionalLines && (
+            <View
+              style={[
+                s.totalRow,
+                { borderTopWidth: 1, borderTopColor: BRAND.border, marginTop: 4, paddingTop: 8 },
+              ]}
+            >
+              <Text style={{ color: BRAND.inkSoft }}>Total avec options</Text>
+              <Text>{money(totalWithOptions, quote.currency, locale)}</Text>
+            </View>
+          )}
         </View>
 
         {quote.notes ? (

@@ -56,9 +56,12 @@ const NOT_COPIED = new Set([
   "followup_paused",
   "followup_stage",
   "followup_anchor_at",
+  "trip_id",
+  "version",
+  "planning_synced_at",
 ]);
 
-const LINE_NOT_COPIED = new Set(["id", "quote_id", "created_at", "updated_at"]);
+const LINE_NOT_COPIED = new Set(["id", "quote_id", "created_at", "updated_at", "trip_activity_id"]);
 
 /** Copie le devis et ses lignes en brouillon, avec un nouveau numéro. Retourne le nouvel id. */
 export async function duplicateQuote(id: string) {

@@ -1,16 +1,22 @@
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { FileDown } from "lucide-react";
+import { FileDown, FilePlus2, FileText, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { formatMoney } from "@/lib/quotes/status";
+import { formatMoney, quoteStatusLabel } from "@/lib/quotes/status";
 import { activityStatusLabel } from "@/lib/trips/status";
 import { fetchPayments, paymentBalance, PAYMENT_RATES } from "@/lib/ops/payments";
 import { downloadPlanningPdf } from "@/lib/trips/download-planning-pdf";
+import {
+  generateOrUpdateQuoteFromTrip,
+  hasPlanningChangedSince,
+} from "@/lib/trips/generate-quote-from-trip";
 import { SLOTS, type PlanningActivity } from "@/components/trips/trip-planning-tab";
 
 const WEEKDAY = (iso: string) =>
@@ -72,6 +78,44 @@ export function TripSummaryTab({
   });
   const balance = paymentBalance(total, cur, payments, PAYMENT_RATES);
 
+  const qc = useQueryClient();
+  const { data: linkedQuote } = useQuery({
+    queryKey: ["trip-quote-link", quoteId],
+    enabled: !!quoteId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quotes")
+        .select("id,number,reference,status,planning_synced_at")
+        .eq("id", quoteId!)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+  const frozen = !!linkedQuote && linkedQuote.status !== "draft";
+  const { data: planningChanged = false } = useQuery({
+    queryKey: ["planning-changed", tripId, linkedQuote?.planning_synced_at],
+    enabled: frozen && !!linkedQuote?.planning_synced_at,
+    queryFn: () => hasPlanningChangedSince(tripId, linkedQuote!.planning_synced_at!),
+  });
+  const [generating, setGenerating] = useState(false);
+  const generateQuote = async () => {
+    setGenerating(true);
+    try {
+      const { quoteId: newQuoteId, versioned } = await generateOrUpdateQuoteFromTrip(tripId);
+      toast.success(versioned ? "Nouvelle version du devis créée." : "Devis généré.");
+      await qc.invalidateQueries({ queryKey: ["trip", tripId] });
+      await qc.invalidateQueries({ queryKey: ["trip-quote-link"] });
+      await qc.invalidateQueries({ queryKey: ["quotes"] });
+      return newQuoteId;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Impossible de générer le devis.");
+      return null;
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const [pdfTitle, setPdfTitle] = useState(() => {
     if (startDate && endDate) {
       const days = Math.round(
@@ -130,6 +174,45 @@ export function TripSummaryTab({
 
   return (
     <div className="space-y-6">
+      <Card className="space-y-3 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">Devis</h2>
+          {linkedQuote && (
+            <Link
+              to="/devis/$id"
+              params={{ id: linkedQuote.id }}
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              {linkedQuote.number ?? linkedQuote.reference} · {quoteStatusLabel(linkedQuote.status)}
+            </Link>
+          )}
+        </div>
+        {frozen && planningChanged && (
+          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
+            Le planning a changé depuis l'envoi du devis.
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {!linkedQuote ? (
+            <Button onClick={generateQuote} disabled={generating || billable.length === 0}>
+              <FilePlus2 className="mr-2 h-4 w-4" />
+              {generating ? "Génération…" : "Générer le devis"}
+            </Button>
+          ) : frozen ? (
+            <Button onClick={generateQuote} disabled={generating || billable.length === 0}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {generating ? "Création…" : "Mettre à jour le devis"}
+            </Button>
+          ) : (
+            <Button onClick={generateQuote} disabled={generating || billable.length === 0}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {generating ? "Régénération…" : "Régénérer les lignes depuis le planning"}
+            </Button>
+          )}
+        </div>
+      </Card>
+
       <Card className="overflow-x-auto p-5">
         <h2 className="mb-4 font-semibold">Synthèse</h2>
         {billable.length === 0 ? (

@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2, FileDown, Save } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TextListEditor } from "@/components/quotes/text-list-editor";
 import { QUOTE_STATUSES, formatMoney, type QuoteStatus } from "@/lib/quotes/status";
 import { downloadQuotePdf } from "@/lib/quotes/download-quote-pdf";
 import { fetchQuoteMeta, quoteMetaKey } from "@/lib/quotes/quote-actions";
@@ -40,20 +42,25 @@ type LineDraft = {
   experience_id?: string | null;
   service_id?: string | null;
   ticket_offer_id?: string | null;
+  /** Activité du planning à l'origine de cette ligne (devis généré depuis un voyage). */
+  trip_activity_id?: string | null;
+  /** « Offert » : affiché 0 € sur le PDF, exclu du total. */
+  is_offered: boolean;
+  /** « En option » : hors total principal, inclus dans le total « avec options ». */
+  is_optional: boolean;
 };
 const NEW_CLIENT = "__new__";
 const NO_PROSPECT = "__none__";
-function parseJsonOrNull(raw: string): unknown {
-  const t = raw.trim();
-  if (!t) return null;
-  try {
-    return JSON.parse(t);
-  } catch {
-    return null;
-  }
-}
 function emptyLine(): LineDraft {
-  return { label: "", unit: "Forfait", quantity: 1, unit_price: 0, catalogValue: "" };
+  return {
+    label: "",
+    unit: "Forfait",
+    quantity: 1,
+    unit_price: 0,
+    catalogValue: "",
+    is_offered: false,
+    is_optional: false,
+  };
 }
 function catalogLinePatch(selection: CatalogLineSelection, partySize?: number): Partial<LineDraft> {
   return {
@@ -88,9 +95,12 @@ export function QuoteForm({
   const [title, setTitle] = useState("");
   const [eyebrow, setEyebrow] = useState("Proposition de séjour");
   const [description, setDescription] = useState("");
-  const [equipmentRaw, setEquipmentRaw] = useState("");
-  const [highlightsRaw, setHighlightsRaw] = useState("");
-  const [itineraryRaw, setItineraryRaw] = useState("");
+  const [equipmentGroups, setEquipmentGroups] = useState<{ label: string; items: string[] }[]>([]);
+  const [includedItems, setIncludedItems] = useState<string[]>([]);
+  const [excludedItems, setExcludedItems] = useState<string[]>([]);
+  // L'itinéraire du devis n'est plus saisi (le planning du voyage est un document séparé) :
+  // on préserve la valeur d'un devis existant sans l'exposer dans le formulaire.
+  const [preservedItinerary, setPreservedItinerary] = useState<unknown>([]);
   const [projectLabel, setProjectLabel] = useState("");
   const [location, setLocation] = useState("Rio de Janeiro");
   const [periodStart, setPeriodStart] = useState("");
@@ -179,17 +189,17 @@ export function QuoteForm({
     setStatus(q.status);
     setLoadedStatus(q.status);
     setNotes(q.notes ?? "");
-    setEquipmentRaw(
-      q.equipment && Object.keys(q.equipment).length ? JSON.stringify(q.equipment, null, 2) : "",
+    setEquipmentGroups(
+      Array.isArray(q.equipment)
+        ? q.equipment.filter(
+            (g: unknown): g is { label: string; items: string[] } =>
+              !!g && typeof g === "object" && Array.isArray((g as { items?: unknown }).items),
+          )
+        : [],
     );
-    setHighlightsRaw(
-      q.highlights && ((q.highlights.included?.length ?? 0) || (q.highlights.excluded?.length ?? 0))
-        ? JSON.stringify(q.highlights, null, 2)
-        : "",
-    );
-    setItineraryRaw(
-      Array.isArray(q.itinerary) && q.itinerary.length ? JSON.stringify(q.itinerary, null, 2) : "",
-    );
+    setIncludedItems(Array.isArray(q.highlights?.included) ? q.highlights.included : []);
+    setExcludedItems(Array.isArray(q.highlights?.excluded) ? q.highlights.excluded : []);
+    setPreservedItinerary(Array.isArray(q.itinerary) ? q.itinerary : []);
     if (q.client_id) setClientId(q.client_id);
     if (q.prospect_id) setProspectId(q.prospect_id);
     setLines(
@@ -210,6 +220,9 @@ export function QuoteForm({
             experience_id: l.experience_id ?? null,
             service_id: l.service_id ?? null,
             ticket_offer_id: l.ticket_offer_id ?? null,
+            trip_activity_id: l.trip_activity_id ?? null,
+            is_offered: !!l.is_offered,
+            is_optional: !!l.is_optional,
           }))
         : [emptyLine()],
     );
@@ -288,14 +301,19 @@ export function QuoteForm({
     catalogOptions,
     initialProspectId,
   ]);
+  const lineAmount = (line: LineDraft) =>
+    line.is_offered ? 0 : (Number(line.quantity) || 0) * (Number(line.unit_price) || 0);
+  // Les lignes « Offert » sortent à 0 € ; les lignes « En option » restent hors total principal
+  // (affichées « En option », avec un total « avec options » séparé en pied de devis).
   const total = useMemo(
-    () =>
-      lines.reduce(
-        (acc, line) => acc + (Number(line.quantity) || 0) * (Number(line.unit_price) || 0),
-        0,
-      ),
+    () => lines.filter((l) => !l.is_optional).reduce((acc, line) => acc + lineAmount(line), 0),
     [lines],
   );
+  const totalWithOptions = useMemo(
+    () => lines.reduce((acc, line) => acc + lineAmount(line), 0),
+    [lines],
+  );
+  const hasOptionalLines = lines.some((l) => l.is_optional && l.label.trim());
   const updateLine = (index: number, patch: Partial<LineDraft>) =>
     setLines((current) => current.map((line, i) => (i === index ? { ...line, ...patch } : line)));
   const applyCatalogSelection = (index: number, selection: CatalogLineSelection) =>
@@ -352,10 +370,15 @@ export function QuoteForm({
         unit: l.unit,
         quantity: Number(l.quantity) || 0,
         unit_price: Number(l.unit_price) || 0,
+        is_offered: l.is_offered,
+        is_optional: l.is_optional,
       })),
-    equipment: parseJsonOrNull(equipmentRaw) as QuotePdfData["equipment"],
-    highlights: parseJsonOrNull(highlightsRaw) as QuotePdfData["highlights"],
-    itinerary: parseJsonOrNull(itineraryRaw) as QuotePdfData["itinerary"],
+    equipment: equipmentGroups.filter((g) => g.label.trim() || g.items.some((it) => it.trim())),
+    highlights: {
+      included: includedItems.filter((it) => it.trim()),
+      excluded: excludedItems.filter((it) => it.trim()),
+    },
+    itinerary: preservedItinerary as QuotePdfData["itinerary"],
   });
 
   const save = async () => {
@@ -395,9 +418,12 @@ export function QuoteForm({
         location: location.trim() || null,
         client_id: resolvedClientId,
         prospect_id: prospectId === NO_PROSPECT ? null : prospectId,
-        equipment: parseJsonOrNull(equipmentRaw) ?? [],
-        highlights: parseJsonOrNull(highlightsRaw) ?? { included: [], excluded: [] },
-        itinerary: parseJsonOrNull(itineraryRaw) ?? [],
+        equipment: equipmentGroups.filter((g) => g.label.trim() || g.items.some((it) => it.trim())),
+        highlights: {
+          included: includedItems.filter((it) => it.trim()),
+          excluded: excludedItems.filter((it) => it.trim()),
+        },
+        itinerary: preservedItinerary,
         period_start: periodStart || null,
         period_end: periodEnd || null,
         party_size: partySize ? Number(partySize) : null,
@@ -465,6 +491,9 @@ export function QuoteForm({
           experience_id: line.experience_id ?? null,
           service_id: line.service_id ?? null,
           ticket_offer_id: line.ticket_offer_id ?? null,
+          trip_activity_id: line.trip_activity_id ?? null,
+          is_offered: line.is_offered,
+          is_optional: line.is_optional,
         })) as any,
       );
       if (lineError) throw new Error(lineError.message);
@@ -722,14 +751,38 @@ export function QuoteForm({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+                <div className="mt-2 flex gap-4">
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={line.is_offered}
+                      onCheckedChange={(v) => updateLine(index, { is_offered: !!v })}
+                    />
+                    Offert (0 €, hors total)
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={line.is_optional}
+                      onCheckedChange={(v) => updateLine(index, { is_optional: !!v })}
+                    />
+                    En option (hors total, ex. version privée, hélico, drone)
+                  </label>
+                </div>
               </div>
             ))}
           </div>
-          <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4">
-            <span className="tracked text-[10px] text-muted-foreground">TOTAL</span>
-            <span className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
-              {formatMoney(total, currency)}
-            </span>
+          <div className="mt-5 space-y-1.5 border-t border-border/60 pt-4">
+            <div className="flex items-center justify-between">
+              <span className="tracked text-[10px] text-muted-foreground">TOTAL</span>
+              <span className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+                {formatMoney(total, currency)}
+              </span>
+            </div>
+            {hasOptionalLines && (
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>Total avec options</span>
+                <span>{formatMoney(totalWithOptions, currency)}</span>
+              </div>
+            )}
           </div>
         </Card>
         <Card className="p-5">
@@ -746,32 +799,78 @@ export function QuoteForm({
             Contenu avancé du PDF
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Optionnel — chaque bloc est inclus uniquement si le JSON est valide.
+            Optionnel — chaque bloc n'apparaît sur le PDF que s'il contient des lignes.
           </p>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
               <Label>Matériel & prestations techniques</Label>
-              <Textarea
-                className="mt-1.5 min-h-20 font-mono text-xs"
-                value={equipmentRaw}
-                onChange={(e) => setEquipmentRaw(e.target.value)}
-              />
+              <div className="mt-2 space-y-3">
+                {equipmentGroups.map((group, gi) => (
+                  <div key={gi} className="rounded-md border border-border/60 p-3">
+                    <div className="mb-2 flex gap-2">
+                      <Input
+                        className="h-8 text-xs"
+                        placeholder="Nom du groupe (ex. Matériel photo)"
+                        value={group.label}
+                        onChange={(e) =>
+                          setEquipmentGroups((gs) =>
+                            gs.map((g, i) => (i === gi ? { ...g, label: e.target.value } : g)),
+                          )
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        aria-label="Supprimer ce groupe"
+                        onClick={() => setEquipmentGroups((gs) => gs.filter((_, i) => i !== gi))}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <TextListEditor
+                      items={group.items}
+                      placeholder="Élément"
+                      addLabel="Ajouter un élément"
+                      onChange={(items) =>
+                        setEquipmentGroups((gs) =>
+                          gs.map((g, i) => (i === gi ? { ...g, items } : g)),
+                        )
+                      }
+                    />
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEquipmentGroups((gs) => [...gs, { label: "", items: [""] }])}
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  Ajouter un groupe
+                </Button>
+              </div>
             </div>
             <div>
-              <Label>Inclus / exclus</Label>
-              <Textarea
-                className="mt-1.5 min-h-20 font-mono text-xs"
-                value={highlightsRaw}
-                onChange={(e) => setHighlightsRaw(e.target.value)}
-              />
+              <Label>Ce qui est inclus</Label>
+              <div className="mt-2">
+                <TextListEditor
+                  items={includedItems}
+                  onChange={setIncludedItems}
+                  placeholder="Inclus"
+                />
+              </div>
             </div>
             <div>
-              <Label>Itinéraire</Label>
-              <Textarea
-                className="mt-1.5 min-h-20 font-mono text-xs"
-                value={itineraryRaw}
-                onChange={(e) => setItineraryRaw(e.target.value)}
-              />
+              <Label>Ce qui n'est pas inclus</Label>
+              <div className="mt-2">
+                <TextListEditor
+                  items={excludedItems}
+                  onChange={setExcludedItems}
+                  placeholder="Exclu"
+                />
+              </div>
             </div>
           </div>
         </Card>
