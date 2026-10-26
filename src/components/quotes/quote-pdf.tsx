@@ -156,7 +156,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
           <View style={s.card}>
             <Text style={s.label}>{t.stayLabel}</Text>
             <Text style={s.value}>
-              {frDate(quote.period_start)} → {frDate(quote.period_end)}
+              {frDate(quote.period_start)} – {frDate(quote.period_end)}
             </Text>
             <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>
               {quote.party_size ? t.peopleCount(quote.party_size) : t.peopleTbd}
