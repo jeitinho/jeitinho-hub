@@ -28,6 +28,7 @@ import {
   Compass,
   Luggage,
   CalendarDays,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { TripExperiencePicker } from "@/components/trips/experience-picker-v2";
@@ -36,6 +37,7 @@ import { TripTicketPicker } from "@/components/trips/ticket-picker";
 import { TripActivityEditor } from "@/components/trips/activity-editor";
 import { TripLogisticsTab } from "@/components/trips/trip-logistics-tab";
 import { TripPlanningTab, type PlanningActivity } from "@/components/trips/trip-planning-tab";
+import { TripSummaryTab } from "@/components/trips/trip-summary-tab";
 import { PaymentsBlock } from "@/components/payments/payments-block";
 import { attachMatchedActivities } from "@/lib/trips/create-trip-from-prospect";
 import {
@@ -157,7 +159,7 @@ function TripDetail() {
         ? ((
             await supabase
               .from("quotes")
-              .select("id,number,reference,title,status,total_amount,currency")
+              .select("id,number,reference,title,status,total_amount,currency,deposit_pct")
               .eq("id", trip.quote_id)
               .maybeSingle()
           ).data ?? null)
@@ -476,6 +478,10 @@ function TripDetail() {
           <TabsTrigger value="planning">
             <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
             Planning
+          </TabsTrigger>
+          <TabsTrigger value="synthese">
+            <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
+            Synthèse
           </TabsTrigger>
           <TabsTrigger value="programme">
             <ClipboardList className="mr-1.5 h-3.5 w-3.5" />
@@ -861,6 +867,21 @@ function TripDetail() {
             endDate={trip.end_date}
             partySize={trip.party_size}
             currency={trip.currency ?? "EUR"}
+            activities={activities as unknown as PlanningActivity[]}
+          />
+        </TabsContent>
+
+        <TabsContent value="synthese" className="mt-6">
+          <TripSummaryTab
+            tripId={id}
+            quoteId={trip.quote_id}
+            clientName={client?.full_name ?? trip.title}
+            startDate={trip.start_date}
+            endDate={trip.end_date}
+            partySize={trip.party_size}
+            currency={trip.currency ?? "EUR"}
+            guideName={guide ? (guide.full_name ?? guide.email) : null}
+            depositPct={sourceQuote?.deposit_pct ?? 50}
             activities={activities as unknown as PlanningActivity[]}
           />
         </TabsContent>

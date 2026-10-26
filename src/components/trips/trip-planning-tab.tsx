@@ -24,6 +24,7 @@ export type PlanningActivity = {
   title: string;
   activity_type: string;
   status: string;
+  quantity: number | string;
   sale_price: number | string;
   currency: string;
   experience_id: string | null;
@@ -38,7 +39,7 @@ export type PlanningActivity = {
   kind: string;
 };
 
-const SLOTS = [
+export const SLOTS = [
   { key: "matin", label: "Matin" },
   { key: "midi", label: "Midi" },
   { key: "apres_midi", label: "Après-midi" },
