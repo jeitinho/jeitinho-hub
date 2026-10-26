@@ -12,7 +12,9 @@ import {
   type Demande,
 } from "@/lib/ops/demandes";
 import { ContactButtons, CreateQuoteButton, StageMenu, TemperatureBadge } from "./shared";
+import { CreateTripButton } from "./create-trip-button";
 import { useDemandeActions } from "./use-demande-actions";
+import { useTripCreationMode } from "@/lib/trips/settings";
 
 const MAX_ACTIVITIES = 3;
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -29,6 +31,7 @@ export function DemandeCard({
   onQualified: (prospectId: string) => void;
 }) {
   const { moveTo, qualify, busy } = useDemandeActions();
+  const { mode: tripCreationMode } = useTripCreationMode();
   const range = fmtTravelRange(d.travelStart, d.travelEnd);
   const extra = d.activities.length - MAX_ACTIVITIES;
   const quote = d.pendingQuote ?? d.quotes[0] ?? null;
@@ -172,7 +175,12 @@ export function DemandeCard({
         <ContactButtons demande={d} compact />
         {d.kind === "prospect" ? (
           d.stage !== "gagnee" &&
-          d.stage !== "perdue" && <CreateQuoteButton prospectId={d.id} className="min-w-0 flex-1" />
+          d.stage !== "perdue" && (
+            <>
+              {tripCreationMode === "manual" && <CreateTripButton demande={d} />}
+              <CreateQuoteButton prospectId={d.id} className="min-w-0 flex-1" />
+            </>
+          )
         ) : (
           <Button
             size="sm"

@@ -109,6 +109,7 @@ export type Database = {
           added_at: string | null
           age: number | null
           city: string | null
+          consent_requested_at: string | null
           country: string | null
           created_at: string
           email: string | null
@@ -122,6 +123,9 @@ export type Database = {
           last_purchase_at: string | null
           newsletter_optin: boolean
           notifications_optin: boolean
+          optin_at: string | null
+          optin_token: string
+          optout_at: string | null
           origin: string | null
           phone: string | null
           recency: string | null
@@ -136,6 +140,7 @@ export type Database = {
           added_at?: string | null
           age?: number | null
           city?: string | null
+          consent_requested_at?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
@@ -149,6 +154,9 @@ export type Database = {
           last_purchase_at?: string | null
           newsletter_optin?: boolean
           notifications_optin?: boolean
+          optin_at?: string | null
+          optin_token?: string
+          optout_at?: string | null
           origin?: string | null
           phone?: string | null
           recency?: string | null
@@ -163,6 +171,7 @@ export type Database = {
           added_at?: string | null
           age?: number | null
           city?: string | null
+          consent_requested_at?: string | null
           country?: string | null
           created_at?: string
           email?: string | null
@@ -176,6 +185,9 @@ export type Database = {
           last_purchase_at?: string | null
           newsletter_optin?: boolean
           notifications_optin?: boolean
+          optin_at?: string | null
+          optin_token?: string
+          optout_at?: string | null
           origin?: string | null
           phone?: string | null
           recency?: string | null
@@ -247,6 +259,56 @@ export type Database = {
           },
         ]
       }
+      blog_topic_proposals: {
+        Row: {
+          angle: string | null
+          brief: string
+          chosen_at: string | null
+          created_at: string
+          editorial_item_id: string | null
+          id: string
+          source_url: string | null
+          title: string
+          token: string
+          week: string
+          why_now: string | null
+        }
+        Insert: {
+          angle?: string | null
+          brief: string
+          chosen_at?: string | null
+          created_at?: string
+          editorial_item_id?: string | null
+          id?: string
+          source_url?: string | null
+          title: string
+          token?: string
+          week: string
+          why_now?: string | null
+        }
+        Update: {
+          angle?: string | null
+          brief?: string
+          chosen_at?: string | null
+          created_at?: string
+          editorial_item_id?: string | null
+          id?: string
+          source_url?: string | null
+          title?: string
+          token?: string
+          week?: string
+          why_now?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_topic_proposals_editorial_item_id_fkey"
+            columns: ["editorial_item_id"]
+            isOneToOne: false
+            referencedRelation: "editorial_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           amount_due: number
@@ -307,6 +369,7 @@ export type Database = {
       calendar_events: {
         Row: {
           all_day: boolean
+          client_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -322,6 +385,7 @@ export type Database = {
         }
         Insert: {
           all_day?: boolean
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -337,6 +401,7 @@ export type Database = {
         }
         Update: {
           all_day?: boolean
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -351,6 +416,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "calendar_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "calendar_events_related_trip_id_fkey"
             columns: ["related_trip_id"]
@@ -717,6 +789,30 @@ export type Database = {
           },
         ]
       }
+      content_poles: {
+        Row: {
+          channels: string[]
+          code: string
+          is_active: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          channels?: string[]
+          code: string
+          is_active?: boolean
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          channels?: string[]
+          code?: string
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       content_revisions: {
         Row: {
           content_id: string
@@ -1023,6 +1119,30 @@ export type Database = {
           },
         ]
       }
+      daily_briefs: {
+        Row: {
+          content: string
+          created_at: string
+          day: string
+          sent_at: string | null
+          source: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          day: string
+          sent_at?: string | null
+          source?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          day?: string
+          sent_at?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
       devis_nordeste: {
         Row: {
           activites: string[] | null
@@ -1089,6 +1209,7 @@ export type Database = {
           collection: string | null
           created_at: string
           deadline: string | null
+          done_token: string
           experience_id: string | null
           external_ref: string | null
           id: string
@@ -1097,6 +1218,8 @@ export type Database = {
           owner: string | null
           planned_at: string | null
           priority: string | null
+          reminded_at: string | null
+          source_url: string | null
           status: string
           title: string
           updated_at: string
@@ -1107,6 +1230,7 @@ export type Database = {
           collection?: string | null
           created_at?: string
           deadline?: string | null
+          done_token?: string
           experience_id?: string | null
           external_ref?: string | null
           id?: string
@@ -1115,6 +1239,8 @@ export type Database = {
           owner?: string | null
           planned_at?: string | null
           priority?: string | null
+          reminded_at?: string | null
+          source_url?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -1125,6 +1251,7 @@ export type Database = {
           collection?: string | null
           created_at?: string
           deadline?: string | null
+          done_token?: string
           experience_id?: string | null
           external_ref?: string | null
           id?: string
@@ -1133,6 +1260,8 @@ export type Database = {
           owner?: string | null
           planned_at?: string | null
           priority?: string | null
+          reminded_at?: string | null
+          source_url?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -1256,6 +1385,13 @@ export type Database = {
             foreignKeyName: "event_partner_sales_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_partner_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -1313,6 +1449,13 @@ export type Database = {
             foreignKeyName: "event_promo_codes_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_promo_codes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -1364,6 +1507,13 @@ export type Database = {
             foreignKeyName: "event_settlements_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: true
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_settlements_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -1407,6 +1557,13 @@ export type Database = {
           vip_tables?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "event_ticket_counts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_ticket_counts_event_id_fkey"
             columns: ["event_id"]
@@ -1455,7 +1612,66 @@ export type Database = {
             foreignKeyName: "event_ticket_lots_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_ticket_lots_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_tracking_links: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          label: string
+          partner_id: string | null
+          url: string
+          utm_source: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          label: string
+          partner_id?: string | null
+          url: string
+          utm_source: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          label?: string
+          partner_id?: string | null
+          url?: string
+          utm_source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tracking_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tracking_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tracking_links_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
             referencedColumns: ["id"]
           },
         ]
@@ -1476,8 +1692,10 @@ export type Database = {
           partner_ticket_commission: number
           partner_vip_commission_pct: number
           presale_target: number | null
+          shotgun_event_id: string | null
           starts_at: string
           status: string
+          sympla_event_id: string | null
           updated_at: string
           venue: string | null
           venue_share_pct: number
@@ -1497,8 +1715,10 @@ export type Database = {
           partner_ticket_commission?: number
           partner_vip_commission_pct?: number
           presale_target?: number | null
+          shotgun_event_id?: string | null
           starts_at: string
           status?: string
+          sympla_event_id?: string | null
           updated_at?: string
           venue?: string | null
           venue_share_pct?: number
@@ -1518,8 +1738,10 @@ export type Database = {
           partner_ticket_commission?: number
           partner_vip_commission_pct?: number
           presale_target?: number | null
+          shotgun_event_id?: string | null
           starts_at?: string
           status?: string
+          sympla_event_id?: string | null
           updated_at?: string
           venue?: string | null
           venue_share_pct?: number
@@ -1657,6 +1879,93 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "partners"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      ig_accounts: {
+        Row: {
+          channel: string
+          ig_user_id: string
+          username: string
+        }
+        Insert: {
+          channel: string
+          ig_user_id: string
+          username: string
+        }
+        Update: {
+          channel?: string
+          ig_user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      ig_media: {
+        Row: {
+          caption: string | null
+          channel: string
+          comments_count: number | null
+          editorial_item_id: string | null
+          first_seen_at: string
+          id: string
+          ig_user_id: string
+          kind: string
+          like_count: number | null
+          media_type: string | null
+          permalink: string | null
+          posted_at: string
+          product_type: string | null
+          raw: Json | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          channel: string
+          comments_count?: number | null
+          editorial_item_id?: string | null
+          first_seen_at?: string
+          id: string
+          ig_user_id: string
+          kind: string
+          like_count?: number | null
+          media_type?: string | null
+          permalink?: string | null
+          posted_at: string
+          product_type?: string | null
+          raw?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          channel?: string
+          comments_count?: number | null
+          editorial_item_id?: string | null
+          first_seen_at?: string
+          id?: string
+          ig_user_id?: string
+          kind?: string
+          like_count?: number | null
+          media_type?: string | null
+          permalink?: string | null
+          posted_at?: string
+          product_type?: string | null
+          raw?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ig_media_editorial_item_id_fkey"
+            columns: ["editorial_item_id"]
+            isOneToOne: true
+            referencedRelation: "editorial_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ig_media_ig_user_id_fkey"
+            columns: ["ig_user_id"]
+            isOneToOne: false
+            referencedRelation: "ig_accounts"
+            referencedColumns: ["ig_user_id"]
           },
         ]
       }
@@ -2357,8 +2666,10 @@ export type Database = {
           id: string
           issue: string | null
           last_checked_at: string | null
+          meeting_point: string | null
           notes: string | null
           platform: string
+          prep_note: string | null
           rating: number | null
           reviews_count: number
           status: string
@@ -2374,8 +2685,10 @@ export type Database = {
           id?: string
           issue?: string | null
           last_checked_at?: string | null
+          meeting_point?: string | null
           notes?: string | null
           platform?: string
+          prep_note?: string | null
           rating?: number | null
           reviews_count?: number
           status?: string
@@ -2391,8 +2704,10 @@ export type Database = {
           id?: string
           issue?: string | null
           last_checked_at?: string | null
+          meeting_point?: string | null
           notes?: string | null
           platform?: string
+          prep_note?: string | null
           rating?: number | null
           reviews_count?: number
           status?: string
@@ -2431,6 +2746,7 @@ export type Database = {
           next_action_at: string | null
           notes: string | null
           phone: string | null
+          ref_code: string | null
           source: string
           status: string
           submitted_at: string | null
@@ -2459,6 +2775,7 @@ export type Database = {
           next_action_at?: string | null
           notes?: string | null
           phone?: string | null
+          ref_code?: string | null
           source?: string
           status?: string
           submitted_at?: string | null
@@ -2487,6 +2804,7 @@ export type Database = {
           next_action_at?: string | null
           notes?: string | null
           phone?: string | null
+          ref_code?: string | null
           source?: string
           status?: string
           submitted_at?: string | null
@@ -2552,6 +2870,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
             referencedColumns: ["id"]
           },
           {
@@ -2626,6 +2951,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_seen_at: string | null
+          short_name: string | null
           status: Database["public"]["Enums"]["account_status"]
           updated_at: string
         }
@@ -2637,6 +2963,7 @@ export type Database = {
           id: string
           is_active?: boolean
           last_seen_at?: string | null
+          short_name?: string | null
           status?: Database["public"]["Enums"]["account_status"]
           updated_at?: string
         }
@@ -2648,6 +2975,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_seen_at?: string | null
+          short_name?: string | null
           status?: Database["public"]["Enums"]["account_status"]
           updated_at?: string
         }
@@ -3473,6 +3801,107 @@ export type Database = {
         }
         Relationships: []
       }
+      team_briefs: {
+        Row: {
+          content: string
+          created_at: string | null
+          day: string
+          person: string
+          sent_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          day: string
+          person: string
+          sent_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          day?: string
+          person?: string
+          sent_at?: string | null
+        }
+        Relationships: []
+      }
+      team_requests: {
+        Row: {
+          answer: string | null
+          created_at: string
+          details: string | null
+          event_id: string | null
+          handled_at: string | null
+          id: string
+          needed_by: string | null
+          pole: string | null
+          requested_by: string
+          requester_name: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string
+          details?: string | null
+          event_id?: string | null
+          handled_at?: string | null
+          id?: string
+          needed_by?: string | null
+          pole?: string | null
+          requested_by: string
+          requester_name?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string
+          details?: string | null
+          event_id?: string | null
+          handled_at?: string | null
+          id?: string
+          needed_by?: string | null
+          pole?: string | null
+          requested_by?: string
+          requester_name?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_requests_pole_fkey"
+            columns: ["pole"]
+            isOneToOne: false
+            referencedRelation: "content_poles"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "team_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_offer_variants: {
         Row: {
           capacity: number | null
@@ -3631,6 +4060,170 @@ export type Database = {
         }
         Relationships: []
       }
+      ticket_sales: {
+        Row: {
+          channel: string
+          currency: string | null
+          event_id: string
+          external_id: string
+          lot: string | null
+          order_id: string | null
+          price: number | null
+          promo_code: string | null
+          raw: Json | null
+          sold_at: string | null
+          status: string | null
+          synced_at: string
+          utm_source: string | null
+        }
+        Insert: {
+          channel: string
+          currency?: string | null
+          event_id: string
+          external_id: string
+          lot?: string | null
+          order_id?: string | null
+          price?: number | null
+          promo_code?: string | null
+          raw?: Json | null
+          sold_at?: string | null
+          status?: string | null
+          synced_at?: string
+          utm_source?: string | null
+        }
+        Update: {
+          channel?: string
+          currency?: string | null
+          event_id?: string
+          external_id?: string
+          lot?: string | null
+          order_id?: string | null
+          price?: number | null
+          promo_code?: string | null
+          raw?: Json | null
+          sold_at?: string | null
+          status?: string | null
+          synced_at?: string
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_sync_requests: {
+        Row: {
+          channel: string
+          created_at: string
+          error: string | null
+          event_id: string
+          id: number
+          kind: string
+          processed_at: string | null
+          request_id: number
+          status_code: number | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          error?: string | null
+          event_id: string
+          id?: number
+          kind: string
+          processed_at?: string | null
+          request_id: number
+          status_code?: number | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error?: string | null
+          event_id?: string
+          id?: number
+          kind?: string
+          processed_at?: string | null
+          request_id?: number
+          status_code?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sync_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_sync_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_accommodations: {
+        Row: {
+          address: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          neighborhood: string | null
+          notes: string | null
+          position: number
+          start_date: string | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          neighborhood?: string | null
+          notes?: string | null
+          position?: number
+          start_date?: string | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          neighborhood?: string | null
+          notes?: string | null
+          position?: number
+          start_date?: string | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_accommodations_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_activities: {
         Row: {
           activity_type: string
@@ -3771,6 +4364,62 @@ export type Database = {
           },
         ]
       }
+      trip_logistics: {
+        Row: {
+          arrival_airport: string | null
+          arrival_date: string | null
+          arrival_flight: string | null
+          arrival_time: string | null
+          departure_airport: string | null
+          departure_date: string | null
+          departure_flight: string | null
+          departure_time: string | null
+          sim_discount: boolean
+          sim_operator: string | null
+          sim_plan: string | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          arrival_airport?: string | null
+          arrival_date?: string | null
+          arrival_flight?: string | null
+          arrival_time?: string | null
+          departure_airport?: string | null
+          departure_date?: string | null
+          departure_flight?: string | null
+          departure_time?: string | null
+          sim_discount?: boolean
+          sim_operator?: string | null
+          sim_plan?: string | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          arrival_airport?: string | null
+          arrival_date?: string | null
+          arrival_flight?: string | null
+          arrival_time?: string | null
+          departure_airport?: string | null
+          departure_date?: string | null
+          departure_flight?: string | null
+          departure_time?: string | null
+          sim_discount?: boolean
+          sim_operator?: string | null
+          sim_plan?: string | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_logistics_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: true
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_number_sequences: {
         Row: {
           next_number: number
@@ -3788,6 +4437,71 @@ export type Database = {
           year?: number
         }
         Relationships: []
+      }
+      trip_settings: {
+        Row: {
+          id: number
+          trip_creation_mode: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          trip_creation_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          trip_creation_mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trip_transfers: {
+        Row: {
+          created_at: string
+          id: string
+          included: boolean
+          notes: string | null
+          position: number
+          provider: string | null
+          route: string
+          transfer_date: string | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          included?: boolean
+          notes?: string | null
+          position?: number
+          provider?: string | null
+          route: string
+          transfer_date?: string | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          included?: boolean
+          notes?: string | null
+          position?: number
+          provider?: string | null
+          route?: string
+          transfer_date?: string | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_transfers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trip_travelers: {
         Row: {
@@ -3990,6 +4704,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_poles: {
+        Row: {
+          created_at: string
+          pole: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          pole: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          pole?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_poles_pole_fkey"
+            columns: ["pole"]
+            isOneToOne: false
+            referencedRelation: "content_poles"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "user_poles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -4016,6 +4763,7 @@ export type Database = {
           category: string
           content: string
           created_at: string
+          done_token: string
           error: string | null
           id: string
           includes_manual_link: boolean
@@ -4039,6 +4787,7 @@ export type Database = {
           category?: string
           content: string
           created_at?: string
+          done_token?: string
           error?: string | null
           id?: string
           includes_manual_link?: boolean
@@ -4062,6 +4811,7 @@ export type Database = {
           category?: string
           content?: string
           created_at?: string
+          done_token?: string
           error?: string | null
           id?: string
           includes_manual_link?: boolean
@@ -4187,9 +4937,180 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      cm_agent_notes: {
+        Row: {
+          agent: string | null
+          created_at: string | null
+          id: string | null
+          summary: string | null
+        }
+        Insert: {
+          agent?: string | null
+          created_at?: string | null
+          id?: string | null
+          summary?: string | null
+        }
+        Update: {
+          agent?: string | null
+          created_at?: string | null
+          id?: string | null
+          summary?: string | null
+        }
+        Relationships: []
+      }
+      cm_event_sales_daily: {
+        Row: {
+          channel: string | null
+          day: string | null
+          event_id: string | null
+          tickets: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cm_event_tracking: {
+        Row: {
+          event_id: string | null
+          label: string | null
+          last_sale: string | null
+          tickets: number | null
+          url: string | null
+          utm_source: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tracking_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tracking_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cm_events: {
+        Row: {
+          capacity: number | null
+          currency: string | null
+          door_price: number | null
+          edition: string | null
+          ends_at: string | null
+          id: string | null
+          name: string | null
+          neighborhood: string | null
+          presale_target: number | null
+          starts_at: string | null
+          status: string | null
+          venue: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          currency?: string | null
+          door_price?: number | null
+          edition?: string | null
+          ends_at?: string | null
+          id?: string | null
+          name?: string | null
+          neighborhood?: string | null
+          presale_target?: number | null
+          starts_at?: string | null
+          status?: string | null
+          venue?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          currency?: string | null
+          door_price?: number | null
+          edition?: string | null
+          ends_at?: string | null
+          id?: string | null
+          name?: string | null
+          neighborhood?: string | null
+          presale_target?: number | null
+          starts_at?: string | null
+          status?: string | null
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      event_tracking_stats: {
+        Row: {
+          event_id: string | null
+          label: string | null
+          last_sale: string | null
+          partner_id: string | null
+          tickets: number | null
+          url: string | null
+          utm_source: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tracking_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "cm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tracking_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tracking_links_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_task_recipients: {
+        Row: {
+          client_id: string | null
+          email: string | null
+          instagram: string | null
+          phone: string | null
+          prospect_id: string | null
+          recipient_name: string | null
+          recipient_type: string | null
+          task_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      ask_rafael: {
+        Args: {
+          p_details?: string
+          p_event_id?: string
+          p_needed_by?: string
+          p_subject: string
+        }
+        Returns: string
+      }
       audience_breakdown: {
         Args: never
         Returns: {
@@ -4198,10 +5119,27 @@ export type Database = {
           value: string
         }[]
       }
+      blog_topic_choose: { Args: { p_token: string }; Returns: string }
       can_edit_content: { Args: { _user_id: string }; Returns: boolean }
       can_manage: { Args: { _user_id: string }; Returns: boolean }
       can_review_content: { Args: { _user_id: string }; Returns: boolean }
       capture_public_lead: { Args: { p_payload: Json }; Returns: string }
+      cm_brief_text: {
+        Args: { _day: string; _user_id: string }
+        Returns: string
+      }
+      cm_channels: { Args: { _user_id: string }; Returns: string[] }
+      cm_has_pole: {
+        Args: { _pole: string; _user_id: string }
+        Returns: boolean
+      }
+      cm_people_for_channel: {
+        Args: { _channel: string }
+        Returns: {
+          person: string
+          user_id: string
+        }[]
+      }
       convert_accepted_quote_to_trip: {
         Args: { p_quote_id: string }
         Returns: string
@@ -4214,6 +5152,8 @@ export type Database = {
         Args: { p_quote_id: string }
         Returns: string
       }
+      editorial_item_done: { Args: { p_token: string }; Returns: string }
+      ensure_tracking_links: { Args: { p_event: string }; Returns: number }
       get_current_hub_user: { Args: never; Returns: Json }
       get_hub_user_by_auth_uid: { Args: { _user_id: string }; Returns: Json }
       has_role: {
@@ -4223,14 +5163,78 @@ export type Database = {
         }
         Returns: boolean
       }
+      ig_daily_report: { Args: never; Returns: undefined }
+      ig_ingest: { Args: { p_account: string; p_items: Json }; Returns: Json }
+      ig_kind: {
+        Args: { p_media_type: string; p_product: string }
+        Returns: string
+      }
+      ig_match: { Args: { p_media_id: string }; Returns: string }
+      ig_words: { Args: { t: string }; Returns: string[] }
       is_account_active: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_cm: { Args: { _user_id: string }; Returns: boolean }
+      lili_brief_text: {
+        Args: { d?: string; with_kits?: boolean }
+        Returns: string
+      }
+      morning_brief_text: { Args: never; Returns: string }
+      my_guide_trips: {
+        Args: never
+        Returns: {
+          client_first_name: string
+          end_date: string
+          id: string
+          itinerary: Json
+          notes: string
+          party_size: number
+          reference: string
+          start_date: string
+          status: string
+          title: string
+        }[]
+      }
+      my_short_name: { Args: never; Returns: string }
       next_invoice_number: { Args: never; Returns: string }
       next_quote_number: { Args: never; Returns: string }
       next_trip_reference: { Args: { p_year?: number }; Returns: string }
       notify_rafael: { Args: { msg: string }; Returns: number }
+      notify_whatsapp: {
+        Args: { msg: string; person: string }
+        Returns: number
+      }
+      person_key: { Args: { _user_id: string }; Returns: string }
+      push_editorial_reminders: { Args: never; Returns: number }
       push_next_whatsapp_post: { Args: never; Returns: string }
+      quote_refresh_paid_status: {
+        Args: { p_quote_id: string }
+        Returns: undefined
+      }
+      send_cm_briefs: { Args: never; Returns: string }
+      send_daily_brief: { Args: never; Returns: string }
+      send_lili_brief: { Args: never; Returns: string }
+      set_sale_commission_paid: {
+        Args: { p_paid: boolean; p_sale_id: string }
+        Returns: string
+      }
+      slugify: { Args: { t: string }; Returns: string }
       submit_partner_application: { Args: { p: Json }; Returns: string }
+      ticketing_eur_brl: { Args: never; Returns: number }
+      ticketing_fire: {
+        Args: {
+          p_channel: string
+          p_event: string
+          p_kind: string
+          p_url: string
+        }
+        Returns: undefined
+      }
+      ticketing_process: {
+        Args: { r: Database["public"]["Tables"]["ticket_sync_requests"]["Row"] }
+        Returns: undefined
+      }
+      ticketing_snapshot: { Args: { p_event: string }; Returns: undefined }
+      ticketing_sync: { Args: never; Returns: undefined }
       urlencode: { Args: { t: string }; Returns: string }
       whatsapp_apply_action: {
         Args: {
@@ -4256,6 +5260,7 @@ export type Database = {
         Returns: string
       }
       whatsapp_next_due_post: { Args: { p_meteo?: string }; Returns: Json }
+      whatsapp_post_done: { Args: { p_token: string }; Returns: string }
       whatsapp_research_context: { Args: never; Returns: Json }
       whatsapp_save_day_plan: {
         Args: { p_raw: string; p_section_id?: string }

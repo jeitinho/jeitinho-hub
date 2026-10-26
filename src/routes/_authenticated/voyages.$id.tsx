@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   Plus,
@@ -23,13 +24,18 @@ import {
   Trash2,
   Save,
   X,
+  Sparkles,
+  Compass,
+  Luggage,
 } from "lucide-react";
 import { toast } from "sonner";
 import { TripExperiencePicker } from "@/components/trips/experience-picker-v2";
 import { TripServicePicker } from "@/components/trips/service-picker";
 import { TripTicketPicker } from "@/components/trips/ticket-picker";
 import { TripActivityEditor } from "@/components/trips/activity-editor";
+import { TripLogisticsTab } from "@/components/trips/trip-logistics-tab";
 import { PaymentsBlock } from "@/components/payments/payments-block";
+import { attachMatchedActivities } from "@/lib/trips/create-trip-from-prospect";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,6 +110,7 @@ function TripDetail() {
     notes: "",
   });
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [matchingActivities, setMatchingActivities] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["trip", id],
@@ -127,7 +134,7 @@ function TripDetail() {
         ? (
             await supabase
               .from("clients")
-              .select("id,full_name,email,phone")
+              .select("id,full_name,email,phone,created_at")
               .eq("id", trip.client_id)
               .maybeSingle()
           ).data
@@ -153,6 +160,30 @@ function TripDetail() {
               .maybeSingle()
           ).data ?? null)
         : null;
+      const sourceProspect = trip.source_prospect_id
+        ? ((
+            await supabase
+              .from("prospects")
+              .select("id,activities")
+              .eq("id", trip.source_prospect_id)
+              .maybeSingle()
+          ).data ?? null)
+        : null;
+      const clientNumber = trip.client_id
+        ? ((
+            await supabase
+              .from("clients")
+              .select("id", { count: "exact", head: true })
+              .lte("created_at", client?.created_at ?? new Date().toISOString())
+          ).count ?? null)
+        : null;
+      const guides = (await supabase.from("user_roles").select("user_id").eq("role", "guide"))
+        .data as { user_id: string }[] | null;
+      const guideIds = (guides ?? []).map((g) => g.user_id);
+      const guideProfiles = guideIds.length
+        ? ((await supabase.from("profiles").select("id,full_name,email").in("id", guideIds)).data ??
+          [])
+        : [];
       return {
         trip,
         travelers,
@@ -162,6 +193,9 @@ function TripDetail() {
         })),
         client,
         sourceQuote,
+        sourceProspect,
+        clientNumber,
+        guides: guideProfiles as { id: string; full_name: string | null; email: string }[],
       };
     },
   });
@@ -181,8 +215,32 @@ function TripDetail() {
       </PageShell>
     );
 
-  const { trip, travelers, activities, client, sourceQuote } = data;
+  const { trip, travelers, activities, client, sourceQuote, sourceProspect, clientNumber, guides } =
+    data;
+  const guide = guides.find((g) => g.id === trip.guide_id) ?? null;
+  const canMatchActivities =
+    !!sourceProspect && (sourceProspect.activities?.length ?? 0) > 0 && activities.length === 0;
   const refresh = () => qc.invalidateQueries({ queryKey: ["trip", id] });
+  const matchActivities = async () => {
+    if (!sourceProspect) return;
+    setMatchingActivities(true);
+    try {
+      const n = await attachMatchedActivities(
+        id,
+        trip.party_size,
+        sourceProspect.activities ?? [],
+        trip.currency ?? "EUR",
+      );
+      if (n === 0) toast.info("Aucune activité du catalogue ne correspond à la demande.");
+      else
+        toast.success(`${n} prestation${n > 1 ? "s" : ""} posée${n > 1 ? "s" : ""} « à placer ».`);
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Impossible d'associer les activités.");
+    } finally {
+      setMatchingActivities(false);
+    }
+  };
   const totalSale = activities.reduce((s, a) => s + Number(a.sale_price || 0), 0);
   const totalCost = activities.reduce((s, a) => s + Number(a.supplier_cost || 0), 0);
   const totalCommission = activities.reduce((s, a) => s + Number(a.commission_amount || 0), 0);
@@ -289,6 +347,7 @@ function TripDetail() {
     const end = String(fd.get("end_date") ?? "") || null;
     const rawStatus = String(fd.get("status") ?? trip.status);
     const status = isTripStatus(rawStatus) ? rawStatus : trip.status;
+    const rawGuideId = String(fd.get("guide_id") ?? "");
     if (!title) return void toast.error("Le titre est obligatoire.");
     if (start && end && end < start)
       return void toast.error("La date de fin doit être après le début.");
@@ -301,6 +360,7 @@ function TripDetail() {
         currency: String(fd.get("currency") ?? "EUR").toUpperCase(),
         party_size: fd.get("party_size") ? Number(fd.get("party_size")) : null,
         status,
+        guide_id: rawGuideId || null,
         notes: String(fd.get("notes") ?? "").trim() || null,
       })
       .eq("id", id);
@@ -373,6 +433,21 @@ function TripDetail() {
                 ))}
               </select>
             </div>
+            <div className="space-y-2">
+              <Label>Accompagnateur</Label>
+              <select
+                name="guide_id"
+                defaultValue={trip.guide_id ?? ""}
+                className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+              >
+                <option value="">Aucun</option>
+                {guides.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.full_name ?? g.email}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="space-y-2 md:col-span-2">
               <Label>Notes</Label>
               <Textarea name="notes" defaultValue={trip.notes ?? ""} />
@@ -386,340 +461,393 @@ function TripDetail() {
           </form>
         </Card>
       )}
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-6">
-          <Card className="p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-primary" />
-                <h2 className="font-semibold">Programme opérationnel</h2>
-              </div>
-              <div className="flex gap-1">
-                <Badge variant="outline">{experiences.length} expériences</Badge>
-                <Badge variant="outline">{services.length} services</Badge>
-                <Badge variant="outline">{tickets.length} billets</Badge>
-              </div>
-            </div>
-            {!activities.length ? (
-              <p className="text-sm text-muted-foreground">
-                Aucune prestation. Ajoute une expérience, un service ou un billet.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {activities.map((activity) => (
-                  <div key={activity.id} className="rounded-lg border p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{activity.title}</p>
-                          <Badge variant="outline">{activity.activity_type}</Badge>
-                        </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {fmt(activity.scheduled_start)}
-                          {activity.partner
-                            ? ` · ${activity.partner.name}`
-                            : " · Prestataire à définir"}
-                        </p>
-                      </div>
-                      <Badge>{activityStatusLabel(activity.status)}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-3 text-xs sm:grid-cols-4">
-                      <div>
-                        <p className="text-muted-foreground">Vente</p>
-                        <p className="font-medium">
-                          {fmtAmount(activity.sale_price, activity.currency)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Coût</p>
-                        <p className="font-medium">
-                          {fmtAmount(activity.supplier_cost, activity.currency)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Commission</p>
-                        <p className="font-medium">
-                          {fmtAmount(activity.commission_amount, activity.currency)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Marge</p>
-                        <p className="font-medium">
-                          {fmtAmount(activity.margin_amount, activity.currency)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {ACTIVITY_STATUSES.map((s) => (
-                        <Button
-                          key={s.value}
-                          size="sm"
-                          variant={activity.status === s.value ? "default" : "outline"}
-                          onClick={() => updateActivityStatus(activity.id, s.value)}
-                        >
-                          {s.label}
-                        </Button>
-                      ))}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          setEditingActivity(editingActivity === activity.id ? null : activity.id)
-                        }
-                      >
-                        <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                        Modifier
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => deleteActivity(activity.id)}
-                      >
-                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                        Supprimer
-                      </Button>
-                    </div>
-                    {editingActivity === activity.id && (
-                      <div className="mt-4">
-                        <TripActivityEditor
-                          tripId={id}
-                          initial={activity as any}
-                          onSaved={() => {
-                            setEditingActivity(null);
-                            refresh();
-                          }}
-                          onCancel={() => setEditingActivity(null)}
-                        />
-                      </div>
-                    )}
+      <Tabs defaultValue="infos" className="mt-6">
+        <TabsList>
+          <TabsTrigger value="infos">
+            <Compass className="mr-1.5 h-3.5 w-3.5" />
+            Infos
+          </TabsTrigger>
+          <TabsTrigger value="logistique">
+            <Luggage className="mr-1.5 h-3.5 w-3.5" />
+            Logistique
+          </TabsTrigger>
+          <TabsTrigger value="programme">
+            <ClipboardList className="mr-1.5 h-3.5 w-3.5" />
+            Programme
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="programme" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+            <div className="space-y-6">
+              <Card className="p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4 text-primary" />
+                    <h2 className="font-semibold">Programme opérationnel</h2>
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Plus className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold">Ajouter une expérience</h2>
-            </div>
-            <TripExperiencePicker tripId={id} onAdded={refresh} />
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold">Ajouter un service</h2>
-            </div>
-            <TripServicePicker tripId={id} onAdded={refresh} />
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Ticket className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold">Ajouter un billet</h2>
-            </div>
-            <TripTicketPicker tripId={id} onAdded={refresh} />
-          </Card>
-        </div>
-        <div className="space-y-6">
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold">Client & voyageurs</h2>
-            </div>
-            <div className="rounded-lg bg-muted/40 p-3">
-              <p className="font-medium">{client?.full_name ?? "Client non renseigné"}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {client?.phone ?? client?.email ?? "Coordonnées à renseigner"}
-              </p>
-            </div>
-            <div className="mt-4 space-y-3">
-              {travelers.map((traveler) =>
-                editingTraveler === traveler.id ? (
-                  <div
-                    key={traveler.id}
-                    className="space-y-2 rounded-lg border border-primary/30 p-3"
-                  >
-                    <Input
-                      placeholder="Nom"
-                      value={travelerDraft.full_name}
-                      onChange={(e) =>
-                        setTravelerDraft({ ...travelerDraft, full_name: e.target.value })
-                      }
-                    />
-                    <Input
-                      placeholder="Rôle"
-                      value={travelerDraft.role}
-                      onChange={(e) => setTravelerDraft({ ...travelerDraft, role: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Téléphone"
-                      value={travelerDraft.phone}
-                      onChange={(e) =>
-                        setTravelerDraft({ ...travelerDraft, phone: e.target.value })
-                      }
-                    />
-                    <Input
-                      placeholder="E-mail"
-                      type="email"
-                      value={travelerDraft.email}
-                      onChange={(e) =>
-                        setTravelerDraft({ ...travelerDraft, email: e.target.value })
-                      }
-                    />
-                    <Textarea
-                      placeholder="Notes"
-                      value={travelerDraft.notes}
-                      onChange={(e) =>
-                        setTravelerDraft({ ...travelerDraft, notes: e.target.value })
-                      }
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => saveTraveler(traveler.id)}>
-                        <Save className="mr-1.5 h-3.5 w-3.5" />
-                        Enregistrer
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingTraveler(null)}>
-                        Annuler
-                      </Button>
-                    </div>
+                  <div className="flex gap-1">
+                    <Badge variant="outline">{experiences.length} expériences</Badge>
+                    <Badge variant="outline">{services.length} services</Badge>
+                    <Badge variant="outline">{tickets.length} billets</Badge>
                   </div>
+                </div>
+                {!activities.length ? (
+                  <p className="text-sm text-muted-foreground">
+                    Aucune prestation. Ajoute une expérience, un service ou un billet.
+                  </p>
                 ) : (
-                  <div key={traveler.id} className="rounded-lg border p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-medium">{traveler.full_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {traveler.role}
-                          {traveler.phone ? ` · ${traveler.phone}` : ""}
-                          {traveler.email ? ` · ${traveler.email}` : ""}
-                        </p>
+                  <div className="space-y-3">
+                    {activities.map((activity) => (
+                      <div key={activity.id} className="rounded-lg border p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{activity.title}</p>
+                              <Badge variant="outline">{activity.activity_type}</Badge>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {fmt(activity.scheduled_start)}
+                              {activity.partner
+                                ? ` · ${activity.partner.name}`
+                                : " · Prestataire à définir"}
+                            </p>
+                          </div>
+                          <Badge>{activityStatusLabel(activity.status)}</Badge>
+                        </div>
+                        <div className="mt-3 grid gap-3 text-xs sm:grid-cols-4">
+                          <div>
+                            <p className="text-muted-foreground">Vente</p>
+                            <p className="font-medium">
+                              {fmtAmount(activity.sale_price, activity.currency)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Coût</p>
+                            <p className="font-medium">
+                              {fmtAmount(activity.supplier_cost, activity.currency)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Commission</p>
+                            <p className="font-medium">
+                              {fmtAmount(activity.commission_amount, activity.currency)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Marge</p>
+                            <p className="font-medium">
+                              {fmtAmount(activity.margin_amount, activity.currency)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {ACTIVITY_STATUSES.map((s) => (
+                            <Button
+                              key={s.value}
+                              size="sm"
+                              variant={activity.status === s.value ? "default" : "outline"}
+                              onClick={() => updateActivityStatus(activity.id, s.value)}
+                            >
+                              {s.label}
+                            </Button>
+                          ))}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setEditingActivity(
+                                editingActivity === activity.id ? null : activity.id,
+                              )
+                            }
+                          >
+                            <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                            Modifier
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => deleteActivity(activity.id)}
+                          >
+                            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                            Supprimer
+                          </Button>
+                        </div>
+                        {editingActivity === activity.id && (
+                          <div className="mt-4">
+                            <TripActivityEditor
+                              tripId={id}
+                              initial={activity as any}
+                              onSaved={() => {
+                                setEditingActivity(null);
+                                refresh();
+                              }}
+                              onCancel={() => setEditingActivity(null)}
+                            />
+                          </div>
+                        )}
                       </div>
-                      <div className="flex shrink-0 gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7"
-                          aria-label="Modifier ce voyageur"
-                          title="Modifier"
-                          onClick={() => startEditTraveler(traveler)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          aria-label="Retirer ce voyageur"
-                          title="Retirer"
-                          onClick={() => deleteTraveler(traveler.id, traveler.full_name)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    {traveler.notes && (
-                      <p className="mt-2 text-xs text-muted-foreground">{traveler.notes}</p>
-                    )}
+                    ))}
                   </div>
-                ),
-              )}
+                )}
+              </Card>
+              <Card className="p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <Plus className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold">Ajouter une expérience</h2>
+                </div>
+                <TripExperiencePicker tripId={id} onAdded={refresh} />
+              </Card>
+              <Card className="p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <Wrench className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold">Ajouter un service</h2>
+                </div>
+                <TripServicePicker tripId={id} onAdded={refresh} />
+              </Card>
+              <Card className="p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <Ticket className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold">Ajouter un billet</h2>
+                </div>
+                <TripTicketPicker tripId={id} onAdded={refresh} />
+              </Card>
             </div>
-            <div className="mt-5 space-y-3 border-t pt-4">
-              <Label>Ajouter un voyageur</Label>
-              <Input
-                placeholder="Nom"
-                value={travelerName}
-                onChange={(e) => setTravelerName(e.target.value)}
-              />
-              <Input
-                placeholder="Rôle"
-                value={travelerRole}
-                onChange={(e) => setTravelerRole(e.target.value)}
-              />
-              <Input
-                placeholder="Téléphone"
-                value={travelerPhone}
-                onChange={(e) => setTravelerPhone(e.target.value)}
-              />
-              <Textarea
-                placeholder="Notes"
-                value={travelerNotes}
-                onChange={(e) => setTravelerNotes(e.target.value)}
-              />
-              <Button onClick={addTraveler}>
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter
+          </div>
+        </TabsContent>
+
+        <TabsContent value="infos" className="mt-6 space-y-6">
+          {canMatchActivities && (
+            <Card className="flex flex-wrap items-center justify-between gap-3 border-primary/20 bg-primary/5 p-4">
+              <p className="text-sm">
+                Des activités ont été demandées mais pas encore associées à ce voyage.
+              </p>
+              <Button size="sm" onClick={matchActivities} disabled={matchingActivities}>
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                {matchingActivities ? "Association…" : "Associer les activités demandées"}
               </Button>
+            </Card>
+          )}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-6">
+              <Card className="p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold">Client & voyageurs</h2>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-3">
+                  <p className="font-medium">{client?.full_name ?? "Client non renseigné"}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {client?.phone ?? client?.email ?? "Coordonnées à renseigner"}
+                    {clientNumber ? ` · Client n°${clientNumber}` : ""}
+                  </p>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {travelers.map((traveler) =>
+                    editingTraveler === traveler.id ? (
+                      <div
+                        key={traveler.id}
+                        className="space-y-2 rounded-lg border border-primary/30 p-3"
+                      >
+                        <Input
+                          placeholder="Nom"
+                          value={travelerDraft.full_name}
+                          onChange={(e) =>
+                            setTravelerDraft({ ...travelerDraft, full_name: e.target.value })
+                          }
+                        />
+                        <Input
+                          placeholder="Rôle"
+                          value={travelerDraft.role}
+                          onChange={(e) =>
+                            setTravelerDraft({ ...travelerDraft, role: e.target.value })
+                          }
+                        />
+                        <Input
+                          placeholder="Téléphone"
+                          value={travelerDraft.phone}
+                          onChange={(e) =>
+                            setTravelerDraft({ ...travelerDraft, phone: e.target.value })
+                          }
+                        />
+                        <Input
+                          placeholder="E-mail"
+                          type="email"
+                          value={travelerDraft.email}
+                          onChange={(e) =>
+                            setTravelerDraft({ ...travelerDraft, email: e.target.value })
+                          }
+                        />
+                        <Textarea
+                          placeholder="Notes"
+                          value={travelerDraft.notes}
+                          onChange={(e) =>
+                            setTravelerDraft({ ...travelerDraft, notes: e.target.value })
+                          }
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => saveTraveler(traveler.id)}>
+                            <Save className="mr-1.5 h-3.5 w-3.5" />
+                            Enregistrer
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setEditingTraveler(null)}
+                          >
+                            Annuler
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={traveler.id} className="rounded-lg border p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="font-medium">{traveler.full_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {traveler.role}
+                              {traveler.phone ? ` · ${traveler.phone}` : ""}
+                              {traveler.email ? ` · ${traveler.email}` : ""}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              aria-label="Modifier ce voyageur"
+                              title="Modifier"
+                              onClick={() => startEditTraveler(traveler)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              aria-label="Retirer ce voyageur"
+                              title="Retirer"
+                              onClick={() => deleteTraveler(traveler.id, traveler.full_name)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                        {traveler.notes && (
+                          <p className="mt-2 text-xs text-muted-foreground">{traveler.notes}</p>
+                        )}
+                      </div>
+                    ),
+                  )}
+                </div>
+                <div className="mt-5 space-y-3 border-t pt-4">
+                  <Label>Ajouter un voyageur</Label>
+                  <Input
+                    placeholder="Nom"
+                    value={travelerName}
+                    onChange={(e) => setTravelerName(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Rôle"
+                    value={travelerRole}
+                    onChange={(e) => setTravelerRole(e.target.value)}
+                  />
+                  <Input
+                    placeholder="Téléphone"
+                    value={travelerPhone}
+                    onChange={(e) => setTravelerPhone(e.target.value)}
+                  />
+                  <Textarea
+                    placeholder="Notes"
+                    value={travelerNotes}
+                    onChange={(e) => setTravelerNotes(e.target.value)}
+                  />
+                  <Button onClick={addTraveler}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Ajouter
+                  </Button>
+                </div>
+              </Card>
+              <Card className="p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <Wallet className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold">État du voyage</h2>
+                </div>
+                <p className="text-sm">
+                  Statut : <Badge className="ml-1">{tripStatusLabel(trip.status)}</Badge>
+                </p>
+                <p className="mt-3 text-sm">
+                  Accompagnateur :{" "}
+                  <span className={guide ? "font-medium" : "text-muted-foreground"}>
+                    {guide ? (guide.full_name ?? guide.email) : "Non assigné"}
+                  </span>
+                </p>
+                <p className="mt-3 text-sm">
+                  Devis d'origine :{" "}
+                  {sourceQuote ? (
+                    <Link
+                      to="/devis/$id"
+                      params={{ id: sourceQuote.id }}
+                      className="text-primary hover:underline"
+                    >
+                      {sourceQuote.number ?? sourceQuote.reference} ·{" "}
+                      {quoteStatusLabel(sourceQuote.status)}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">aucun (voyage créé à la main)</span>
+                  )}
+                </p>
+                {trip.status !== "cancelled" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-4 text-destructive hover:text-destructive"
+                    onClick={() => setConfirmCancel(true)}
+                  >
+                    <X className="mr-1.5 h-3.5 w-3.5" />
+                    Annuler le voyage
+                  </Button>
+                )}
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Le voyage est la couche opérationnelle : client, voyageurs, prestations,
+                  prestataires, coûts, commissions et marge.
+                </p>
+              </Card>
+              <PaymentsBlock
+                tripId={id}
+                quoteId={trip.quote_id}
+                clientId={trip.client_id}
+                currency={sourceQuote?.currency ?? trip.currency ?? "EUR"}
+                total={
+                  sourceQuote
+                    ? Number(sourceQuote.total_amount ?? 0)
+                    : Number(trip.quoted_amount) || totalSale
+                }
+                totalLabel={sourceQuote ? "Total du devis" : "Prix du voyage"}
+                invalidateKeys={[["trip", id], ["trips"]]}
+              />
+              <Card className="border-primary/10 bg-primary/5 p-5">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  <p className="font-medium">Workflow JEITINHO</p>
+                </div>
+                <ol className="mt-3 space-y-2 text-xs text-muted-foreground">
+                  <li>1. Lead → prospect → client</li>
+                  <li>2. Devis → accepté</li>
+                  <li>3. Créer le voyage</li>
+                  <li>4. Ajouter expérience + prestataire</li>
+                  <li>5. Ajouter services / billets</li>
+                  <li>6. Planifier → informer → réaliser</li>
+                </ol>
+              </Card>
             </div>
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-primary" />
-              <h2 className="font-semibold">État du voyage</h2>
-            </div>
-            <p className="text-sm">
-              Statut : <Badge className="ml-1">{tripStatusLabel(trip.status)}</Badge>
-            </p>
-            <p className="mt-3 text-sm">
-              Devis d'origine :{" "}
-              {sourceQuote ? (
-                <Link
-                  to="/devis/$id"
-                  params={{ id: sourceQuote.id }}
-                  className="text-primary hover:underline"
-                >
-                  {sourceQuote.number ?? sourceQuote.reference} ·{" "}
-                  {quoteStatusLabel(sourceQuote.status)}
-                </Link>
-              ) : (
-                <span className="text-muted-foreground">aucun (voyage créé à la main)</span>
-              )}
-            </p>
-            {trip.status !== "cancelled" && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-4 text-destructive hover:text-destructive"
-                onClick={() => setConfirmCancel(true)}
-              >
-                <X className="mr-1.5 h-3.5 w-3.5" />
-                Annuler le voyage
-              </Button>
-            )}
-            <p className="mt-3 text-xs text-muted-foreground">
-              Le voyage est la couche opérationnelle : client, voyageurs, prestations, prestataires,
-              coûts, commissions et marge.
-            </p>
-          </Card>
-          <PaymentsBlock
-            tripId={id}
-            quoteId={trip.quote_id}
-            clientId={trip.client_id}
-            currency={sourceQuote?.currency ?? trip.currency ?? "EUR"}
-            total={
-              sourceQuote
-                ? Number(sourceQuote.total_amount ?? 0)
-                : Number(trip.quoted_amount) || totalSale
-            }
-            totalLabel={sourceQuote ? "Total du devis" : "Prix du voyage"}
-            invalidateKeys={[["trip", id], ["trips"]]}
-          />
-          <Card className="border-primary/10 bg-primary/5 p-5">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <p className="font-medium">Workflow JEITINHO</p>
-            </div>
-            <ol className="mt-3 space-y-2 text-xs text-muted-foreground">
-              <li>1. Lead → prospect → client</li>
-              <li>2. Devis → accepté</li>
-              <li>3. Créer le voyage</li>
-              <li>4. Ajouter expérience + prestataire</li>
-              <li>5. Ajouter services / billets</li>
-              <li>6. Planifier → informer → réaliser</li>
-            </ol>
-          </Card>
-        </div>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="logistique" className="mt-6">
+          <TripLogisticsTab tripId={id} />
+        </TabsContent>
+      </Tabs>
       <AlertDialog open={confirmCancel} onOpenChange={setConfirmCancel}>
         <AlertDialogContent>
           <AlertDialogHeader>

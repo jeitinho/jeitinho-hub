@@ -28,8 +28,10 @@ import {
   StagePill,
   TemperatureBadge,
 } from "./shared";
+import { CreateTripButton } from "./create-trip-button";
 import { useDemandeActions } from "./use-demande-actions";
 import { DeleteDemandeButton, DemandeEditForm } from "./demande-edit";
+import { useTripCreationMode } from "@/lib/trips/settings";
 
 export function DemandeSheet({
   demande,
@@ -89,6 +91,7 @@ function DemandeDetail({
   onClose: () => void;
 }) {
   const { moveTo, qualify, convert, remove, busy } = useDemandeActions();
+  const { mode: tripCreationMode } = useTripCreationMode();
   const pending = busy === d.key;
   const range = fmtTravelRange(d.travelStart, d.travelEnd);
   const [editing, setEditing] = useState(false);
@@ -122,7 +125,12 @@ function DemandeDetail({
       <div className="flex flex-wrap gap-2">
         <ContactButtons demande={d} />
         {d.kind === "prospect" ? (
-          !closed && <CreateQuoteButton prospectId={d.id} className="text-xs" />
+          !closed && (
+            <>
+              {tripCreationMode === "manual" && <CreateTripButton demande={d} />}
+              <CreateQuoteButton prospectId={d.id} className="text-xs" />
+            </>
+          )
         ) : (
           <Button
             size="sm"

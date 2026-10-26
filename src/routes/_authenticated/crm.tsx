@@ -5,6 +5,7 @@ import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FollowupsPanel } from "@/components/crm/followups-panel";
+import { TripCreationModeToggle } from "@/components/crm/trip-creation-mode-toggle";
 import { DemandesBoard } from "@/components/demandes/demandes-board";
 
 export const Route = createFileRoute("/_authenticated/crm")({
@@ -36,12 +37,15 @@ function CrmPage() {
       title="CRM"
       description="Chaque demande (site jeitinho.fr ou saisie manuelle) suit un seul pipeline, de la première réponse au devis."
       actions={
-        <Button asChild className="btn-primary">
-          <Link to="/crm/leads/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle demande
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <TripCreationModeToggle />
+          <Button asChild className="btn-primary">
+            <Link to="/crm/leads/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouvelle demande
+            </Link>
+          </Button>
+        </div>
       }
     >
       <Tabs value={tab} onValueChange={(v) => setTab(v as CrmTab)}>
