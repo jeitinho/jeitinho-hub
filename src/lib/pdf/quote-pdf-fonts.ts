@@ -5,6 +5,10 @@ import { Font } from "@react-pdf/renderer";
 // families as static, predictably-named files — no hash lookup needed.
 const FONTSOURCE = "https://cdn.jsdelivr.net/fontsource/fonts";
 
+/** Font stacks for PDF styles: the brand family first, Cyrillic fallback second. */
+export const PDF_SANS = ["Inter", "InterCyrillic"];
+export const PDF_SERIF = ["Fraunces", "InterCyrillic"];
+
 let registered = false;
 
 export function registerQuotePdfFonts() {
@@ -27,6 +31,19 @@ export function registerQuotePdfFonts() {
       { src: `${FONTSOURCE}/inter@latest/latin-500-normal.ttf`, fontWeight: 500 },
       { src: `${FONTSOURCE}/inter@latest/latin-600-normal.ttf`, fontWeight: 600 },
       { src: `${FONTSOURCE}/inter@latest/latin-700-normal.ttf`, fontWeight: 700 },
+    ],
+  });
+
+  // Fraunces and the Inter files above are Latin-only. Russian PDFs need Cyrillic
+  // glyphs: PDF_SANS / PDF_SERIF list this family as a fallback, used only for
+  // characters the first family lacks, so Latin-script documents are unchanged.
+  Font.register({
+    family: "InterCyrillic",
+    fonts: [
+      { src: `${FONTSOURCE}/inter@latest/cyrillic-400-normal.ttf`, fontWeight: 400 },
+      { src: `${FONTSOURCE}/inter@latest/cyrillic-500-normal.ttf`, fontWeight: 500 },
+      { src: `${FONTSOURCE}/inter@latest/cyrillic-600-normal.ttf`, fontWeight: 600 },
+      { src: `${FONTSOURCE}/inter@latest/cyrillic-700-normal.ttf`, fontWeight: 700 },
     ],
   });
 

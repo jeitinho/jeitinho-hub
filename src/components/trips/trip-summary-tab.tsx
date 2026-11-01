@@ -13,15 +13,14 @@ import { formatMoney, quoteStatusLabel } from "@/lib/quotes/status";
 import { activityStatusLabel } from "@/lib/trips/status";
 import { fetchPayments, paymentBalance, PAYMENT_RATES } from "@/lib/ops/payments";
 import { downloadPlanningPdf } from "@/lib/trips/download-planning-pdf";
+import { normalizePdfLanguage, PDF_LANGUAGES, PLANNING_I18N, type PdfLanguage } from "@/lib/pdf/pdf-i18n";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   generateOrUpdateQuoteFromTrip,
   hasPlanningChangedSince,
 } from "@/lib/trips/generate-quote-from-trip";
 import { SLOTS, type PlanningActivity } from "@/components/trips/trip-planning-tab";
 
-const WEEKDAY = (iso: string) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "short" }).toUpperCase();
-const SLOT_LABEL: Record<string, string> = Object.fromEntries(SLOTS.map((s) => [s.key, s.label]));
 
 function fmtDay(iso: string | null): string {
   if (!iso) return "—";
@@ -85,7 +84,7 @@ export function TripSummaryTab({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("quotes")
-        .select("id,number,reference,status,planning_synced_at")
+        .select("id,number,reference,status,planning_synced_at,language")
         .eq("id", quoteId!)
         .maybeSingle();
       if (error) throw new Error(error.message);
@@ -116,15 +115,19 @@ export function TripSummaryTab({
     }
   };
 
-  const [pdfTitle, setPdfTitle] = useState(() => {
-    if (startDate && endDate) {
-      const days = Math.round(
-        (new Date(endDate).getTime() - new Date(startDate).getTime()) / 86_400_000 + 1,
-      );
-      return days >= 6 && days <= 8 ? "Une semaine à Rio" : "Votre séjour à Rio";
-    }
-    return "Votre séjour à Rio";
-  });
+  // Langue du PDF planning : celle du devis lié par défaut, modifiable avant export.
+  const [pdfLanguage, setPdfLanguage] = useState<PdfLanguage | null>(null);
+  const planningLanguage: PdfLanguage = pdfLanguage ?? normalizePdfLanguage(linkedQuote?.language);
+  const isWeekLong = (() => {
+    if (!startDate || !endDate) return false;
+    const days = Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86_400_000 + 1);
+    return days >= 6 && days <= 8;
+  })();
+  const defaultPdfTitle = (lang: PdfLanguage) =>
+    isWeekLong ? PLANNING_I18N[lang].defaultTitleWeek : PLANNING_I18N[lang].defaultTitleStay;
+  // null = titre par défaut, qui suit la langue choisie ; une saisie le fige.
+  const [customPdfTitle, setCustomPdfTitle] = useState<string | null>(null);
+  const pdfTitle = customPdfTitle ?? defaultPdfTitle(planningLanguage);
   const [printStart, setPrintStart] = useState(startDate ?? "");
   const [printEnd, setPrintEnd] = useState(endDate ?? "");
 
@@ -138,14 +141,14 @@ export function TripSummaryTab({
             SLOTS.findIndex((s) => s.key === x.slot) - SLOTS.findIndex((s) => s.key === y.slot),
         )
         .map((a) => ({
-          slotLabel: SLOT_LABEL[a.slot ?? ""] ?? "",
+          slot: a.slot ?? null,
           title: a.title,
           displayTime: a.display_time,
           category: a.category,
           isOffered: a.is_offered,
           kind: a.kind,
         }));
-      return { date, weekdayLabel: WEEKDAY(date), lines };
+      return { date, lines };
     });
     const nightEntries = activities
       .filter(
@@ -160,6 +163,7 @@ export function TripSummaryTab({
       .map((a) => ({ date: a.day as string, title: a.title }));
     try {
       await downloadPlanningPdf({
+        language: planningLanguage,
         clientName,
         periodStart: printStart,
         periodEnd: printEnd,
@@ -290,10 +294,23 @@ export function TripSummaryTab({
           Document sans prix, à partager avec le client. Pré-planning adaptable (encadré météo
           inclus automatiquement).
         </p>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-4">
+          <div className="space-y-1.5">
+            <Label>Langue</Label>
+            <Select value={planningLanguage} onValueChange={(v) => setPdfLanguage(v as PdfLanguage)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PDF_LANGUAGES.map((l) => (
+                  <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1.5 sm:col-span-1">
             <Label>Titre</Label>
-            <Input value={pdfTitle} onChange={(e) => setPdfTitle(e.target.value)} />
+            <Input value={pdfTitle} onChange={(e) => setCustomPdfTitle(e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label>Du</Label>

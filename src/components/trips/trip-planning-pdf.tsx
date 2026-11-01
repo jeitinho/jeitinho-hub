@@ -4,20 +4,24 @@
  * Aucun prix n'apparaît sur ce document — c'est un planning, pas un devis.
  */
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
+import { PDF_SANS, PDF_SERIF, registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
+import { normalizePdfLanguage, PLANNING_I18N, pdfDayMonth, pdfWeekday } from "@/lib/pdf/pdf-i18n";
 
 registerQuotePdfFonts();
 
 export type PlanningPdfLine = {
-  slotLabel: string;
+  /** Créneau (matin, midi, apres_midi, soir, nuit) — libellé traduit dans le PDF. */
+  slot: string | null;
   title: string;
   displayTime: string | null;
   category: string | null;
   isOffered: boolean;
   kind: string;
 };
-export type PlanningPdfDay = { date: string; weekdayLabel: string; lines: PlanningPdfLine[] };
+export type PlanningPdfDay = { date: string; lines: PlanningPdfLine[] };
 export type PlanningPdfData = {
+  /** "fr" | "en" | "pt" | "es" | "it" | "de" | "ru" — repli sur le français. */
+  language?: string | null;
   clientName: string;
   periodStart: string | null;
   periodEnd: string | null;
@@ -51,7 +55,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 40,
     fontSize: 9,
     color: BRAND.ink,
-    fontFamily: "Inter",
+    fontFamily: PDF_SANS,
   },
   header: {
     flexDirection: "row",
@@ -59,12 +63,12 @@ const s = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 6,
   },
-  brand: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 18, letterSpacing: 1 },
+  brand: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 18, letterSpacing: 1 },
   brandSub: { fontSize: 7, letterSpacing: 2, color: BRAND.inkSoft, marginTop: 3 },
   clientBox: { alignItems: "flex-end" },
-  clientName: { fontFamily: "Inter", fontWeight: 700, fontSize: 11 },
+  clientName: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 11 },
   period: { fontSize: 8.5, color: BRAND.inkSoft, marginTop: 2 },
-  title: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 20, marginTop: 14, marginBottom: 10 },
+  title: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 20, marginTop: 14, marginBottom: 10 },
   weatherBox: {
     backgroundColor: BRAND.ink,
     borderRadius: 4,
@@ -87,7 +91,7 @@ const s = StyleSheet.create({
     marginBottom: 10,
   },
   dayHeader: {
-    fontFamily: "Inter",
+    fontFamily: PDF_SANS,
     fontWeight: 700,
     fontSize: 9,
     marginBottom: 6,
@@ -103,7 +107,7 @@ const s = StyleSheet.create({
     padding: 10,
   },
   nightTitle: {
-    fontFamily: "Inter",
+    fontFamily: PDF_SANS,
     fontWeight: 700,
     fontSize: 8,
     color: "#FFFFFF",
@@ -125,31 +129,23 @@ const s = StyleSheet.create({
   },
 });
 
-function frDate(iso: string): string {
-  const [, m, d] = iso.split("-");
-  return `${d}/${m}`;
-}
 
-/** « 17/11 au 28/11 » — jamais de « → », absent du subset latin d'Inter. */
-function periodLabel(start: string | null, end: string | null): string {
-  if (start && end) return `Du ${frDate(start)} au ${frDate(end)}`;
-  if (start) return `À partir du ${frDate(start)}`;
-  if (end) return `Jusqu'au ${frDate(end)}`;
-  return "";
-}
-
+// Dates « 17/11 » et jamais de « → » : la flèche est absente du subset latin d'Inter.
 export function TripPlanningPdf({ planning }: { planning: PlanningPdfData }) {
+  const lang = normalizePdfLanguage(planning.language);
+  const t = PLANNING_I18N[lang];
+  const dm = (iso: string | null) => (iso ? pdfDayMonth(iso, lang) : null);
   return (
-    <Document title={`Planning ${planning.clientName}`} author="JEITINHO">
+    <Document title={t.docTitle(planning.clientName)} author="JEITINHO">
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View>
             <Text style={s.brand}>JEITINHO</Text>
-            <Text style={s.brandSub}>PROGRAMME PRIVÉ · RIO DE JANEIRO</Text>
+            <Text style={s.brandSub}>{t.brandLine}</Text>
           </View>
           <View style={s.clientBox}>
             <Text style={s.clientName}>{planning.clientName}</Text>
-            <Text style={s.period}>{periodLabel(planning.periodStart, planning.periodEnd)}</Text>
+            <Text style={s.period}>{t.period(dm(planning.periodStart), dm(planning.periodEnd))}</Text>
           </View>
         </View>
 
@@ -157,27 +153,26 @@ export function TripPlanningPdf({ planning }: { planning: PlanningPdfData }) {
 
         <View style={s.weatherBox}>
           <Text style={s.weatherText}>
-            Pré-planning adaptable à tout moment. Les activités peuvent être modifiées ou inversées
-            selon la météo.
+            {t.weather}
           </Text>
         </View>
 
         <View style={s.legend}>
           <View style={s.legendItem}>
             <View style={[s.legendSwatch, { backgroundColor: CATEGORY_COLOR.activite }]} />
-            <Text style={s.legendLabel}>Activité / visite</Text>
+            <Text style={s.legendLabel}>{t.legendActivity}</Text>
           </View>
           <View style={s.legendItem}>
             <View style={[s.legendSwatch, { backgroundColor: CATEGORY_COLOR.deplacement }]} />
-            <Text style={s.legendLabel}>Déplacement</Text>
+            <Text style={s.legendLabel}>{t.legendTransfer}</Text>
           </View>
           <View style={s.legendItem}>
             <View style={[s.legendSwatch, { backgroundColor: CATEGORY_COLOR.soiree }]} />
-            <Text style={s.legendLabel}>Soirée</Text>
+            <Text style={s.legendLabel}>{t.legendEvening}</Text>
           </View>
           <View style={s.legendItem}>
             <View style={[s.legendSwatch, { backgroundColor: FREE_COLOR }]} />
-            <Text style={s.legendLabel}>Libre</Text>
+            <Text style={s.legendLabel}>{t.legendFree}</Text>
           </View>
         </View>
 
@@ -185,10 +180,10 @@ export function TripPlanningPdf({ planning }: { planning: PlanningPdfData }) {
           {planning.days.map((day) => (
             <View key={day.date} style={s.dayCard}>
               <Text style={s.dayHeader}>
-                {day.weekdayLabel} {frDate(day.date)}
+                {pdfWeekday(day.date, lang)} {dm(day.date)}
               </Text>
               {day.lines.length === 0 ? (
-                <Text style={{ fontSize: 7.5, color: BRAND.inkSoft }}>Journée libre</Text>
+                <Text style={{ fontSize: 7.5, color: BRAND.inkSoft }}>{t.freeDay}</Text>
               ) : (
                 day.lines.map((line, i) => {
                   const bg =
@@ -200,11 +195,11 @@ export function TripPlanningPdf({ planning }: { planning: PlanningPdfData }) {
                   return (
                     <View key={i} style={[s.slotRow, { backgroundColor: bg }]}>
                       <Text style={[s.slotLabel, { color: textColor }]}>
-                        {line.displayTime || line.slotLabel}
+                        {line.displayTime || (line.slot ? (t.slots[line.slot] ?? "") : "")}
                       </Text>
                       <Text style={[s.slotText, { color: textColor }]}>
                         {line.title}
-                        {line.isOffered ? " · Offert" : ""}
+                        {line.isOffered ? ` · ${t.offered}` : ""}
                       </Text>
                     </View>
                   );
@@ -216,10 +211,10 @@ export function TripPlanningPdf({ planning }: { planning: PlanningPdfData }) {
 
         {planning.nightEntries.length > 0 && (
           <View style={s.nightBand}>
-            <Text style={s.nightTitle}>NUIT · SORTIES</Text>
+            <Text style={s.nightTitle}>{t.nightTitle}</Text>
             {planning.nightEntries.map((n, i) => (
               <Text key={i} style={s.nightItem}>
-                {frDate(n.date)} — {n.title}
+                {dm(n.date)} — {n.title}
               </Text>
             ))}
           </View>

@@ -3,9 +3,9 @@
  * Rendu uniquement côté navigateur (import dynamique), jamais pendant le SSR.
  */
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
+import { PDF_SANS, PDF_SERIF, registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
 import { IconCheck, IconX, IconPackage } from "@/lib/pdf/quote-pdf-icons";
-import { normalizePdfLanguage, PDF_LOCALE_MAP, QUOTE_I18N } from "@/lib/pdf/pdf-i18n";
+import { normalizePdfLanguage, PDF_BRAND_LINE, PDF_LOCALE_MAP, pdfDate, QUOTE_I18N } from "@/lib/pdf/pdf-i18n";
 
 registerQuotePdfFonts();
 
@@ -30,7 +30,7 @@ export type QuotePdfData = {
   project_label?: string | null;
   location?: string | null;
   currency: string;
-  /** ISO 639-1 code: "fr" | "en" | "pt" | "es". Unrecognized/missing falls back to "fr". */
+  /** ISO 639-1 code: "fr" | "en" | "pt" | "es" | "it" | "de" | "ru". Unrecognized/missing falls back to "fr". */
   language?: string | null;
   period_start?: string | null;
   period_end?: string | null;
@@ -64,7 +64,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 44,
     fontSize: 9.5,
     color: BRAND.ink,
-    fontFamily: "Inter",
+    fontFamily: PDF_SANS,
   },
   header: {
     flexDirection: "row",
@@ -72,12 +72,12 @@ const s = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 28,
   },
-  brand: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 20, letterSpacing: 1 },
+  brand: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 20, letterSpacing: 1 },
   brandSub: { fontSize: 7, letterSpacing: 2, color: BRAND.inkSoft, marginTop: 3 },
   refBox: { alignItems: "flex-end" },
-  ref: { fontFamily: "Inter", fontWeight: 700, fontSize: 12, color: BRAND.terracotta },
+  ref: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 12, color: BRAND.terracotta },
   eyebrow: { fontSize: 7, letterSpacing: 2, color: BRAND.terracotta, marginBottom: 6 },
-  title: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 24, marginBottom: 6 },
+  title: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 24, marginBottom: 6 },
   subtitle: { fontSize: 9.5, color: BRAND.inkSoft, marginBottom: 12 },
   description: {
     fontSize: 9,
@@ -159,8 +159,8 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: BRAND.ink,
   },
-  grandLabel: { fontFamily: "Inter", fontWeight: 700, fontSize: 11 },
-  grandValue: { fontFamily: "Inter", fontWeight: 700, fontSize: 14, color: BRAND.terracotta },
+  grandLabel: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 11 },
+  grandValue: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 14, color: BRAND.terracotta },
   notes: {
     marginTop: 26,
     padding: 12,
@@ -187,11 +187,6 @@ function money(v: number, currency: string, locale: string) {
   return `${v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
-function frDate(v?: string | null) {
-  if (!v) return "—";
-  const [y, m, d] = v.split("-");
-  return `${d}/${m}/${y}`;
-}
 
 function safeStrings(v: unknown): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
@@ -224,12 +219,12 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
   const hasHighlights = included.length > 0 || excluded.length > 0;
 
   return (
-    <Document title={`Devis ${quote.number}`} author="JEITINHO">
+    <Document title={t.docTitle(quote.number)} author="JEITINHO">
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View>
             <Text style={s.brand}>JEITINHO</Text>
-            <Text style={s.brandSub}>RIO DE JANEIRO · CONCIERGERIE</Text>
+            <Text style={s.brandSub}>{PDF_BRAND_LINE[lang]}</Text>
           </View>
           <View style={s.refBox}>
             <Text style={s.label}>{t.quoteNumberLabel}</Text>
@@ -258,7 +253,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
           <View style={s.card}>
             <Text style={s.label}>{t.stayLabel}</Text>
             <Text style={s.value}>
-              {frDate(quote.period_start)} → {frDate(quote.period_end)}
+              {pdfDate(quote.period_start, lang)} – {pdfDate(quote.period_end, lang)}
             </Text>
             <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>
               {quote.party_size ? t.peopleCount(quote.party_size) : t.peopleTbd}
@@ -357,7 +352,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
               ) : null}
               {l.is_optional ? (
                 <Text style={{ fontSize: 7.5, color: BRAND.terracotta, marginTop: 2 }}>
-                  EN OPTION
+                  {t.optional}
                 </Text>
               ) : null}
             </View>
@@ -366,7 +361,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
               {l.is_offered ? "—" : money(l.unit_price, quote.currency, locale)}
             </Text>
             <Text style={s.cTotal}>
-              {l.is_offered ? "Offert" : money(l.quantity * l.unit_price, quote.currency, locale)}
+              {l.is_offered ? t.offered : money(l.quantity * l.unit_price, quote.currency, locale)}
             </Text>
           </View>
         ))}
@@ -378,7 +373,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
           </View>
           {perPerson != null && (
             <View style={s.totalRow}>
-              <Text style={{ color: BRAND.inkSoft }}>{t.totalLabel} / pers.</Text>
+              <Text style={{ color: BRAND.inkSoft }}>{t.totalLabel} {t.perPerson}</Text>
               <Text>{money(perPerson, quote.currency, locale)}</Text>
             </View>
           )}
@@ -397,7 +392,7 @@ export function QuotePdf({ quote }: { quote: QuotePdfData }) {
                 { borderTopWidth: 1, borderTopColor: BRAND.border, marginTop: 4, paddingTop: 8 },
               ]}
             >
-              <Text style={{ color: BRAND.inkSoft }}>Total avec options</Text>
+              <Text style={{ color: BRAND.inkSoft }}>{t.totalWithOptions}</Text>
               <Text>{money(totalWithOptions, quote.currency, locale)}</Text>
             </View>
           )}

@@ -2,8 +2,8 @@
  * Modèle PDF "Carolina" — facture JEITINHO. Rendu uniquement côté navigateur.
  */
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
-import { normalizePdfLanguage, PDF_LOCALE_MAP, INVOICE_I18N } from "@/lib/pdf/pdf-i18n";
+import { PDF_SANS, PDF_SERIF, registerQuotePdfFonts } from "@/lib/pdf/quote-pdf-fonts";
+import { normalizePdfLanguage, PDF_BRAND_LINE, PDF_LOCALE_MAP, pdfDate, INVOICE_I18N } from "@/lib/pdf/pdf-i18n";
 
 registerQuotePdfFonts();
 
@@ -14,7 +14,7 @@ export type InvoicePdfData = {
   title: string;
   status: string;
   currency: string;
-  /** ISO 639-1 code: "fr" | "en" | "pt" | "es". Unrecognized/missing falls back to "fr". */
+  /** ISO 639-1 code: "fr" | "en" | "pt" | "es" | "it" | "de" | "ru". Unrecognized/missing falls back to "fr". */
   language?: string | null;
   issueDate: string;
   dueDate?: string | null;
@@ -33,13 +33,13 @@ export type InvoicePdfData = {
 const BRAND = { terracotta: "#B15D36", cream: "#F6F2E9", ink: "#221E1A", inkSoft: "#6B625A", border: "#E0D8C9" };
 
 const s = StyleSheet.create({
-  page: { backgroundColor: BRAND.cream, paddingTop: 48, paddingBottom: 56, paddingHorizontal: 44, fontSize: 9.5, color: BRAND.ink, fontFamily: "Inter" },
+  page: { backgroundColor: BRAND.cream, paddingTop: 48, paddingBottom: 56, paddingHorizontal: 44, fontSize: 9.5, color: BRAND.ink, fontFamily: PDF_SANS },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 },
-  brand: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 20, letterSpacing: 1 },
+  brand: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 20, letterSpacing: 1 },
   brandSub: { fontSize: 7, letterSpacing: 2, color: BRAND.inkSoft, marginTop: 3 },
   refBox: { alignItems: "flex-end" },
-  ref: { fontFamily: "Inter", fontWeight: 700, fontSize: 12, color: BRAND.terracotta },
-  title: { fontFamily: "Fraunces", fontWeight: 600, fontSize: 24, marginBottom: 20 },
+  ref: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 12, color: BRAND.terracotta },
+  title: { fontFamily: PDF_SERIF, fontWeight: 600, fontSize: 24, marginBottom: 20 },
   cols: { flexDirection: "row", gap: 18, marginBottom: 24 },
   card: { flex: 1, backgroundColor: "#FFFFFF", borderRadius: 4, padding: 12, borderWidth: 1, borderColor: BRAND.border },
   label: { fontSize: 7, letterSpacing: 1.5, color: BRAND.inkSoft, marginBottom: 5 },
@@ -53,19 +53,14 @@ const s = StyleSheet.create({
   th: { fontSize: 7, letterSpacing: 1.2, color: BRAND.inkSoft },
   totals: { marginTop: 16, alignSelf: "flex-end", width: 220 },
   grand: { flexDirection: "row", justifyContent: "space-between", marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: BRAND.ink },
-  grandLabel: { fontFamily: "Inter", fontWeight: 700, fontSize: 11 },
-  grandValue: { fontFamily: "Inter", fontWeight: 700, fontSize: 14, color: BRAND.terracotta },
+  grandLabel: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 11 },
+  grandValue: { fontFamily: PDF_SANS, fontWeight: 700, fontSize: 14, color: BRAND.terracotta },
   notes: { marginTop: 26, padding: 12, backgroundColor: "#FFFFFF", borderRadius: 4, borderLeftWidth: 3, borderLeftColor: BRAND.terracotta },
   footer: { position: "absolute", bottom: 24, left: 44, right: 44, borderTopWidth: 1, borderTopColor: BRAND.border, paddingTop: 8, fontSize: 7, color: BRAND.inkSoft, textAlign: "center" },
 });
 
 function money(v: number, currency: string, locale: string) {
   return `${v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
-}
-function frDate(v?: string | null) {
-  if (!v) return "—";
-  const [y, m, d] = v.split("-");
-  return `${d}/${m}/${y}`;
 }
 
 export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
@@ -74,12 +69,12 @@ export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
   const locale = PDF_LOCALE_MAP[lang];
   const total = invoice.lines.reduce((acc, l) => acc + l.quantity * l.unit_price, 0);
   return (
-    <Document title={`Facture ${invoice.number}`} author="JEITINHO">
+    <Document title={t.docTitle(invoice.number)} author="JEITINHO">
       <Page size="A4" style={s.page}>
         <View style={s.header}>
           <View>
             <Text style={s.brand}>JEITINHO</Text>
-            <Text style={s.brandSub}>RIO DE JANEIRO · CONCIERGERIE</Text>
+            <Text style={s.brandSub}>{PDF_BRAND_LINE[lang]}</Text>
           </View>
           <View style={s.refBox}>
             <Text style={s.label}>{t.invoiceNumberLabel}</Text>
@@ -99,8 +94,8 @@ export function InvoicePdf({ invoice }: { invoice: InvoicePdfData }) {
           </View>
           <View style={s.card}>
             <Text style={s.label}>{t.datesLabel}</Text>
-            <Text style={s.value}>{t.issuedOn(frDate(invoice.issueDate))}</Text>
-            <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{t.dueDate(frDate(invoice.dueDate))}</Text>
+            <Text style={s.value}>{t.issuedOn(pdfDate(invoice.issueDate, lang))}</Text>
+            <Text style={{ color: BRAND.inkSoft, marginTop: 3 }}>{t.dueDate(pdfDate(invoice.dueDate, lang))}</Text>
           </View>
         </View>
 

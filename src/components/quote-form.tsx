@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- typage historique du formulaire (lignes et devis lus en any) */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PDF_LANGUAGES } from "@/lib/pdf/pdf-i18n";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -919,10 +920,9 @@ export function QuoteForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fr">Français</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="pt">Português</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
+                  {PDF_LANGUAGES.map((l) => (
+                    <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
