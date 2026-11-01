@@ -3993,6 +3993,9 @@ export type Database = {
           description_en: string | null
           description_es: string | null
           description_pt: string | null
+          description_it: string | null
+          description_de: string | null
+          description_ru: string | null
           event_date: string | null
           event_time: string | null
           fixed_cost: number | null
@@ -4012,11 +4015,17 @@ export type Database = {
           title_en: string | null
           title_es: string | null
           title_pt: string | null
+          title_it: string | null
+          title_de: string | null
+          title_ru: string | null
           updated_at: string
           venue: string | null
           venue_en: string | null
           venue_es: string | null
           venue_pt: string | null
+          venue_it: string | null
+          venue_de: string | null
+          venue_ru: string | null
         }
         Insert: {
           category?: string | null
@@ -4029,6 +4038,9 @@ export type Database = {
           description_en?: string | null
           description_es?: string | null
           description_pt?: string | null
+          description_it?: string | null
+          description_de?: string | null
+          description_ru?: string | null
           event_date?: string | null
           event_time?: string | null
           fixed_cost?: number | null
@@ -4048,11 +4060,17 @@ export type Database = {
           title_en?: string | null
           title_es?: string | null
           title_pt?: string | null
+          title_it?: string | null
+          title_de?: string | null
+          title_ru?: string | null
           updated_at?: string
           venue?: string | null
           venue_en?: string | null
           venue_es?: string | null
           venue_pt?: string | null
+          venue_it?: string | null
+          venue_de?: string | null
+          venue_ru?: string | null
         }
         Update: {
           category?: string | null
@@ -4065,6 +4083,9 @@ export type Database = {
           description_en?: string | null
           description_es?: string | null
           description_pt?: string | null
+          description_it?: string | null
+          description_de?: string | null
+          description_ru?: string | null
           event_date?: string | null
           event_time?: string | null
           fixed_cost?: number | null
@@ -4084,11 +4105,17 @@ export type Database = {
           title_en?: string | null
           title_es?: string | null
           title_pt?: string | null
+          title_it?: string | null
+          title_de?: string | null
+          title_ru?: string | null
           updated_at?: string
           venue?: string | null
           venue_en?: string | null
           venue_es?: string | null
           venue_pt?: string | null
+          venue_it?: string | null
+          venue_de?: string | null
+          venue_ru?: string | null
         }
         Relationships: []
       }

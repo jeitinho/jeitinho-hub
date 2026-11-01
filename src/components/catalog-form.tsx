@@ -19,7 +19,7 @@ import { TicketPhotoUpload } from "@/components/ticket-photo-upload";
 import { convertFromEur } from "@/lib/currency";
 
 type Mode = "service" | "ticket";
-type TranslatedLocale = "en" | "es" | "pt";
+type TranslatedLocale = "en" | "es" | "pt" | "it" | "de" | "ru";
 type Values = {
   title: string;
   description: string;
@@ -45,12 +45,21 @@ type Values = {
   title_en: string;
   title_es: string;
   title_pt: string;
+  title_it: string;
+  title_de: string;
+  title_ru: string;
   description_en: string;
   description_es: string;
   description_pt: string;
+  description_it: string;
+  description_de: string;
+  description_ru: string;
   venue_en: string;
   venue_es: string;
   venue_pt: string;
+  venue_it: string;
+  venue_de: string;
+  venue_ru: string;
 };
 const emptyValues: Values = {
   title: "",
@@ -77,17 +86,29 @@ const emptyValues: Values = {
   title_en: "",
   title_es: "",
   title_pt: "",
+  title_it: "",
+  title_de: "",
+  title_ru: "",
   description_en: "",
   description_es: "",
   description_pt: "",
+  description_it: "",
+  description_de: "",
+  description_ru: "",
   venue_en: "",
   venue_es: "",
   venue_pt: "",
+  venue_it: "",
+  venue_de: "",
+  venue_ru: "",
 };
 const TRANSLATION_LOCALES: { value: TranslatedLocale; label: string }[] = [
   { value: "en", label: "English" },
   { value: "es", label: "Español" },
   { value: "pt", label: "Português" },
+  { value: "it", label: "Italiano" },
+  { value: "de", label: "Deutsch" },
+  { value: "ru", label: "Русский" },
 ];
 export const TICKET_CATEGORIES = [
   "Foot",
@@ -270,7 +291,7 @@ export function CatalogForm({
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Laissez vide pour afficher automatiquement le français sur jeitinho.fr.
+              Laissez vide : jeitinho.fr affichera la traduction anglaise (pour l'italien, l'allemand et le russe), sinon le français.
             </p>
             <div className="space-y-2">
               <Label>Titre</Label>
