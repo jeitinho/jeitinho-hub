@@ -17,6 +17,7 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AuthenticatedAValiderRouteImport } from './routes/_authenticated/a-valider'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAssociesRouteImport } from './routes/_authenticated/associes'
 import { Route as AuthenticatedAudienceRouteImport } from './routes/_authenticated/audience'
 import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
@@ -111,6 +112,11 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
 const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAssociesRoute = AuthenticatedAssociesRouteImport.update({
+  id: '/associes',
+  path: '/associes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAudienceRoute = AuthenticatedAudienceRouteImport.update({
@@ -417,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/a-valider': typeof AuthenticatedAValiderRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/associes': typeof AuthenticatedAssociesRoute
   '/audience': typeof AuthenticatedAudienceRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -482,6 +489,7 @@ export interface FileRoutesByTo {
   '/a-valider': typeof AuthenticatedAValiderRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/associes': typeof AuthenticatedAssociesRoute
   '/audience': typeof AuthenticatedAudienceRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -549,6 +557,7 @@ export interface FileRoutesById {
   '/_authenticated/a-valider': typeof AuthenticatedAValiderRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/associes': typeof AuthenticatedAssociesRoute
   '/_authenticated/audience': typeof AuthenticatedAudienceRoute
   '/_authenticated/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -616,6 +625,7 @@ export interface FileRouteTypes {
     | '/a-valider'
     | '/agents'
     | '/analytics'
+    | '/associes'
     | '/audience'
     | '/billetterie'
     | '/blog'
@@ -681,6 +691,7 @@ export interface FileRouteTypes {
     | '/a-valider'
     | '/agents'
     | '/analytics'
+    | '/associes'
     | '/audience'
     | '/billetterie'
     | '/blog'
@@ -747,6 +758,7 @@ export interface FileRouteTypes {
     | '/_authenticated/a-valider'
     | '/_authenticated/agents'
     | '/_authenticated/analytics'
+    | '/_authenticated/associes'
     | '/_authenticated/audience'
     | '/_authenticated/billetterie'
     | '/_authenticated/blog'
@@ -886,6 +898,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/associes': {
+      id: '/_authenticated/associes'
+      path: '/associes'
+      fullPath: '/associes'
+      preLoaderRoute: typeof AuthenticatedAssociesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/audience': {
@@ -1428,6 +1447,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAValiderRoute: typeof AuthenticatedAValiderRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedAssociesRoute: typeof AuthenticatedAssociesRoute
   AuthenticatedAudienceRoute: typeof AuthenticatedAudienceRoute
   AuthenticatedBilletterieRoute: typeof AuthenticatedBilletterieRouteWithChildren
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
@@ -1455,6 +1475,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAValiderRoute: AuthenticatedAValiderRoute,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedAssociesRoute: AuthenticatedAssociesRoute,
   AuthenticatedAudienceRoute: AuthenticatedAudienceRoute,
   AuthenticatedBilletterieRoute: AuthenticatedBilletterieRouteWithChildren,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,

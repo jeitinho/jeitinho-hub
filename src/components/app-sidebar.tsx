@@ -23,6 +23,7 @@ import {
   Store,
   Contact,
   Wallet,
+  Scale,
   Send,
   Images,
 } from "lucide-react";
@@ -104,6 +105,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
   {
     label: "Pilotage",
     items: [
+      { url: "/associes", icon: Scale, module: "associes" },
       { url: "/finances", icon: Wallet, module: "finances" },
       { url: "/agents", icon: Bot, module: "agents" },
     ],
@@ -114,12 +116,12 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { roles, user, canManage } = useAuth();
+  const { roles, user, canManage, canOperate } = useAuth();
   const kind = profileKind(roles);
   const { data: badges = {} } = useQuery({
     queryKey: ["sidebar-badges"],
     queryFn: fetchSidebarBadges,
-    enabled: canManage,
+    enabled: canOperate,
     refetchInterval: 120_000,
   });
 

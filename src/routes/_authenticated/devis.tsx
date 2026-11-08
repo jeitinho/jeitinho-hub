@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatTripRange } from "@/lib/trips/list-rules";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
@@ -130,9 +131,7 @@ function QuotesList() {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {q.client_name ?? "Client non renseigné"}
                   {q.party_size ? ` · ${q.party_size} pers.` : ""}
-                  {q.period_start
-                    ? ` · ${q.period_start}${q.period_end ? ` → ${q.period_end}` : ""}`
-                    : ""}
+                  {q.period_start ? ` · ${formatTripRange(q.period_start, q.period_end)}` : ""}
                 </p>
               </Link>
               <div className="flex items-center gap-3">
@@ -140,6 +139,18 @@ function QuotesList() {
                   {formatMoney(Number(q.total_amount ?? 0), q.currency)}
                 </span>
                 {q.status === "accepted" && <ConvertInlineButton quoteId={q.id} />}
+                {(q.status === "sent" || q.status === "draft") && (
+                  <Link to="/voyages/new" search={{ quote: q.id }}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title="Créer le voyage prérempli avec ce devis (dates, voyageurs, prestations)"
+                    >
+                      <ArrowRight className="mr-1 h-3.5 w-3.5" />
+                      Préparer le voyage
+                    </Button>
+                  </Link>
+                )}
               </div>
             </Card>
           ))}

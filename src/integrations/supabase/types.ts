@@ -2725,6 +2725,132 @@ export type Database = {
           },
         ]
       }
+      partner_ledger_entries: {
+        Row: {
+          apporteur_id: string | null
+          created_at: string
+          created_by: string | null
+          direct_cost: number
+          guide_id: string | null
+          guided_internally: boolean
+          id: string
+          label: string
+          notes: string | null
+          occurred_on: string
+          original_amount: number | null
+          original_currency: string | null
+          revenue: number
+          source_id: string | null
+          source_type: string
+          updated_at: string
+          vehicle_used: boolean
+        }
+        Insert: {
+          apporteur_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direct_cost?: number
+          guide_id?: string | null
+          guided_internally?: boolean
+          id?: string
+          label: string
+          notes?: string | null
+          occurred_on?: string
+          original_amount?: number | null
+          original_currency?: string | null
+          revenue?: number
+          source_id?: string | null
+          source_type?: string
+          updated_at?: string
+          vehicle_used?: boolean
+        }
+        Update: {
+          apporteur_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direct_cost?: number
+          guide_id?: string | null
+          guided_internally?: boolean
+          id?: string
+          label?: string
+          notes?: string | null
+          occurred_on?: string
+          original_amount?: number | null
+          original_currency?: string | null
+          revenue?: number
+          source_id?: string | null
+          source_type?: string
+          updated_at?: string
+          vehicle_used?: boolean
+        }
+        Relationships: []
+      }
+      partner_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      partner_settings: {
+        Row: {
+          apporteur_pct: number
+          currency: string
+          eur_brl: number
+          guide_pct: number
+          id: number
+          pro_labore: number
+          reserve_pct: number
+          tax_pct: number
+          updated_at: string
+          updated_by: string | null
+          vehicle_fee: number
+        }
+        Insert: {
+          apporteur_pct?: number
+          currency?: string
+          eur_brl?: number
+          guide_pct?: number
+          id?: number
+          pro_labore?: number
+          reserve_pct?: number
+          tax_pct?: number
+          updated_at?: string
+          updated_by?: string | null
+          vehicle_fee?: number
+        }
+        Update: {
+          apporteur_pct?: number
+          currency?: string
+          eur_brl?: number
+          guide_pct?: number
+          id?: number
+          pro_labore?: number
+          reserve_pct?: number
+          tax_pct?: number
+          updated_at?: string
+          updated_by?: string | null
+          vehicle_fee?: number
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           address: string | null
@@ -3990,11 +4116,11 @@ export type Database = {
           created_by: string | null
           currency: string
           description: string | null
+          description_de: string | null
           description_en: string | null
           description_es: string | null
-          description_pt: string | null
           description_it: string | null
-          description_de: string | null
+          description_pt: string | null
           description_ru: string | null
           event_date: string | null
           event_time: string | null
@@ -4012,19 +4138,19 @@ export type Database = {
           supplier_cost: number | null
           supplier_net: number | null
           title: string
+          title_de: string | null
           title_en: string | null
           title_es: string | null
-          title_pt: string | null
           title_it: string | null
-          title_de: string | null
+          title_pt: string | null
           title_ru: string | null
           updated_at: string
           venue: string | null
+          venue_de: string | null
           venue_en: string | null
           venue_es: string | null
-          venue_pt: string | null
           venue_it: string | null
-          venue_de: string | null
+          venue_pt: string | null
           venue_ru: string | null
         }
         Insert: {
@@ -4035,11 +4161,11 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string | null
+          description_de?: string | null
           description_en?: string | null
           description_es?: string | null
-          description_pt?: string | null
           description_it?: string | null
-          description_de?: string | null
+          description_pt?: string | null
           description_ru?: string | null
           event_date?: string | null
           event_time?: string | null
@@ -4057,19 +4183,19 @@ export type Database = {
           supplier_cost?: number | null
           supplier_net?: number | null
           title: string
+          title_de?: string | null
           title_en?: string | null
           title_es?: string | null
-          title_pt?: string | null
           title_it?: string | null
-          title_de?: string | null
+          title_pt?: string | null
           title_ru?: string | null
           updated_at?: string
           venue?: string | null
+          venue_de?: string | null
           venue_en?: string | null
           venue_es?: string | null
-          venue_pt?: string | null
           venue_it?: string | null
-          venue_de?: string | null
+          venue_pt?: string | null
           venue_ru?: string | null
         }
         Update: {
@@ -4080,11 +4206,11 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string | null
+          description_de?: string | null
           description_en?: string | null
           description_es?: string | null
-          description_pt?: string | null
           description_it?: string | null
-          description_de?: string | null
+          description_pt?: string | null
           description_ru?: string | null
           event_date?: string | null
           event_time?: string | null
@@ -4102,19 +4228,19 @@ export type Database = {
           supplier_cost?: number | null
           supplier_net?: number | null
           title?: string
+          title_de?: string | null
           title_en?: string | null
           title_es?: string | null
-          title_pt?: string | null
           title_it?: string | null
-          title_de?: string | null
+          title_pt?: string | null
           title_ru?: string | null
           updated_at?: string
           venue?: string | null
+          venue_de?: string | null
           venue_en?: string | null
           venue_es?: string | null
-          venue_pt?: string | null
           venue_it?: string | null
-          venue_de?: string | null
+          venue_pt?: string | null
           venue_ru?: string | null
         }
         Relationships: []
@@ -5202,6 +5328,7 @@ export type Database = {
       blog_topic_choose: { Args: { p_token: string }; Returns: string }
       can_edit_content: { Args: { _user_id: string }; Returns: boolean }
       can_manage: { Args: { _user_id: string }; Returns: boolean }
+      can_operate: { Args: { _user_id: string }; Returns: boolean }
       can_review_content: { Args: { _user_id: string }; Returns: boolean }
       capture_public_lead: { Args: { p_payload: Json }; Returns: string }
       cm_brief_text: {
@@ -5251,9 +5378,18 @@ export type Database = {
       }
       ig_match: { Args: { p_media_id: string }; Returns: string }
       ig_words: { Args: { t: string }; Returns: string[] }
+      import_quote_into_trip: {
+        Args: { p_quote_id: string; p_trip_id: string }
+        Returns: number
+      }
       is_account_active: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_associe: { Args: { _user_id: string }; Returns: boolean }
       is_cm: { Args: { _user_id: string }; Returns: boolean }
+      lead_dates_from_payload: {
+        Args: { p_raw: Json }
+        Returns: Record<string, unknown>
+      }
       lili_brief_text: {
         Args: { d?: string; with_kits?: boolean }
         Returns: string
@@ -5283,6 +5419,10 @@ export type Database = {
         Args: { msg: string; person: string }
         Returns: number
       }
+      partner_ledger_import_month: {
+        Args: { p_month: string }
+        Returns: number
+      }
       person_key: { Args: { _user_id: string }; Returns: string }
       push_editorial_reminders: { Args: never; Returns: number }
       push_next_whatsapp_post: { Args: never; Returns: string }
@@ -5290,6 +5430,7 @@ export type Database = {
         Args: { p_quote_id: string }
         Returns: undefined
       }
+      safe_date: { Args: { p: string }; Returns: string }
       send_cm_briefs: { Args: never; Returns: string }
       send_daily_brief: { Args: never; Returns: string }
       send_lili_brief: { Args: never; Returns: string }
@@ -5362,6 +5503,7 @@ export type Database = {
         | "redacteur_chef"
         | "auteur"
         | "community_manager"
+        | "associe"
       lead_status:
         | "new"
         | "contacted"
@@ -5527,6 +5669,7 @@ export const Constants = {
         "redacteur_chef",
         "auteur",
         "community_manager",
+        "associe",
       ],
       lead_status: [
         "new",

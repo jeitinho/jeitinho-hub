@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QuoteImportBanner } from "@/components/trips/quote-import-banner";
+import { countdownLabel, formatTripRange, todayRio } from "@/lib/trips/list-rules";
 import {
   ArrowLeft,
   Plus,
@@ -168,7 +170,7 @@ function TripDetail() {
         ? ((
             await supabase
               .from("prospects")
-              .select("id,activities")
+              .select("id,name,activities")
               .eq("id", trip.source_prospect_id)
               .maybeSingle()
           ).data ?? null)
@@ -378,7 +380,16 @@ function TripDetail() {
     <PageShell
       eyebrow="Conciergerie / Voyage"
       title={trip.title}
-      description={`${trip.reference} · ${client?.full_name ?? "Client non renseigné"}`}
+      description={[
+        trip.reference,
+        client?.full_name ??
+          (sourceProspect?.name ? `${sourceProspect.name} (demande)` : "Client non renseigné"),
+        formatTripRange(trip.start_date, trip.end_date),
+        trip.party_size ? `${trip.party_size} pers.` : null,
+        countdownLabel(trip, todayRio()),
+      ]
+        .filter(Boolean)
+        .join(" · ")}
       actions={
         <div className="flex gap-2">
           <Link to="/voyages">
@@ -400,6 +411,19 @@ function TripDetail() {
         <Money label="Commissions" value={totalCommission} currency={trip.currency} />
         <Money label="Marge" value={totalMargin} currency={trip.currency} highlight />
       </div>
+      <QuoteImportBanner
+        tripId={id}
+        clientId={trip.client_id ?? null}
+        prospectId={trip.source_prospect_id ?? null}
+        linkedQuoteId={trip.quote_id ?? null}
+        importedQuoteLineIds={activities
+          .map((a) => (a as { quote_line_id?: string | null }).quote_line_id)
+          .filter((x): x is string => !!x)}
+        onImported={() => {
+          refresh();
+          qc.invalidateQueries({ queryKey: ["trips"] });
+        }}
+      />
       {editingTrip && (
         <Card className="mt-6 border-primary/20 bg-primary/5 p-5">
           <form onSubmit={updateTrip} className="grid gap-4 md:grid-cols-2">
