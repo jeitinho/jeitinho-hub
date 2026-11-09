@@ -1,5 +1,10 @@
 /* Généré à partir des libellés français du hub — portugais (Brésil). Clé = texte français exact. */
 export const PT_DICT: Record<string, string> = {
+ "Choisis une heure.": "Escolha um horário.",
+ "Heure enregistrée": "Horário salvo",
+ "Changer l'heure": "Mudar o horário",
+ "Heure de la sortie": "Horário da saída",
+ "Heure de Rio.": "Horário do Rio.",
  "Active les notifications du hub.": "Ative as notificações do hub.",
  "personne": "pessoa",
  "Offre": "Oferta",

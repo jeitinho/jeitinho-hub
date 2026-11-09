@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AlertTriangle, MapPin, MessageCircle, Phone, UserPlus, Users, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
+import { TimeEditor } from "@/components/ops/time-editor";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -322,7 +323,16 @@ function DispatchPage() {
                         <span className="hidden md:block" />
                       )}
                       <div className="flex items-center gap-2 md:block">
-                        <p className="font-display text-[17px] leading-none tabular-nums">{displayTime(i.time_label)}</p>
+                        <TimeEditor
+                          source={i.source}
+                          id={i.source_id}
+                          index={i.item_index}
+                          day={i.day}
+                          label={i.time_label}
+                          canEdit={canOperate}
+                          onSaved={() => void qc.invalidateQueries({ queryKey: ["dispatch"] })}
+                          className="font-display text-[17px] leading-none tabular-nums"
+                        />
                         <span
                           className={`mt-1.5 inline-block rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${
                             SOURCE_TONE[i.source] ?? SOURCE_TONE.manuel
@@ -344,7 +354,7 @@ function DispatchPage() {
                         <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px] text-muted-foreground">
                           {i.pax != null && <span className="font-medium text-foreground/80">{i.pax} pers.</span>}
                           {i.client_name && <span>{i.client_name}</span>}
-                          {i.language && <span className="uppercase">{i.language}</span>}
+                          {i.language && <span className="capitalize">{i.language.toLowerCase()}</span>}
                           {i.ref && <span>{i.ref}</span>}
                           {!isConfirmed(i) && <span className="text-amber-700">{t("voyage en préparation")}</span>}
                           {clash.has(k) && (
