@@ -36,6 +36,8 @@ export type DemandeLead = {
   last_contact_at: string | null;
   request_type: string | null;
   campaign: string | null;
+  /** Budget déclaré dans le formulaire du site (« Plus de 3 000 € »…), tel quel. */
+  budget?: string | null;
 };
 
 export type DemandeProspect = {
@@ -381,6 +383,8 @@ export type Demande = {
   activities: string[];
   /** Message d'origine (le plus ancien non vide). */
   message: string | null;
+  /** Budget déclaré par le client (le plus récent), tel qu'il l'a choisi. */
+  budget: string | null;
   createdAt: string;
   lastActivityAt: string;
   clientId: string | null;
@@ -543,6 +547,12 @@ export function buildDemandes(
         ...newestFirst.flatMap((l) => l.activities ?? []),
       ]),
       message: firstValue([...leads.map((l) => l.message?.trim()), prospect?.message?.trim()]),
+      budget: firstValue(
+        [...leads]
+          .reverse()
+          .map((l) => l.budget?.trim())
+          .filter((b) => b && !/ne sais pas/i.test(b)),
+      ),
       createdAt,
       lastActivityAt,
       clientId: firstValue([prospect?.client_id, ...quotes.map((q) => q.client_id)]),
