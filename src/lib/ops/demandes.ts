@@ -41,7 +41,7 @@ export const DEMANDES_RELATED_KEYS = [
 const PROSPECT_SELECT =
   "id,status,source,name,email,phone,travel_start,travel_end,party_size,activities,message,notes,client_id,created_at,updated_at,last_contact_at";
 const LEAD_SELECT =
-  "id,source,status,name,email,phone,travel_start,travel_end,party_size,activities,message,prospect_id,received_at,processed_at,updated_at,last_contact_at,request_type,campaign";
+  "id,source,status,name,email,phone,travel_start,travel_end,party_size,activities,message,prospect_id,received_at,processed_at,updated_at,last_contact_at,request_type,campaign,budget:raw_payload->>budget";
 const QUOTE_SELECT =
   "id,number,reference,title,status,total_amount,currency,client_id,prospect_id,sent_at,accepted_at,paid_at,created_at";
 const TASK_SELECT =

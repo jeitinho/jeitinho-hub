@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CalendarDays, ClipboardCheck, FileText, UserCheck, Users, X } from "lucide-react";
+import { CalendarDays, ClipboardCheck, FileText, UserCheck, Users, Wallet, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ import { CreateTripButton } from "./create-trip-button";
 import { useDemandeActions } from "./use-demande-actions";
 import { useTripCreationMode } from "@/lib/trips/settings";
 
-const MAX_ACTIVITIES = 3;
+const MAX_ACTIVITIES = 2;
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 export function DemandeCard({
@@ -105,6 +105,12 @@ export function DemandeCard({
           <Users className="h-3 w-3 shrink-0" />
           {d.partySize ? `${d.partySize} pers.` : "Nb pers. inconnu"}
         </span>
+        {d.budget && (
+          <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
+            <Wallet className="h-3 w-3 shrink-0" />
+            {d.budget}
+          </span>
+        )}
       </div>
 
       {d.activities.length > 0 && (
@@ -184,7 +190,8 @@ export function DemandeCard({
         ) : (
           <Button
             size="sm"
-            className="h-8 min-w-0 flex-1 px-2.5 text-[11px]"
+            variant="outline"
+            className="h-8 min-w-0 flex-1 px-2.5 text-[12px]"
             disabled={busy === d.key || d.stage === "perdue"}
             onClick={async (e) => {
               e.stopPropagation();
