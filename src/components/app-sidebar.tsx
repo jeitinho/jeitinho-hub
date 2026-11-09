@@ -17,6 +17,7 @@ import {
   LogOut,
   Languages,
   ListChecks,
+  Waypoints,
   ClipboardCheck,
   Bot,
   PartyPopper,
@@ -46,7 +47,7 @@ import {
 import { JeitinhoLogo } from "./jeitinho-logo";
 import { useAuth, canAccessModule, displayName, profileKind } from "@/hooks/use-auth";
 import { NAV_LABELS, navLabel } from "@/lib/nav-labels";
-import { getLang, setLang, t } from "@/lib/i18n";
+import { HUB_LANGS, getLang, setLang, t } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
@@ -69,6 +70,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { url: "/a-valider", icon: ClipboardCheck, module: "a-valider" },
       { url: "/calendrier", icon: Calendar, module: "calendrier" },
       { url: "/manifest", icon: ListChecks, module: "manifest" },
+      { url: "/dispatch", icon: Waypoints, module: "dispatch" },
       { url: "/demandes", icon: Send, module: "demandes" },
     ],
   },
@@ -219,20 +221,35 @@ export function AppSidebar() {
             
           </div>
         )}
-        <button
-          onClick={() => setLang(getLang() === "pt" ? "fr" : "pt")}
-          className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        <div
+          data-no-translate
+          className={`mb-1 flex items-center gap-1 px-2 py-1 ${collapsed ? "flex-col" : ""}`}
           title={t("Langue de l'interface")}
         >
-          <Languages className="h-4 w-4" />
-          {!collapsed && <span>{getLang() === "pt" ? "Français" : "Português"}</span>}
-        </button>
+          <Languages className="mr-1 h-4 w-4 text-sidebar-foreground/50" />
+          {HUB_LANGS.map((l) => (
+            <button
+              key={l.value}
+              type="button"
+              onClick={() => l.value !== getLang() && setLang(l.value)}
+              aria-pressed={getLang() === l.value}
+              title={l.label}
+              className={`rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold transition-colors ${
+                getLang() === l.value
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+              }`}
+            >
+              {l.short}
+            </button>
+          ))}
+        </div>
         <button
           onClick={handleSignOut}
           className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>{getLang() === "pt" ? "Sair" : "Se déconnecter"}</span>}
+          {!collapsed && <span>{t("Se déconnecter")}</span>}
         </button>
       </SidebarFooter>
     </Sidebar>
