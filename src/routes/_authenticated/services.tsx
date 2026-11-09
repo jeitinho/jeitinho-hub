@@ -160,7 +160,7 @@ function ServicesList() {
             groups.map((group) => (
               <section key={group}>
                 <div className="mb-3 flex items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {group}
                   </span>
                   <div className="h-px flex-1 bg-border" />

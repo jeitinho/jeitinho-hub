@@ -137,7 +137,7 @@ function Section({
   return (
     <section className="border-t border-border/60 pt-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="tracked text-[10px] text-muted-foreground">{title}</h3>
+        <h3 className="tracked text-xs text-muted-foreground">{title}</h3>
         {action}
       </div>
       {children}
@@ -221,7 +221,7 @@ function PartnerForm({
           {isNewApplication(p) && <NewBadge />}
           <StatusPill status={p.status} />
           <KindPill kind={p.kind} />
-          {!p.is_active && <span className="text-[10px] text-muted-foreground">· inactif</span>}
+          {!p.is_active && <span className="text-[11px] text-muted-foreground">· inactif</span>}
         </div>
         <SheetTitle className="text-xl" style={{ fontFamily: "Fraunces, serif", fontWeight: 500 }}>
           {p.name}

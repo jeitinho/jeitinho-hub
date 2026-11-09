@@ -39,7 +39,7 @@ export function StatusPill({ status, className }: { status: PartnerStatus; class
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
         STATUS_TONE[status] ?? STATUS_TONE.a_contacter,
         className,
       )}
@@ -51,7 +51,7 @@ export function StatusPill({ status, className }: { status: PartnerStatus; class
 
 export function KindPill({ kind }: { kind: Partner["kind"] }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-border/70 px-2 py-0.5 text-[10px] text-muted-foreground">
+    <span className="inline-flex items-center rounded-full border border-border/70 px-2 py-0.5 text-[11px] text-muted-foreground">
       {KIND_LABEL[kind] ?? kind}
     </span>
   );
@@ -59,7 +59,7 @@ export function KindPill({ kind }: { kind: Partner["kind"] }) {
 
 export function NewBadge() {
   return (
-    <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+    <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
       Nouveau
     </span>
   );
@@ -101,7 +101,7 @@ export function StatusMenu({
           <div key={col.key}>
             {i > 0 && <DropdownMenuSeparator />}
             {col.statuses.length > 1 && (
-              <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <DropdownMenuLabel className="text-[11px] text-muted-foreground">
                 {col.label}
               </DropdownMenuLabel>
             )}

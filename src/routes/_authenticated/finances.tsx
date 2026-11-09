@@ -168,7 +168,7 @@ function FinancesPage() {
                     {r.label}
                   </ObjectLinkView>
                   {r.provisional && (
-                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] text-amber-700 dark:text-amber-300">
+                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[11px] text-amber-700 dark:text-amber-300">
                       provisoire
                     </span>
                   )}

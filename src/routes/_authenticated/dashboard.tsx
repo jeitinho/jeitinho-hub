@@ -230,7 +230,7 @@ function CockpitPage() {
 
           {/* 2. À traiter */}
           <section>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
               À traiter
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

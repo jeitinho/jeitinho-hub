@@ -120,7 +120,7 @@ export function BlogFeedList() {
                   <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     <span>{fmtPubDate(a.pubDate)}</span>
                     {a.categories.map((c) => (
-                      <Badge key={c} variant="outline" className="text-[10px]">
+                      <Badge key={c} variant="outline" className="text-[11px]">
                         {c}
                       </Badge>
                     ))}

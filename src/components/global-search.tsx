@@ -10,7 +10,9 @@ import {
   Palmtree,
   PartyPopper,
   Plane,
+  Plus,
   Search,
+  CornerDownLeft,
   UserRound,
 } from "lucide-react";
 import {
@@ -22,6 +24,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/hooks/use-auth";
+import { filterActions } from "@/lib/command-actions";
+import { t as tr } from "@/lib/i18n";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -43,7 +48,7 @@ type Hit = {
  * la liste ne re-filtre pas (shouldFilter={false}), sinon un e-mail ou un téléphone
  * trouvé en base disparaîtrait de l'affichage.
  */
-export function GlobalSearch() {
+export function GlobalSearch({ roles = [] }: { roles?: AppRole[] }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [term, setTerm] = useState("");
@@ -235,6 +240,12 @@ export function GlobalSearch() {
     },
   });
 
+  const actions = filterActions(q, roles).slice(0, q.trim() ? 6 : 12);
+  const runAction = (to: string) => {
+    setOpen(false);
+    setQ("");
+    void navigate({ to } as never);
+  };
   const hits = data?.hits ?? [];
   const failed = data?.failed ?? [];
   const groups = [...new Set(hits.map((h) => h.group))];
@@ -243,17 +254,17 @@ export function GlobalSearch() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex h-8 items-center gap-2 rounded-md border border-border/60 px-2.5 text-xs text-muted-foreground hover:bg-muted/40 sm:w-64"
+        className="flex h-8 items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-[13px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground sm:w-72"
       >
         <Search className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">Rechercher partout…</span>
-        <kbd className="ml-auto hidden rounded border border-border/60 px-1 text-[10px] sm:inline">
+        <span className="hidden sm:inline">{tr("Rechercher ou créer…")}</span>
+        <kbd className="ml-auto hidden rounded border border-border bg-card px-1.5 font-sans text-[11px] sm:inline">
           ⌘K
         </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
         <CommandInput
-          placeholder="Nom, e-mail, téléphone, devis, facture, réf. GYG…"
+          placeholder={tr("Chercher un client, un devis… ou taper une action (nouveau devis)")}
           value={q}
           onValueChange={setQ}
         />
@@ -264,13 +275,25 @@ export function GlobalSearch() {
               {failed.length > 1 ? "s" : ""} pour le moment.
             </p>
           )}
-          <CommandEmpty>
-            {term.length < 2
-              ? "Tape au moins 2 lettres."
-              : isFetching
-                ? "Recherche…"
-                : "Aucun résultat."}
-          </CommandEmpty>
+          {actions.length === 0 && (
+            <CommandEmpty>
+              {term.length < 2 ? "Tape au moins 2 lettres." : isFetching ? "Recherche…" : "Aucun résultat."}
+            </CommandEmpty>
+          )}
+          {actions.length > 0 && (
+            <CommandGroup heading={q.trim() ? tr("Actions") : tr("Aller vite")}>
+              {actions.map((a) => (
+                <CommandItem key={a.id} value={a.id} onSelect={() => runAction(a.to)}>
+                  {a.kind === "create" ? (
+                    <Plus className="mr-2 h-4 w-4 text-primary" />
+                  ) : (
+                    <CornerDownLeft className="mr-2 h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span>{tr(a.label)}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
           {groups.map((g) => (
             <CommandGroup key={g} heading={g}>
               {hits

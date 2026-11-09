@@ -169,7 +169,7 @@ export function CatalogForm({
     >
       <div className="space-y-6 lg:col-span-2">
         <Card className="space-y-5 border-border/60 p-6">
-          <p className="tracked text-[10px] text-muted-foreground">Informations</p>
+          <p className="tracked text-xs text-muted-foreground">Informations</p>
           <div className="space-y-2">
             <Label>Titre</Label>
             <Input required value={v.title} onChange={(e) => set("title", e.target.value)} />
@@ -276,7 +276,7 @@ export function CatalogForm({
         {mode === "ticket" && (
           <Card className="space-y-4 border-border/60 p-6">
             <div className="flex items-center justify-between">
-              <p className="tracked text-[10px] text-muted-foreground">Traductions (optionnel)</p>
+              <p className="tracked text-xs text-muted-foreground">Traductions (optionnel)</p>
               <div className="flex gap-1">
                 {TRANSLATION_LOCALES.map((l) => (
                   <button
@@ -321,7 +321,7 @@ export function CatalogForm({
           </Card>
         )}
         <Card className="space-y-5 border-border/60 p-6">
-          <p className="tracked text-[10px] text-muted-foreground">Économie</p>
+          <p className="tracked text-xs text-muted-foreground">Économie</p>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label>{mode === "ticket" ? "Prix public" : "Prix à partir de"}</Label>

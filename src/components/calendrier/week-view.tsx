@@ -64,7 +64,7 @@ export function WeekView({
               >
                 <span
                   className={cn(
-                    "tracked block text-[10px] uppercase text-muted-foreground",
+                    "tracked block text-[11px] text-muted-foreground",
                     d === today && "text-primary",
                   )}
                 >
@@ -137,7 +137,7 @@ export function WeekView({
                 <h3 className={cn("text-sm font-medium capitalize", d === today && "text-primary")}>
                   {longFmt.format(keyToUtcDate(d))}
                   {d === today && (
-                    <span className="ml-2 text-[10px] uppercase tracking-wide">Aujourd'hui</span>
+                    <span className="ml-2 text-[11px] ">Aujourd'hui</span>
                   )}
                 </h3>
                 <button

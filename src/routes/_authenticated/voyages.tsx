@@ -281,7 +281,7 @@ function Voyages() {
                     <Badge variant="secondary">{tripStatusLabel(trip.status)}</Badge>
                     {countdownLabel(trip, today) && countdownLabel(trip, today) !== "Terminé" && (
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PHASE_TONE[tripPhase(trip, today)]}`}
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${PHASE_TONE[tripPhase(trip, today)]}`}
                       >
                         {countdownLabel(trip, today)}
                       </span>

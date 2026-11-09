@@ -271,7 +271,7 @@ function PostRow({ row, late }: { row: Row; late?: boolean }) {
   const isWa = row.source === "whatsapp";
 
   return (
-    <li className={`py-2.5 ${row.done ? "opacity-60" : ""}`}>
+    <li className={`group -mx-2 rounded-lg px-2 py-2 transition-colors hover:bg-muted/50 ${row.done ? "opacity-60" : ""}`}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span
           className={`w-[4.5rem] flex-shrink-0 text-xs tabular-nums ${
@@ -284,7 +284,7 @@ function PostRow({ row, late }: { row: Row; late?: boolean }) {
           {late ? `${fmtDayKey(dayKey(row.at), { weekday: "short", day: "numeric" })} ` : ""}
           {fmtTime(row.at)}
         </span>
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[11px]">
           {row.format}
         </Badge>
         {late && (
@@ -314,7 +314,7 @@ function PostRow({ row, late }: { row: Row; late?: boolean }) {
         )}
       </div>
 
-      <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pl-0 sm:pl-[5rem]">
+      <div className="mt-1 flex flex-wrap items-center gap-1 pl-0 transition-opacity sm:pl-[5rem] md:h-0 md:overflow-hidden md:opacity-0 md:group-focus-within:h-auto md:group-focus-within:opacity-100 md:group-hover:h-auto md:group-hover:opacity-100">
         {row.notes && (
           <Button
             size="sm"
@@ -451,7 +451,7 @@ export function TodayPosts() {
       )}
 
       {lateRows.length > 0 && (
-        <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/5 p-3">
+        <div className="mb-4 rounded-lg border border-destructive/20 border-l-[3px] border-l-destructive bg-destructive/[0.03] px-3 py-2.5">
           <p className="flex items-center gap-1.5 text-xs font-semibold text-destructive">
             <AlertTriangle className="h-3.5 w-3.5" />
             En retard · {lateRows.length} (7 derniers jours)
@@ -473,7 +473,7 @@ export function TodayPosts() {
             if (!rows.length) return null;
             return (
               <div key={g.value}>
-                <p className="tracked text-[10px] text-muted-foreground">
+                <p className="tracked text-xs text-muted-foreground">
                   {g.label} · {rows.filter((r) => !r.done).length}/{rows.length}
                 </p>
                 <ul className="divide-y divide-border/60">

@@ -33,11 +33,11 @@ function AuthenticatedLayout() {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border bg-card/85 px-4 backdrop-blur-md lg:px-6">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
             <div className="tracked text-[11px] text-muted-foreground">{title}</div>
             <div className="ml-auto">
-              <GlobalSearch />
+              <GlobalSearch roles={roles} />
             </div>
           </header>
           <main className="flex-1 pb-20 md:pb-0">
@@ -45,7 +45,7 @@ function AuthenticatedLayout() {
               <Outlet />
             ) : (
               <div className="mx-auto max-w-xl px-4 py-16 text-center">
-                <p className="tracked mb-3 text-[10px] text-muted-foreground">Accès réservé</p>
+                <p className="tracked mb-3 text-xs text-muted-foreground">Accès réservé</p>
                 <p className="text-sm text-muted-foreground">
                   Cette page ne fait pas partie de ton espace.
                 </p>

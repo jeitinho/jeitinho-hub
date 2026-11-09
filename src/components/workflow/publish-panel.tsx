@@ -37,7 +37,7 @@ export function PublishPanel({ contentId, contentType }: { contentId: string; co
 
   return (
     <Card className="border-border/60 space-y-3 p-4">
-      <p className="tracked text-[10px] text-muted-foreground flex items-center gap-2">
+      <p className="tracked text-xs text-muted-foreground flex items-center gap-2">
         <Send className="h-3 w-3" />Publishers
       </p>
       <div className="space-y-2">
@@ -45,7 +45,7 @@ export function PublishPanel({ contentId, contentType }: { contentId: string; co
           <div key={p.id} className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2">
             <div className="min-w-0">
               <div className="text-sm font-medium">{p.label}</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{p.channelSlug}</div>
+              <div className="text-[11px] r text-muted-foreground">{p.channelSlug}</div>
             </div>
             <div className="flex gap-1">
               <Button size="sm" variant="outline" disabled={busy !== null} onClick={() => run(p.id, true)}>Aperçu</Button>

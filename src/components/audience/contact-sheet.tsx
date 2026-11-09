@@ -122,7 +122,7 @@ export function ContactSheet({
         </div>
 
         <section className="mt-5">
-          <h3 className="tracked mb-1 text-[10px] text-muted-foreground">Coordonnées</h3>
+          <h3 className="tracked mb-1 text-xs text-muted-foreground">Coordonnées</h3>
           <Row label="E-mail" value={contact.email} />
           <Row label="Téléphone" value={contact.phone} />
           <Row
@@ -138,7 +138,7 @@ export function ContactSheet({
         </section>
 
         <section className="mt-5">
-          <h3 className="tracked mb-1 text-[10px] text-muted-foreground">Historique</h3>
+          <h3 className="tracked mb-1 text-xs text-muted-foreground">Historique</h3>
           <Row label="Dernier achat" value={fmtDate(contact.last_purchase_at)} />
           <Row label="Récence" value={contact.recency} />
           <Row label="Billets" value={contact.tickets_count ?? 0} />
@@ -147,7 +147,7 @@ export function ContactSheet({
         </section>
 
         <section className="mt-5">
-          <h3 className="tracked mb-1 text-[10px] text-muted-foreground">Segmentation</h3>
+          <h3 className="tracked mb-1 text-xs text-muted-foreground">Segmentation</h3>
           <Row
             label="Engagement"
             value={
@@ -166,7 +166,7 @@ export function ContactSheet({
         </section>
 
         <section className="mt-5">
-          <h3 className="tracked mb-2 text-[10px] text-muted-foreground">Tags</h3>
+          <h3 className="tracked mb-2 text-xs text-muted-foreground">Tags</h3>
           <div className="mb-2 flex flex-wrap gap-1.5">
             {tags.length === 0 && <span className="text-xs text-muted-foreground">Aucun tag.</span>}
             {tags.map((t) => (

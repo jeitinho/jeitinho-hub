@@ -48,7 +48,7 @@ export function TemperatureBadge({ demande, className }: { demande: Demande; cla
     <span
       title={demande.temperatureReasons.join(" · ")}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium",
         TEMPERATURE_TONE[demande.temperature],
         className,
       )}
@@ -72,7 +72,7 @@ export function StagePill({ stage }: { stage: DemandeStage }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
         STAGE_TONE[stage],
       )}
     >
@@ -112,7 +112,7 @@ export function StageMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60" onClick={stop} onKeyDown={stop}>
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-wide text-muted-foreground">
+        <DropdownMenuLabel className="text-[11px] text-muted-foreground">
           Passer à…
         </DropdownMenuLabel>
         {options.map((o) => (
@@ -125,7 +125,7 @@ export function StageMenu({
                   {o.current && <span className="ml-1.5 text-muted-foreground">· actuelle</span>}
                 </span>
                 {o.hint && !o.current && (
-                  <span className="text-[10px] text-muted-foreground">{o.hint}</span>
+                  <span className="text-[11px] text-muted-foreground">{o.hint}</span>
                 )}
               </div>
             </DropdownMenuItem>

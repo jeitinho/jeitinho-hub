@@ -114,7 +114,7 @@ export function ItemRow({
           <span className="text-xs font-semibold tabular-nums text-muted-foreground">
             {whenLabel(item, day)}
           </span>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground/80">
+          <span className="text-[11px] text-muted-foreground/80">
             {meta.label}
           </span>
         </span>
@@ -124,7 +124,7 @@ export function ItemRow({
         )}
       </span>
       {item.status && (
-        <span className="mt-1 shrink-0 rounded-full border border-border/60 px-2 py-0.5 text-[10px] text-muted-foreground">
+        <span className="mt-1 shrink-0 rounded-full border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
           {item.status}
         </span>
       )}

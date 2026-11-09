@@ -109,7 +109,7 @@ export function MobileNav() {
                   {navLabel(item.module, { canManage, kind })}
                 </span>
                 {n > 0 && (
-                  <span className="absolute right-[22%] top-2 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] font-semibold leading-4 text-primary-foreground">
+                  <span className="absolute right-[22%] top-2 min-w-4 rounded-full bg-primary px-1 text-center text-[11px] font-semibold leading-4 text-primary-foreground">
                     {n > 99 ? "99+" : n}
                   </span>
                 )}

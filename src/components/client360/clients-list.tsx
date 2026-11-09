@@ -205,7 +205,7 @@ export function ClientsList() {
           </p>
           <Card className="overflow-hidden border-border/60">
             <div
-              className={`hidden border-b border-border/60 bg-muted/30 px-4 py-2 text-[10px] text-muted-foreground md:grid ${GRID} tracked`}
+              className={`hidden border-b border-border/60 bg-muted/30 px-4 py-2 text-[11px] text-muted-foreground md:grid ${GRID} tracked`}
             >
               <span>Client</span>
               <span>Source</span>
@@ -259,7 +259,7 @@ function ClientRow({ row: { c, v }, loading }: { row: Row; loading: boolean }) {
       </div>
       <div className="grid grid-cols-3 gap-3 md:contents">
         <div className="min-w-0">
-          <p className="text-[10px] text-muted-foreground md:hidden">Activité</p>
+          <p className="text-[11px] text-muted-foreground md:hidden">Activité</p>
           {last ? (
             <>
               <p className="text-xs tabular-nums">
@@ -275,11 +275,11 @@ function ClientRow({ row: { c, v }, loading }: { row: Row; loading: boolean }) {
           )}
         </div>
         <div className="min-w-0 md:text-right">
-          <p className="text-[10px] text-muted-foreground md:hidden">Encaissé</p>
+          <p className="text-[11px] text-muted-foreground md:hidden">Encaissé</p>
           {v ? <AmountLines totals={v.collected} className="text-xs" /> : pending}
         </div>
         <div className="min-w-0 md:text-right">
-          <p className="text-[10px] text-muted-foreground md:hidden">Devis en cours</p>
+          <p className="text-[11px] text-muted-foreground md:hidden">Devis en cours</p>
           {!v ? (
             pending
           ) : open.length === 0 ? (
