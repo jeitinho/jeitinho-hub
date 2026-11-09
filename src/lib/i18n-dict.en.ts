@@ -1,5 +1,16 @@
 /* Généré à partir des libellés français du hub — anglais. Clé = texte français exact. */
 export const EN_DICT: Record<string, string> = {
+ "Préparation du voyage": "Trip readiness",
+ "Tout est prêt pour le départ.": "Everything is ready for departure.",
+ "à faire": "to do",
+ "Dates du séjour": "Stay dates",
+ "Client rattaché": "Client linked",
+ "Noms des voyageurs": "Traveller names",
+ "Prestations placées au planning": "Services placed on the schedule",
+ "Prestataires confirmés": "Providers confirmed",
+ "Équipe terrain assignée": "Field team assigned",
+ "Client informé du programme": "Client informed of the programme",
+ "aucune prestation": "no services",
  "Choisis une heure.": "Pick a time.",
  "Heure enregistrée": "Time saved",
  "Changer l'heure": "Change time",

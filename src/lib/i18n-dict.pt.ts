@@ -1,5 +1,16 @@
 /* Généré à partir des libellés français du hub — portugais (Brésil). Clé = texte français exact. */
 export const PT_DICT: Record<string, string> = {
+ "Préparation du voyage": "Preparação da viagem",
+ "Tout est prêt pour le départ.": "Tudo pronto para a partida.",
+ "à faire": "a fazer",
+ "Dates du séjour": "Datas da estadia",
+ "Client rattaché": "Cliente vinculado",
+ "Noms des voyageurs": "Nomes dos viajantes",
+ "Prestations placées au planning": "Serviços posicionados no planejamento",
+ "Prestataires confirmés": "Prestadores confirmados",
+ "Équipe terrain assignée": "Equipe de campo atribuída",
+ "Client informé du programme": "Cliente informado do programa",
+ "aucune prestation": "nenhum serviço",
  "Choisis une heure.": "Escolha um horário.",
  "Heure enregistrée": "Horário salvo",
  "Changer l'heure": "Mudar o horário",

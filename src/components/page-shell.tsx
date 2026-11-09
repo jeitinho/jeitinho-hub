@@ -20,7 +20,13 @@ export function PageShell({
           {eyebrow && <p className="mb-1 text-[12.5px] font-medium text-muted-foreground">{eyebrow}</p>}
           <h1 className="text-[24px] leading-tight sm:text-[30px]">{title}</h1>
           {description && (
-            <p className="mt-1.5 hidden max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground sm:block">
+            <p
+              className={`mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground ${
+                // Sur téléphone : on garde les descriptions courtes (référence, dates, client…),
+                // on masque les phrases d'explication.
+                typeof description === "string" && description.length > 90 ? "hidden sm:block" : ""
+              }`}
+            >
               {description}
             </p>
           )}
