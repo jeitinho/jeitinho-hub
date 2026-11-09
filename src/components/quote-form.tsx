@@ -503,7 +503,9 @@ export function QuoteForm({
         const { data: ref, error: refErr } = await supabase.rpc("next_quote_number");
         if (refErr) throw new Error(refErr.message);
         const generatedReference = ref as string;
-        const desiredNumber = number.trim() || generatedReference;
+        // Numéro affiché : suit le dernier numéro réellement utilisé (« 2026-43 » → « 2026-044 »).
+        const { data: display } = await (supabase as any).rpc("next_quote_display_number");
+        const desiredNumber = number.trim() || (display as string | null) || generatedReference;
         const me = await fetch("/api/auth/me", { credentials: "include" })
           .then((r) => r.json())
           .catch(() => null);

@@ -39,6 +39,7 @@ import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenti
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedPartenairesRouteImport } from './routes/_authenticated/partenaires'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
+import { Route as AuthenticatedTarifsRouteImport } from './routes/_authenticated/tarifs'
 import { Route as AuthenticatedVoyagesRouteImport } from './routes/_authenticated/voyages'
 import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as ApiCatalogRouteImport } from './routes/api/catalog'
@@ -229,6 +230,11 @@ const AuthenticatedPartenairesRoute =
 const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTarifsRoute = AuthenticatedTarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVoyagesRoute = AuthenticatedVoyagesRouteImport.update({
@@ -457,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/partenaires': typeof AuthenticatedPartenairesRoute
   '/services': typeof AuthenticatedServicesRouteWithChildren
+  '/tarifs': typeof AuthenticatedTarifsRoute
   '/voyages': typeof AuthenticatedVoyagesRouteWithChildren
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/catalog': typeof ApiCatalogRoute
@@ -525,6 +532,7 @@ export interface FileRoutesByTo {
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/partenaires': typeof AuthenticatedPartenairesRoute
   '/services': typeof AuthenticatedServicesRouteWithChildren
+  '/tarifs': typeof AuthenticatedTarifsRoute
   '/voyages': typeof AuthenticatedVoyagesRouteWithChildren
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/catalog': typeof ApiCatalogRoute
@@ -595,6 +603,7 @@ export interface FileRoutesById {
   '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
   '/_authenticated/partenaires': typeof AuthenticatedPartenairesRoute
   '/_authenticated/services': typeof AuthenticatedServicesRouteWithChildren
+  '/_authenticated/tarifs': typeof AuthenticatedTarifsRoute
   '/_authenticated/voyages': typeof AuthenticatedVoyagesRouteWithChildren
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/catalog': typeof ApiCatalogRoute
@@ -665,6 +674,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/partenaires'
     | '/services'
+    | '/tarifs'
     | '/voyages'
     | '/whatsapp'
     | '/api/catalog'
@@ -733,6 +743,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/partenaires'
     | '/services'
+    | '/tarifs'
     | '/voyages'
     | '/whatsapp'
     | '/api/catalog'
@@ -802,6 +813,7 @@ export interface FileRouteTypes {
     | '/_authenticated/parametres'
     | '/_authenticated/partenaires'
     | '/_authenticated/services'
+    | '/_authenticated/tarifs'
     | '/_authenticated/voyages'
     | '/_authenticated/whatsapp'
     | '/api/catalog'
@@ -1076,6 +1088,13 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof AuthenticatedServicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tarifs': {
+      id: '/_authenticated/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof AuthenticatedTarifsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/voyages': {
@@ -1507,6 +1526,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
   AuthenticatedPartenairesRoute: typeof AuthenticatedPartenairesRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRouteWithChildren
+  AuthenticatedTarifsRoute: typeof AuthenticatedTarifsRoute
   AuthenticatedVoyagesRoute: typeof AuthenticatedVoyagesRouteWithChildren
   AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
 }
@@ -1537,6 +1557,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,
   AuthenticatedPartenairesRoute: AuthenticatedPartenairesRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRouteWithChildren,
+  AuthenticatedTarifsRoute: AuthenticatedTarifsRoute,
   AuthenticatedVoyagesRoute: AuthenticatedVoyagesRouteWithChildren,
   AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
 }

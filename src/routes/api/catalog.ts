@@ -49,7 +49,7 @@ async function handle({ request }: { request: Request }) {
     return new Response(body, { status: response.status, headers: { "content-type": "application/json" } });
   }
 
-  if (!current.user.roles.some((role) => ["admin", "manager", "redacteur_chef", "redacteur"].includes(role))) {
+  if (!current.user.roles.some((role) => ["admin", "manager", "associe", "redacteur_chef", "redacteur"].includes(role))) {
     return Response.json({ data: null, error: { message: "Forbidden" } }, { status: 403 });
   }
 

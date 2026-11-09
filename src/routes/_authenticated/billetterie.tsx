@@ -1,3 +1,4 @@
+import { SellTicketDialog } from "@/components/tickets/sell-ticket-dialog";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, RefreshCw, Ticket } from "lucide-react";
+import { Plus, Search, RefreshCw, Ticket, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   type DisplayCurrency,
@@ -36,6 +37,8 @@ function offerState(t: {
 const OFFER_STATE_LABEL = { active: "Publié", draft: "Brouillon", archived: "Archivé" } as const;
 
 function Ticketing() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selling, setSelling] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "draft" | "archived">("all");
   const [displayCurrency, setDisplayCurrency] = useState<DisplayCurrency>(() =>
@@ -210,7 +213,8 @@ function Ticketing() {
             const commissionEur = (saleEur * Number(t.commission_pct ?? 0)) / 100;
             const marginEur = saleEur - costEur - commissionEur;
             return (
-              <Link key={t.id} to="/billetterie/$id" params={{ id: t.id }}>
+              <div key={t.id} className="relative">
+              <Link to="/billetterie/$id" params={{ id: t.id }}>
                 <Card className="h-full overflow-hidden border-border/60 transition-shadow hover:shadow-[var(--shadow-soft)]">
                   <div
                     className="relative overflow-hidden bg-muted/40"
@@ -268,9 +272,25 @@ function Ticketing() {
                   </div>
                 </Card>
               </Link>
+              {offerState(t) !== "archived" && (
+                <Button
+                  size="sm"
+                  className="absolute right-3 top-3 shadow-md"
+                  onClick={() => setSelling(t)}
+                  disabled={!hasSale}
+                  title={hasSale ? "Créer un devis pour ce billet" : "Renseigne d'abord un prix public"}
+                >
+                  <ShoppingBag className="mr-1.5 h-4 w-4" />
+                  Vendre
+                </Button>
+              )}
+              </div>
             );
           })}
         </div>
+      )}
+      {selling && (
+        <SellTicketDialog offer={selling} open={!!selling} onOpenChange={(o) => !o && setSelling(null)} />
       )}
     </PageShell>
   );
