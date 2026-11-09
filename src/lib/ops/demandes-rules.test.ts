@@ -542,3 +542,22 @@ describe("catalogue et formats", () => {
     );
   });
 });
+
+import { budgetFloor } from "./demandes-rules";
+
+test("budget déclaré → seuil bas", () => {
+  assert.equal(budgetFloor("Plus de 3 000 €"), 3000);
+  assert.equal(budgetFloor("1 000 € à 2 000 €"), 1000);
+  assert.equal(budgetFloor("Moins de 500 €"), 0);
+  assert.equal(budgetFloor("Je ne sais pas encore"), null);
+});
+
+test("demande récente à gros budget ou grand groupe → chaude, même si le voyage est loin", () => {
+  const now = new Date("2026-11-09T22:00:00Z");
+  const base = { stage: "nouvelle" as const, travelStart: "2027-11-01", travelEnd: "2027-11-11", quotes: [], lastActivityAt: "2026-11-09T12:27:00Z" };
+  assert.equal(scoreDemande({ ...base, partySize: 6, budget: "Plus de 3 000 €" }, now).temperature, "chaud");
+  assert.equal(scoreDemande({ ...base, partySize: 2, budget: "Plus de 3 000 €" }, now).reasons[0], "Budget Plus de 3 000 €");
+  assert.equal(scoreDemande({ ...base, partySize: 2, budget: "Moins de 500 €" }, now).temperature, "tiede");
+  // gros potentiel mais sans activité depuis plus de 7 jours : la règle ne s'applique plus
+  assert.notEqual(scoreDemande({ ...base, partySize: 6, budget: null, lastActivityAt: "2026-10-20T00:00:00Z" }, now).temperature, "chaud");
+});
