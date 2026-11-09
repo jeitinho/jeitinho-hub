@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
+import { TimeEditor } from "@/components/ops/time-editor";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -248,9 +249,16 @@ function ManifestPage() {
                   <div
                     className={`flex w-20 shrink-0 flex-col items-center justify-center gap-1 p-3 ${i.done ? "bg-emerald-600 text-white" : i.noShow ? "bg-destructive/80 text-white" : "bg-primary/10 text-primary"}`}
                   >
-                    <span className="text-lg font-semibold tabular-nums leading-none">
-                      {i.time}
-                    </span>
+                    <TimeEditor
+                      source={i.dsource ?? "ota"}
+                      id={i.id}
+                      index={i.index ?? 0}
+                      day={day}
+                      label={i.time === "?" ? "00h00" : i.time}
+                      canEdit={canOperate && !i.done}
+                      onSaved={() => void qc.invalidateQueries({ queryKey: ["manifest"] })}
+                      className="text-lg font-semibold tabular-nums leading-none"
+                    />
                     {i.pax != null && (
                       <span className="flex items-center gap-1 text-[11px] opacity-90">
                         <Users className="h-3 w-3" />

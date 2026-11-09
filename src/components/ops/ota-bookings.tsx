@@ -19,6 +19,8 @@ import {
   updateOtaBooking,
   type OtaBooking,
 } from "@/lib/ops/ops";
+import { TimeEditor } from "@/components/ops/time-editor";
+import { LoadingRows } from "@/components/loading-rows";
 
 const PLATFORM_LABEL: Record<string, string> = { getyourguide: "GetYourGuide" };
 const STATUS_TONE: Record<OtaBooking["status"], string> = {
@@ -39,6 +41,24 @@ function fmtStart(iso: string | null) {
     minute: "2-digit",
     timeZone: "America/Sao_Paulo",
   });
+}
+
+function fmtDay(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "America/Sao_Paulo",
+  });
+}
+function rioDay(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-CA", { timeZone: "America/Sao_Paulo" });
+}
+/** « 09h30 » à l'heure de Rio ; minuit = heure inconnue (« 00h00 »). */
+function rioHour(iso: string) {
+  return new Date(iso)
+    .toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" })
+    .replace(":", "h");
 }
 
 /** Liste des réservations plateformes. `clientId` → seulement celles d'un client. */
@@ -74,7 +94,7 @@ export function OtaBookingsList({ clientId, compact }: { clientId?: string; comp
     .sort((a, b) => (a.start_at ?? "").localeCompare(b.start_at ?? ""));
   const past = data.filter((b) => !upcoming.includes(b));
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Chargement…</p>;
+  if (isLoading) return <LoadingRows rows={3} />;
   if (error)
     return <Card className="border-destructive/40 p-4 text-sm">{(error as Error).message}</Card>;
   if (data.length === 0)
@@ -100,9 +120,24 @@ export function OtaBookingsList({ clientId, compact }: { clientId?: string; comp
               {b.supplier_ref ? ` · ${b.supplier_ref}` : ""}
             </span>
           </div>
-          <p className="flex items-center gap-1.5 text-sm font-semibold">
+          <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
             <CalendarClock className="h-4 w-4 text-primary" />
-            {fmtStart(b.start_at)}
+            {b.start_at ? (
+              <>
+                {fmtDay(b.start_at)}
+                <TimeEditor
+                  source="ota"
+                  id={b.id}
+                  index={0}
+                  day={rioDay(b.start_at)}
+                  label={rioHour(b.start_at)}
+                  canEdit={b.status !== "annulee"}
+                  onSaved={() => void qc.invalidateQueries({ queryKey: ["ops", "ota-bookings"] })}
+                />
+              </>
+            ) : (
+              fmtStart(b.start_at)
+            )}
           </p>
           <p className="text-sm">{b.activity_title ?? "Activité"}</p>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">

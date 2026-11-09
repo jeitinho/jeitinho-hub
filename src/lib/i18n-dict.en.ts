@@ -1,5 +1,10 @@
 /* Généré à partir des libellés français du hub — anglais. Clé = texte français exact. */
 export const EN_DICT: Record<string, string> = {
+ "Choisis une heure.": "Pick a time.",
+ "Heure enregistrée": "Time saved",
+ "Changer l'heure": "Change time",
+ "Heure de la sortie": "Outing time",
+ "Heure de Rio.": "Rio time.",
  "Active les notifications du hub.": "Turn on hub notifications.",
  "personne": "person",
  "Offre": "Offer",
