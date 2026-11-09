@@ -133,7 +133,7 @@ export function ItemSheet({
               </span>
               <SheetTitle
                 className="pr-6 text-2xl font-normal"
-                style={{ fontFamily: "Fraunces, serif" }}
+               
               >
                 {item.title}
               </SheetTitle>

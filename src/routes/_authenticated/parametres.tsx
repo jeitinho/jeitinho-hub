@@ -45,7 +45,7 @@ function Overview() {
         to="/parametres/utilisateurs"
         className="rounded-lg border border-border/60 bg-card p-6 transition-colors hover:bg-muted/40"
       >
-        <h3 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+        <h3 className="text-lg font-display">
           Utilisateurs & rôles
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">

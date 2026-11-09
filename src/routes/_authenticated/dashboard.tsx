@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -28,6 +29,7 @@ import { TerrainHome } from "@/components/home/terrain-home";
 import { TodayPosts } from "@/components/home/today-posts";
 import { fetchCockpit, type AgentHealth } from "@/lib/ops/cockpit";
 import { fmtDateTime, fmtMoney } from "@/lib/ops/ops";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: CockpitPage,
@@ -46,6 +48,42 @@ function when(iso: string | null) {
   if (day(d) === day(today)) return `Aujourd'hui ${time}`;
   if (day(d) === day(tomorrow)) return `Demain ${time}`;
   return fmtDateTime(iso);
+}
+
+type TileProps = React.ComponentProps<typeof Tile>;
+
+/**
+ * Ce qui demande une action passe en tuiles ; le reste (compteurs à zéro) se range
+ * dans une seule ligne discrète « À jour », toujours cliquable.
+ */
+function TileGrid({ children }: { children: React.ReactNode }) {
+  const tiles = (React.Children.toArray(children) as React.ReactElement<TileProps>[]).filter(Boolean);
+  const active = tiles.filter((c) => c.props.error || c.props.value > 0);
+  const calm = tiles.filter((c) => !c.props.error && c.props.value === 0);
+  return (
+    <div className="space-y-3">
+      {active.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{active}</div>
+      ) : (
+        <Card className="p-5 text-[14px] text-muted-foreground">Tout est à jour. Rien n'attend ton action.</Card>
+      )}
+      {calm.length > 0 && (
+        <p className="flex flex-wrap items-center gap-x-1 gap-y-1.5 text-[12.5px] text-muted-foreground">
+          <span className="mr-1 font-medium text-foreground/70">À jour :</span>
+          {calm.map((c) => (
+            <Link
+              key={c.props.label}
+              to={c.props.to}
+              search={c.props.search as never}
+              className="rounded-full border border-border bg-card px-2.5 py-0.5 transition-colors hover:border-foreground/25 hover:text-foreground"
+            >
+              {c.props.label}
+            </Link>
+          ))}
+        </p>
+      )}
+    </div>
+  );
 }
 
 function Tile({
@@ -79,7 +117,7 @@ function Tile({
       <Card
         className={`relative flex h-full items-start gap-3 overflow-hidden p-4 transition-[border-color,box-shadow] group-hover:border-foreground/20 group-hover:shadow-[0_4px_16px_-8px_rgb(34_30_26/0.18)] ${
           hot ? "before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-primary" : ""
-        } ${value === 0 && !error ? "opacity-55" : ""}`}
+        }`}
       >
         <div
           className={`rounded-lg p-2 ${hot ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
@@ -88,7 +126,7 @@ function Tile({
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-display text-[28px] leading-none">{error ? "—" : value}</p>
-          <p className="mt-1.5 truncate text-[13px] font-medium text-foreground/80">{label}</p>
+          <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-snug text-foreground/80">{label}</p>
           {error ? (
             <p className="truncate text-[11px] text-destructive">Erreur de chargement</p>
           ) : (
@@ -209,7 +247,7 @@ function CockpitPage() {
       <div className="mb-6">
         <TodayPosts />
       </div>
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <LoadingRows />}
       {error && (
         <Card className="border-destructive/40 p-4 text-sm">{(error as Error).message}</Card>
       )}
@@ -249,7 +287,7 @@ function CockpitPage() {
             <h2 className="mb-3 font-sans text-[13px] font-semibold text-foreground">
               À traiter
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <TileGrid>
               <Tile
                 to="/a-valider"
                 icon={ClipboardCheck}
@@ -328,7 +366,7 @@ function CockpitPage() {
                 value={data.editorialLate}
                 error={data.errors.editorialLate}
               />
-            </div>
+            </TileGrid>
           </section>
 
           <div className="grid gap-6 lg:grid-cols-3">

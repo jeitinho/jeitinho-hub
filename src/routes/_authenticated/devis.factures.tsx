@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { FilePlus2, FileText } from "lucide-react";
 import { formatMoney } from "@/lib/quotes/status";
 import { INVOICE_STATUSES, invoiceStatusLabel } from "@/lib/invoices/status";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/devis/factures")({
   component: Layout,
@@ -77,7 +78,7 @@ function InvoicesList() {
         ))}
       </div>
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">Chargement…</div>
+        <LoadingRows />
       ) : error ? (
         <Card className="border-destructive/40 p-8">
           <h2 className="font-semibold">Impossible de charger les factures</h2>
@@ -86,7 +87,7 @@ function InvoicesList() {
       ) : !rows.length ? (
         <Card className="border-dashed p-16 text-center">
           <FileText className="mx-auto mb-4 h-8 w-8 text-primary" />
-          <h2 className="text-xl">Aucune facture</h2>
+          <h2 className="text-xl font-display font-medium">Aucune facture</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Créez une facture autonome ou convertissez un devis accepté.
           </p>

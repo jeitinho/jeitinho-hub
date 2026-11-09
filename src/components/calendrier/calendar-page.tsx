@@ -194,7 +194,7 @@ export function CalendarPage() {
         </div>
         <h2
           className="min-w-0 flex-1 text-xl first-letter:uppercase sm:text-2xl"
-          style={{ fontFamily: "Fraunces, serif" }}
+         
         >
           {periodLabel(view, anchor, range)}
           {isFetching && !isLoading && (

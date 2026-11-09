@@ -73,7 +73,7 @@ export function FollowupsPanel() {
     return (
       <Card className="border-dashed p-16 text-center">
         <BellRing className="mx-auto mb-4 h-8 w-8 text-primary" />
-        <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+        <h3 className="text-xl font-display">
           Aucune relance à traiter
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">

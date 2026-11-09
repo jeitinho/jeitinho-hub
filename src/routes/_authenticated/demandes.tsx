@@ -16,6 +16,7 @@ import {
   fetchTeamRequests,
   type TeamRequest,
 } from "@/lib/ops/cm";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/demandes")({
   component: RequestsPage,
@@ -144,13 +145,13 @@ function RequestsPage() {
       actions={!canManage ? <AskRafaelDialog events={events.data ?? []} /> : undefined}
     >
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <LoadingRows />
       ) : error ? (
         <Card className="border-destructive/40 p-4 text-sm">{(error as Error).message}</Card>
       ) : (
         <div className="grid gap-8 lg:grid-cols-2">
           <section className="space-y-3">
-            <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+            <h2 className="text-lg font-display font-medium">
               En attente {open.length > 0 && <span className="pill ml-1">{open.length}</span>}
             </h2>
             {open.length === 0 ? (
@@ -160,7 +161,7 @@ function RequestsPage() {
             )}
           </section>
           <section className="space-y-3">
-            <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+            <h2 className="text-lg font-display font-medium">
               Traitées
             </h2>
             {closed.length === 0 ? (

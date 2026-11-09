@@ -15,6 +15,7 @@ import {
   VALIDATION_KEY,
   useValidationActions,
 } from "@/components/a-valider/use-validation-actions";
+import { LoadingRows } from "@/components/loading-rows";
 
 /** ?task=<id> (depuis le cockpit) : la page descend sur cette tâche et la met en évidence. */
 const searchSchema = z.object({ task: z.string().optional().catch(undefined) });
@@ -151,7 +152,7 @@ function ValidationPage() {
         </div>
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {loading && <LoadingRows />}
       {queue.error && (
         <Card className="border-destructive/40 p-6 text-sm">{(queue.error as Error).message}</Card>
       )}
@@ -164,7 +165,7 @@ function ValidationPage() {
       {!loading && !queue.error && visible.length === 0 && (
         <Card className="border-dashed p-12 text-center sm:p-16">
           <Inbox className="mx-auto mb-4 h-8 w-8 text-primary" />
-          <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+          <h3 className="text-xl font-display">
             {data.length ? "Rien pour ce filtre" : "Rien à valider"}
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">

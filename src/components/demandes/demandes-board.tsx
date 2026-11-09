@@ -363,7 +363,7 @@ function CounterCard({
       <p className="tracked text-xs text-muted-foreground">{label}</p>
       <p
         className={cn("mt-1 text-3xl", tone === "alert" && "text-destructive")}
-        style={{ fontFamily: "Fraunces, serif" }}
+       
       >
         {value}
       </p>

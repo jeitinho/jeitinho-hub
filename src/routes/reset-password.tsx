@@ -51,7 +51,7 @@ function ResetPasswordPage() {
 
   return <div className="flex min-h-screen items-center justify-center bg-background px-4"><div className="w-full max-w-sm">
     <div className="mb-8 flex justify-center"><JeitinhoLogo className="h-8 w-auto" /></div>
-    <h1 className="mb-3 text-center text-2xl" style={{ fontFamily: "Fraunces, serif" }}>{recoveryToken ? "Choisir un nouveau mot de passe" : "Réinitialiser le mot de passe"}</h1>
+    <h1 className="mb-3 text-center text-2xl font-display">{recoveryToken ? "Choisir un nouveau mot de passe" : "Réinitialiser le mot de passe"}</h1>
     {done ? <div className="space-y-4 text-center text-sm text-muted-foreground"><p>Votre mot de passe a été mis à jour.</p><Button className="btn-primary w-full" onClick={() => navigate({ to: "/auth" })}>Retour à la connexion</Button></div>
       : recoveryToken ? <form onSubmit={onReset} className="space-y-4"><div className="space-y-2"><Label htmlFor="new-password">Nouveau mot de passe</Label><Input id="new-password" type="password" minLength={10} required value={password} onChange={(e) => setPassword(e.target.value)} /></div><Button type="submit" disabled={loading} className="btn-primary w-full">{loading ? "..." : "Mettre à jour"}</Button></form>
       : sent ? <div className="space-y-4 text-center text-sm text-muted-foreground"><p>Vérifiez votre boîte mail pour la suite.</p><Button variant="outline" className="w-full" onClick={() => navigate({ to: "/auth" })}>Retour à la connexion</Button></div>

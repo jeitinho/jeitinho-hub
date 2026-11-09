@@ -45,7 +45,7 @@ function SetupPage() {
       <div className="w-full max-w-md space-y-6">
         <div>
           <p className="tracked text-[11px] text-muted-foreground">Setup initial</p>
-          <h1 className="mt-2 text-2xl font-medium" style={{ fontFamily: "Fraunces, serif" }}>
+          <h1 className="mt-2 text-2xl font-medium font-display">
             Créer le premier administrateur
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">

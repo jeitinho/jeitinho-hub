@@ -75,7 +75,7 @@ export function WeekView({
                     "inline-flex h-7 min-w-7 items-center justify-center rounded-full text-lg tabular-nums",
                     d === today && "bg-primary px-1.5 text-primary-foreground",
                   )}
-                  style={{ fontFamily: "Fraunces, serif" }}
+                 
                 >
                   {date.getUTCDate()}
                 </span>

@@ -246,7 +246,7 @@ function Voyages() {
       ) : !data?.length ? (
         <Card className="border-dashed p-16 text-center">
           <Plane className="mx-auto mb-4 h-8 w-8 text-primary" />
-          <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+          <h3 className="text-xl font-display">
             Aucun voyage
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -273,7 +273,7 @@ function Voyages() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs text-muted-foreground">{trip.reference}</p>
-                    <h3 className="mt-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+                    <h3 className="mt-1 text-lg font-display">
                       {trip.title}
                     </h3>
                   </div>

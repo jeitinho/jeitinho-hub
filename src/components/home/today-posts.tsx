@@ -428,6 +428,9 @@ export function TodayPosts() {
   const toPost = todayRows.filter((r) => !r.done).length;
   const published = todayRows.filter((r) => r.done).length;
 
+  // Rien à poster et rien en retard : la carte disparaît de l'accueil (le planning reste accessible au menu).
+  if (!isLoading && !error && todayRows.length === 0 && lateRows.length === 0) return null;
+
   return (
     <Card className="p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

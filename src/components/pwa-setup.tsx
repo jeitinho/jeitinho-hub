@@ -121,7 +121,14 @@ export function PwaSetup() {
           {mode === "push" ? <Bell className="h-4 w-4" /> : mode === "install-ios" ? <Share className="h-4 w-4" /> : <Download className="h-4 w-4" />}
         </div>
         <p className="min-w-0 flex-1 text-[13px] leading-snug">
-          {mode === "push" && t("Reçois une notification pour chaque nouvelle demande, réservation et sortie qui t'est assignée.")}
+          {mode === "push" && (
+            <>
+              <span className="sm:hidden">{t("Active les notifications du hub.")}</span>
+              <span className="hidden sm:inline">
+                {t("Reçois une notification pour chaque nouvelle demande, réservation et sortie qui t'est assignée.")}
+              </span>
+            </>
+          )}
           {mode === "install-ios" &&
             t("Installe le hub sur ton iPhone : touche Partager puis « Sur l'écran d'accueil ». Les notifications marchent ensuite comme une app.")}
           {mode === "install" && t("Installe le hub comme une app sur cet appareil.")}

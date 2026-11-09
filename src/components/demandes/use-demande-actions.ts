@@ -13,6 +13,7 @@ import {
   type Demande,
   type StageTarget,
 } from "@/lib/ops/demandes";
+import { confirmAction } from "@/components/confirm-dialog";
 
 function message(e: unknown) {
   return e instanceof Error ? e.message : "Action impossible.";
@@ -91,7 +92,7 @@ export function useDemandeActions() {
   };
 
   const remove = async (leadId: string) => {
-    if (!confirm("Supprimer définitivement ce lead et ses tâches ?")) return false;
+    if (!(await confirmAction("Supprimer définitivement ce lead et ses tâches ?", { confirmLabel: "Supprimer le lead" }))) return false;
     try {
       await removeLead(leadId);
       await refresh();

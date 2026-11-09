@@ -1,5 +1,7 @@
 /* Généré à partir des libellés français du hub — portugais (Brésil). Clé = texte français exact. */
 export const PT_DICT: Record<string, string> = {
+ "Active les notifications du hub.": "Ative as notificações do hub.",
+ "personne": "pessoa",
  "Offre": "Oferta",
  "Créer": "Criar",
  "Demandes clients": "Pedidos de clientes",

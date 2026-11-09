@@ -69,7 +69,9 @@ import {
   saveTicketLot,
   setPartnerSalePaid,
 } from "@/lib/ops/event-extras";
+import { confirmAction } from "@/components/confirm-dialog";
 import { fromRioInput, toRioInput } from "@/lib/rio-time";
+import { LoadingRows } from "@/components/loading-rows";
 
 const searchSchema = z.object({ id: z.string().uuid().optional() });
 export const Route = createFileRoute("/_authenticated/evenements")({
@@ -117,7 +119,7 @@ function EventsPage() {
       }
     >
       {creating && <EventForm onDone={() => setCreating(false)} />}
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <LoadingRows />}
       {error && (
         <Card className="border-destructive/40 p-6 text-sm">{(error as Error).message}</Card>
       )}
@@ -131,7 +133,7 @@ function EventsPage() {
                   {daysUntil(e.starts_at) >= 0 ? `J-${daysUntil(e.starts_at)}` : "passé"}
                 </span>
               </div>
-              <h3 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+              <h3 className="text-lg font-display">
                 {e.name}
               </h3>
               <p className="text-sm text-muted-foreground">{e.edition}</p>
@@ -382,7 +384,7 @@ function EventDetail({ event }: { event: EventRow }) {
         <Kpi label="Tables VIP" value={String(totalVip)} />
       </div>
       {isLoading || !data ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <LoadingRows />
       ) : (
         <div className="space-y-6">
           <TicketsSection event={event} counts={data.counts} latest={latest} onSaved={refresh} />
@@ -423,9 +425,10 @@ function TicketsSection({
   const [showHistory, setShowHistory] = useState(false);
   const removeCount = async (c: TicketCount) => {
     if (
-      !confirm(
+      !(await confirmAction(
         `Supprimer le relevé ${CHANNEL_LABEL[c.channel] ?? c.channel} du ${fmtDateTime(c.recorded_at)} (${c.tickets} billets) ?`,
-      )
+        { confirmLabel: "Supprimer le relevé" },
+      ))
     )
       return;
     try {
@@ -715,8 +718,8 @@ function PartnersSection({
                   />
                   <DeleteIcon
                     label="Supprimer ce relais"
-                    onClick={() => {
-                      if (!confirm(`Retirer ${p.partner_name} de cette soirée ?`)) return;
+                    onClick={async () => {
+                      if (!(await confirmAction(`Retirer ${p.partner_name} de cette soirée ?`, { confirmLabel: "Retirer" }))) return;
                       void run(() => deletePartnerSale(p.id), "Relais supprimé");
                     }}
                   />
@@ -870,8 +873,8 @@ function TicketLotsSection({ event }: { event: EventRow }) {
                   />
                   <DeleteIcon
                     label="Supprimer ce lot"
-                    onClick={() => {
-                      if (!confirm(`Supprimer le lot « ${l.name} » ?`)) return;
+                    onClick={async () => {
+                      if (!(await confirmAction(`Supprimer le lot « ${l.name} » ?`, { confirmLabel: "Supprimer le lot" }))) return;
                       void run(() => deleteTicketLot(l.id), "Lot supprimé");
                     }}
                   />
@@ -1094,8 +1097,8 @@ function PromoCodesSection({ event }: { event: EventRow }) {
                   />
                   <DeleteIcon
                     label="Supprimer ce code"
-                    onClick={() => {
-                      if (!confirm(`Supprimer le code ${c.code} ?`)) return;
+                    onClick={async () => {
+                      if (!(await confirmAction(`Supprimer le code ${c.code} ?`, { confirmLabel: "Supprimer le code" }))) return;
                       void run(() => deletePromoCode(c.id), "Code supprimé");
                     }}
                   />

@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Archive, Trash2 } from "lucide-react";
 import { fetchCatalogItem, updateCatalogItem, deleteCatalogItem } from "@/lib/catalog-gateway";
 import { toast } from "sonner";
+import { confirmAction } from "@/components/confirm-dialog";
 export const Route = createFileRoute("/_authenticated/billetterie/$id")({
   component: EditTicket,
   head: () => ({ meta: [{ title: "Billet (catalogue) — JEITINHO" }] }),
@@ -45,7 +46,7 @@ function EditTicket() {
     }
   };
   const remove = async () => {
-    if (!confirm("Supprimer définitivement cette offre ?")) return;
+    if (!(await confirmAction("Supprimer définitivement cette offre ?", { confirmLabel: "Supprimer l'offre" }))) return;
     try {
       await deleteCatalogItem("ticket_offers", id);
       toast.success("Offre supprimée");

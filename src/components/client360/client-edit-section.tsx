@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { deleteClient, updateClient, type ClientRecord } from "@/lib/clients-gateway";
 import { LEGAL_TYPES, type LegalType } from "@/lib/invoices/status";
+import { confirmAction } from "@/components/confirm-dialog";
 
 /** Section repliable « Modifier la fiche » : coordonnées, notes, facturation, suppression. */
 export function ClientEditSection({
@@ -81,7 +82,12 @@ export function ClientEditSection({
   };
 
   const remove = async () => {
-    if (!confirm("Supprimer cette fiche client ? Les devis, voyages et factures sont conservés."))
+    if (
+      !(await confirmAction("Supprimer cette fiche client ?", {
+        description: "Les devis, voyages et factures sont conservés.",
+        confirmLabel: "Supprimer la fiche",
+      }))
+    )
       return;
     try {
       await deleteClient(client.id);
@@ -102,7 +108,7 @@ export function ClientEditSection({
             className="flex w-full items-center justify-between gap-2 p-5 text-left"
           >
             <span>
-              <span className="block text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+              <span className="block text-lg font-display">
                 Modifier la fiche
               </span>
               <span className="text-xs text-muted-foreground">

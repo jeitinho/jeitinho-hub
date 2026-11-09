@@ -135,7 +135,7 @@ export function Section({
   return (
     <section className="space-y-3">
       <div className="flex items-baseline gap-2">
-        <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+        <h2 className="text-lg font-display font-medium">
           {title}
         </h2>
         {items.length > 0 && <span className="pill">{items.length}</span>}
@@ -173,7 +173,7 @@ function WhatsappToday() {
   return (
     <section className="space-y-3">
       <div className="flex items-baseline gap-2">
-        <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+        <h2 className="text-lg font-display font-medium">
           Groupe WhatsApp
         </h2>
         {posts.length > 0 && <span className="pill">{posts.length}</span>}

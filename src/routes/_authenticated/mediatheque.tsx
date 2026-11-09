@@ -25,6 +25,7 @@ import {
   uploadMedia,
   type MediaItem,
 } from "@/lib/ops/cm";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/mediatheque")({
   component: MediaLibraryPage,
@@ -254,7 +255,7 @@ function MediaLibraryPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <LoadingRows />
       ) : error ? (
         <Card className="border-destructive/40 p-4 text-sm">{(error as Error).message}</Card>
       ) : shown.length === 0 ? (

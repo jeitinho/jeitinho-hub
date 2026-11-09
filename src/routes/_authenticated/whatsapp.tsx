@@ -37,6 +37,7 @@ import {
   type WhatsappPost,
   type WhatsappRejectionReason,
 } from "@/lib/ops/ops";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
   component: WhatsappPage,
@@ -137,14 +138,14 @@ function WhatsappPage() {
       <p className="mb-4 text-sm text-muted-foreground">
         {data.length} posts cette semaine · {sent} postés
       </p>
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <LoadingRows />}
       {error && (
         <Card className="border-destructive/40 p-6 text-sm">{(error as Error).message}</Card>
       )}
       {!isLoading && !error && data.length === 0 && (
         <Card className="border-dashed p-16 text-center">
           <MessageCircle className="mx-auto mb-4 h-8 w-8 text-primary" />
-          <h3 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+          <h3 className="text-xl font-display">
             Aucun post pour cette semaine
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">

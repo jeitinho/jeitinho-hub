@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Check,
@@ -17,7 +17,6 @@ import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -62,13 +61,18 @@ function dayTitle(day: string) {
 
 function ManifestPage() {
   const qc = useQueryClient();
-  const { user, canOperate } = useAuth();
+  const { user, canOperate, loading: authLoading } = useAuth();
   const [day, setDay] = useState(todayRio());
-  const [mineOnly, setMineOnly] = useState(!canOperate);
+  const [mineOnly, setMineOnly] = useState(false);
+  // Le rôle n'est connu qu'après le chargement du compte : un guide voit d'abord ses sorties.
+  useEffect(() => {
+    if (!authLoading) setMineOnly(!canOperate);
+  }, [authLoading, canOperate]);
   const today = todayRio();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["manifest", day],
+    queryKey: ["manifest", day, canOperate],
+    enabled: !authLoading,
     queryFn: async () => {
       // Liste unifiée : GetYourGuide, paniers payés du site, prestations des voyages, saisies manuelles.
       const [listR, teamR] = await Promise.all([
@@ -96,7 +100,7 @@ function ManifestPage() {
 
   // Mise à jour optimiste : l'écran change tout de suite, la base suit.
   const optimistic = (key: string, patch: Partial<ManifestItem>) =>
-    qc.setQueryData(["manifest", day], (old: typeof data) =>
+    qc.setQueryData(["manifest", day, canOperate], (old: typeof data) =>
       old ? { ...old, items: old.items.map((i) => (i.key === key ? { ...i, ...patch } : i)) } : old,
     );
   const run = async (
@@ -146,6 +150,7 @@ function ManifestPage() {
         <Button
           variant="ghost"
           size="icon"
+          className="h-8 w-8"
           onClick={() => setDay(shiftDay(day, -1))}
           aria-label="Jour précédent"
         >
@@ -161,7 +166,7 @@ function ManifestPage() {
               key={d}
               type="button"
               onClick={() => setDay(d)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${day === d ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 ${day === d ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
               {label}
             </button>
@@ -170,6 +175,7 @@ function ManifestPage() {
         <Button
           variant="ghost"
           size="icon"
+          className="h-8 w-8"
           onClick={() => setDay(shiftDay(day, 1))}
           aria-label="Jour suivant"
         >
@@ -201,11 +207,12 @@ function ManifestPage() {
       </div>
 
       <div className="mb-4">
-        <h2 className="text-2xl">
+        <h2 className="text-2xl font-display font-medium">
           {dayTitle(day)}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {summary.departures} {t("sorties")} · {summary.pax} {t("personnes")}
+          {summary.departures} {summary.departures > 1 ? t("sorties") : t("sortie")} · {summary.pax}{" "}
+          {summary.pax > 1 ? t("personnes") : t("personne")}
           {canOperate && summary.unassigned > 0 && (
             <span className="ml-1 font-medium text-amber-700">
               · {summary.unassigned} {t("sans guide")}
@@ -261,9 +268,6 @@ function ManifestPage() {
                           {i.tentative && ` · ${t("voyage en préparation")}`}
                         </p>
                       </div>
-                      <Badge variant="outline" className="text-[11px] capitalize">
-                        {i.source}
-                      </Badge>
                     </div>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                       {i.contactName && <span className="font-medium">{i.contactName}</span>}
@@ -313,7 +317,9 @@ function ManifestPage() {
                             <SelectTrigger
                               className={`h-8 w-40 text-xs ${i.guideId ? "" : "border-amber-500/60 text-amber-700"}`}
                             >
-                              <SelectValue />
+                              <SelectValue>
+                                {t("Guide")} : {nameOf(i.guideId) ?? "—"}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value={NONE}>{t("Guide")} : —</SelectItem>

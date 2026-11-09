@@ -427,7 +427,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         <div className="space-y-6">
           <Card className="p-5">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+              <h2 className="text-lg font-display font-medium">
                 Client
               </h2>
               {selectedClient && <Badge variant="outline">Client existant</Badge>}
@@ -550,7 +550,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             </div>
           </Card>
           <Card className="p-5">
-            <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+            <h2 className="mb-4 text-lg font-display font-medium">
               Facture
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -598,7 +598,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           </Card>
           <Card className="p-5">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+              <h2 className="text-lg font-display font-medium">
                 Prestations
               </h2>
               <Button variant="outline" size="sm" onClick={newLine}>
@@ -668,7 +668,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             <div className="mt-5 flex justify-end border-t border-border/60 pt-4">
               <div className="text-right">
                 <p className="tracked text-xs text-muted-foreground">TOTAL TTC</p>
-                <p className="mt-1 text-2xl" style={{ fontFamily: "Fraunces, serif" }}>
+                <p className="mt-1 text-2xl font-display">
                   {formatMoney(total, currency)}
                 </p>
               </div>

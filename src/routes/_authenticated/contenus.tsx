@@ -24,6 +24,7 @@ import {
   applyFilters,
   type EditorialFilterState,
 } from "@/components/media/editorial-filters-state";
+import { LoadingRows } from "@/components/loading-rows";
 
 /** ?id=<uuid> ouvre la fiche du contenu ; ?retard=1 n'affiche que les retards. */
 const searchSchema = z.object({
@@ -119,7 +120,7 @@ function PlanningPage() {
       }
     >
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <LoadingRows />
       ) : error ? (
         <Card className="border-destructive/40 p-4 text-sm">
           {(error as Error).message}{" "}

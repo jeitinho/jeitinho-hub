@@ -695,7 +695,7 @@ export function QuoteForm({
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         <Card className="p-5">
-          <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+          <h2 className="mb-4 text-lg font-display font-medium">
             Client
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -770,7 +770,7 @@ export function QuoteForm({
           </div>
         </Card>
         <Card className="p-5">
-          <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+          <h2 className="mb-4 text-lg font-display font-medium">
             Séjour
           </h2>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -852,7 +852,7 @@ export function QuoteForm({
         </Card>
         <Card className="p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+            <h2 className="text-lg font-display font-medium">
               Prestations
             </h2>
             <span className="text-xs text-muted-foreground">
@@ -1023,7 +1023,7 @@ export function QuoteForm({
           <div className="mt-5 space-y-1.5 border-t border-border/60 pt-4">
             <div className="flex items-center justify-between">
               <span className="tracked text-xs text-muted-foreground">TOTAL</span>
-              <span className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+              <span className="text-xl font-display">
                 {formatMoney(totals.total, currency)}
               </span>
             </div>
@@ -1055,7 +1055,7 @@ export function QuoteForm({
           <Card className="p-5">
             <CollapsibleTrigger className="group flex w-full items-center justify-between text-left">
               <span>
-                <span className="block text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+                <span className="block text-lg font-display">
                   Contenu avancé du PDF
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -1149,7 +1149,7 @@ export function QuoteForm({
         <Card className="overflow-hidden p-0">
           <div className="bg-primary/5 p-5">
             <p className="tracked text-xs text-muted-foreground">TOTAL DU DEVIS</p>
-            <p className="mt-1 text-3xl tabular-nums" style={{ fontFamily: "Fraunces, serif" }}>
+            <p className="mt-1 text-3xl tabular-nums font-display">
               {formatMoney(totals.total, currency)}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
