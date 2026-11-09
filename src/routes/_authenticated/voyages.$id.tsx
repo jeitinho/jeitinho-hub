@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- typage historique (lignes Supabase lues en any) */
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ReadinessCard } from "@/components/trips/readiness-card";
+import { defaultTripTab, tripReadiness } from "@/lib/trips/readiness";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +64,8 @@ import {
 import { confirmAction } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/_authenticated/voyages/$id")({
+  validateSearch: (s: Record<string, unknown>): { onglet?: string } =>
+    typeof s.onglet === "string" ? { onglet: s.onglet } : {},
   component: TripDetail,
   head: () => ({ meta: [{ title: "Voyage — JEITINHO" }] }),
 });
@@ -101,6 +105,8 @@ function Money({
 
 function TripDetail() {
   const { id } = Route.useParams();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const qc = useQueryClient();
   const [travelerName, setTravelerName] = useState("");
   const [travelerRole, setTravelerRole] = useState("Voyageur");
@@ -222,6 +228,16 @@ function TripDetail() {
       </PageShell>
     );
 
+  const readiness = tripReadiness({
+    trip: data.trip,
+    travelersCount: data.travelers.length,
+    activities: data.activities,
+    quoteStatus: data.sourceQuote?.status ?? null,
+  });
+  const tab =
+    search.onglet ?? defaultTripTab(!!data.trip.start_date && !!data.trip.end_date, data.activities.length);
+  const openTab = (v: string) =>
+    void navigate({ search: { onglet: v } as never, replace: true, resetScroll: false } as never);
   const { trip, travelers, activities, client, sourceQuote, sourceProspect, clientNumber, guides } =
     data;
   const guide = guides.find((g) => g.id === trip.guide_id) ?? null;
@@ -490,8 +506,9 @@ function TripDetail() {
           </form>
         </Card>
       )}
-      <Tabs defaultValue="infos" className="mt-6">
-        <TabsList>
+      <ReadinessCard {...readiness} onOpen={openTab} />
+      <Tabs value={tab} onValueChange={openTab} className="mt-6">
+        <TabsList className="max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="infos">
             <Compass className="mr-1.5 h-3.5 w-3.5" />
             Infos
