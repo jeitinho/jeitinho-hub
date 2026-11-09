@@ -54,3 +54,15 @@ test("déplacer une ligne", () => {
   assert.deepEqual(moveItem([1, 2, 3], 0, 2), [2, 3, 1]);
   assert.deepEqual(moveItem([1, 2, 3], 0, -1), [1, 2, 3]);
 });
+
+test("taux de marge sur les lignes chiffrées et lignes sans coût", () => {
+  const t = quoteTotals([
+    { label: "A", quantity: 2, unit_price: 100, supplier_cost: 60, is_offered: false, is_optional: false },
+    { label: "B", quantity: 1, unit_price: 100, supplier_cost: null, is_offered: false, is_optional: false },
+    { label: "C", quantity: 1, unit_price: 50, supplier_cost: null, is_offered: true, is_optional: false },
+  ] as never);
+  assert.equal(t.estimatedMargin, 80);
+  assert.equal(t.marginRate, 0.4);
+  assert.equal(t.uncostedLines, 1);
+  assert.ok(Math.abs(t.marginCoverage - 2 / 3) < 1e-9);
+});
