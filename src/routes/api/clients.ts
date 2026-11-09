@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth/supabase-auth";
 
 const SUPABASE_URL = "https://sxzdabtarlgozixcbzus.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_lCRfloaagzEBNlbvdspIcA_VCQfL6Cn";
-const WRITE_ROLES = new Set(["admin", "manager"]);
+const WRITE_ROLES = new Set(["admin", "manager", "associe"]);
 const CLIENT_FIELDS = new Set([
   "full_name", "email", "phone", "status", "stage", "source", "notes", "tags", "assigned_to",
   "last_contact_at", "legal_type", "company_name", "siret", "vat_number", "billing_address",

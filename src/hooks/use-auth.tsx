@@ -9,7 +9,8 @@ export type AppRole =
   | "auteur"
   | "guide"
   | "prestataire"
-  | "community_manager";
+  | "community_manager"
+  | "associe";
 
 export type AccountStatus = "pending_validation" | "active" | "rejected" | "suspended";
 
@@ -70,6 +71,9 @@ export function useAuth() {
   const hasRole = (r: AppRole) => roles.includes(r);
   const isAdmin = hasRole("admin");
   const canManage = isAdmin || hasRole("manager");
+  /** Associés JEITINHO (Luan, Patricia) : tout le périmètre conciergerie, pas AFRO LOVE. */
+  const isAssocie = hasRole("associe");
+  const canOperate = canManage || isAssocie;
   const canEditContent = canManage || hasRole("redacteur_chef") || hasRole("redacteur");
   const isPending = user?.status === "pending_validation";
   const isRejected = user?.status === "rejected";
@@ -82,6 +86,8 @@ export function useAuth() {
     hasRole,
     isAdmin,
     canManage,
+    canOperate,
+    isAssocie,
     canEditContent,
     isPending: Boolean(isPending),
     isRejected: Boolean(isRejected),
@@ -98,31 +104,45 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
     "guide",
     "prestataire",
     "community_manager",
+    "associe",
   ],
-  crm: ["admin", "manager"],
-  clients: ["admin", "manager"],
-  voyages: ["admin", "manager"],
-  devis: ["admin", "manager"],
-  experiences: ["admin", "manager", "redacteur_chef"],
+  crm: ["admin", "manager", "associe"],
+  clients: ["admin", "manager", "associe"],
+  voyages: ["admin", "manager", "associe"],
+  devis: ["admin", "manager", "associe"],
+  experiences: ["admin", "manager", "redacteur_chef", "associe"],
   contenus: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "community_manager"],
   blog: ["admin", "manager", "redacteur_chef", "redacteur", "auteur"],
   mediatheque: ["admin", "manager", "redacteur_chef", "redacteur", "community_manager"],
   /** Demandes de l'équipe à Rafael (community manager : les siennes ; gestionnaires : toutes). */
   demandes: ["admin", "manager", "community_manager"],
-  partenaires: ["admin", "manager"],
-  services: ["admin", "manager"],
-  billetterie: ["admin", "manager"],
-  calendrier: ["admin", "manager", "redacteur_chef", "redacteur", "auteur", "guide", "prestataire"],
+  partenaires: ["admin", "manager", "associe"],
+  services: ["admin", "manager", "associe"],
+  billetterie: ["admin", "manager", "associe"],
+  calendrier: [
+    "admin",
+    "manager",
+    "redacteur_chef",
+    "redacteur",
+    "auteur",
+    "guide",
+    "prestataire",
+    "associe",
+  ],
   analytics: ["admin", "manager"],
   parametres: ["admin", "manager"],
   "a-valider": ["admin", "manager"],
   agents: ["admin", "manager"],
   evenements: ["admin", "manager"],
   whatsapp: ["admin", "manager", "redacteur_chef", "redacteur"],
-  manuel: ["admin", "manager"],
-  distribution: ["admin", "manager"],
+  manuel: ["admin", "manager", "associe"],
+  distribution: ["admin", "manager", "associe"],
   audience: ["admin", "manager"],
   finances: ["admin", "manager"],
+  /** Registre des parts de l'association (pas de lecture pour les autres rôles). */
+  associes: ["admin", "manager", "associe"],
+  /** Manifeste du jour : guides et prestataires voient les sorties qui leur sont assignées. */
+  manifest: ["admin", "manager", "associe", "guide", "prestataire"],
 };
 
 export function canAccessModule(module: string, roles: AppRole[]) {
@@ -142,7 +162,8 @@ export function displayName(
 /** Profil d'usage, qui décide de l'accueil et de la barre mobile. */
 export type ProfileKind = "pilotage" | "media" | "cm" | "terrain" | "autre";
 export function profileKind(roles: AppRole[]): ProfileKind {
-  if (roles.includes("admin") || roles.includes("manager")) return "pilotage";
+  if (roles.includes("admin") || roles.includes("manager") || roles.includes("associe"))
+    return "pilotage";
   if (roles.includes("community_manager")) return "cm";
   if (roles.some((r) => r === "redacteur_chef" || r === "redacteur" || r === "auteur"))
     return "media";

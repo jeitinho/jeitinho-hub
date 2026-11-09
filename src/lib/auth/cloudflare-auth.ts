@@ -1,6 +1,6 @@
 import type { D1Database } from "@cloudflare/workers-types";
 
-export type AppRole = "admin" | "manager" | "redacteur_chef" | "redacteur" | "auteur" | "guide" | "prestataire" | "community_manager";
+export type AppRole = "admin" | "manager" | "redacteur_chef" | "redacteur" | "auteur" | "guide" | "prestataire" | "community_manager"  | "associe";
 export type AccountStatus = "pending_validation" | "active" | "rejected" | "suspended";
 export type AuthUser = { id: string; email: string; fullName: string | null; status: AccountStatus; roles: AppRole[] };
 

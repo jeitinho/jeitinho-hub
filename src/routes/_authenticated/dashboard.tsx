@@ -106,13 +106,13 @@ const AGENT_TONE: Record<AgentHealth["state"], string> = {
 };
 
 function CockpitPage() {
-  const { canManage, user, roles } = useAuth();
+  const { canManage, canOperate, user, roles } = useAuth();
   const name = displayName(user);
   const kind = profileKind(roles);
   const { data, isLoading, error } = useQuery({
     queryKey: ["cockpit"],
     queryFn: fetchCockpit,
-    enabled: canManage,
+    enabled: canOperate,
     refetchInterval: 120_000,
   });
   const pendingUsers = useQuery({
@@ -141,7 +141,7 @@ function CockpitPage() {
 
   const hello = name ? `${greet}, ${name}.` : `${greet}.`;
 
-  if (!canManage)
+  if (!canOperate)
     return (
       <PageShell
         eyebrow={dateLabel}

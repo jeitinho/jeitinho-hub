@@ -1,4 +1,5 @@
 import type { ProfileKind } from "@/hooks/use-auth";
+import { t } from "@/lib/i18n";
 
 /*
  * Un seul nom par écran. Cette table est la référence pour le menu (app-sidebar),
@@ -27,6 +28,8 @@ export const NAV_LABELS: Record<string, string> = {
   audience: "Audience",
   partenaires: "Partenaires",
   finances: "Finances",
+  associes: "Associés",
+  manifest: "Sorties du jour",
   agents: "Agents",
   analytics: "Analytics",
   parametres: "Paramètres",
@@ -40,7 +43,14 @@ export function navLabel(
   module: string,
   opts: { canManage?: boolean; kind?: ProfileKind } = {},
 ): string {
-  if (opts.canManage === false) {
+  return t(navLabelFr(module, opts));
+}
+
+function navLabelFr(
+  module: string,
+  opts: { canManage?: boolean; kind?: ProfileKind } = {},
+): string {
+  if (opts.canManage === false && opts.kind !== "pilotage") {
     if (module === "dashboard") {
       if (opts.kind === "media") return "Mon plan";
       if (opts.kind === "terrain") return "Mes sorties";

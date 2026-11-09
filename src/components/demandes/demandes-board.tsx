@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDemandeActions } from "./use-demande-actions";
 import { ChevronDown, ChevronRight, Inbox, RefreshCw, Search, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,30 @@ export function DemandesBoard({ onOpenRelances }: { onOpenRelances?: () => void 
   const [todayOnly, setTodayOnly] = useState(false);
   const [showLost, setShowLost] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
+  // Glisser-déposer entre colonnes (comme Pipedrive) : déplacement immédiat à l'écran, la base suit.
+  const qc = useQueryClient();
+  const { moveTo } = useDemandeActions();
+  const [dragKey, setDragKey] = useState<string | null>(null);
+  const [overStage, setOverStage] = useState<string | null>(null);
+  const dropOn = async (stageKey: string) => {
+    const d = (data?.demandes ?? []).find((x) => x.key === dragKey);
+    setDragKey(null);
+    setOverStage(null);
+    if (!d || d.stage === stageKey) return;
+    qc.setQueryData(DEMANDES_QUERY_KEY, (old: typeof data) =>
+      old
+        ? {
+            ...old,
+            demandes: old.demandes.map((x) =>
+              x.key === d.key ? { ...x, stage: stageKey as Demande["stage"] } : x,
+            ),
+          }
+        : old,
+    );
+    // moveTo affiche l'erreur éventuelle (ex. demande non qualifiée) ; le rechargement remet l'état réel.
+    await moveTo(d, stageKey as Parameters<typeof moveTo>[1]);
+    void qc.invalidateQueries({ queryKey: DEMANDES_QUERY_KEY });
+  };
 
   const demandes = useMemo(() => data?.demandes ?? [], [data]);
   const counters = useMemo(
@@ -207,7 +232,26 @@ export function DemandesBoard({ onOpenRelances }: { onOpenRelances?: () => void 
             const items = byStage.get(s.key) ?? [];
             const hot = items.filter((d) => d.temperature === "chaud").length;
             return (
-              <div key={s.key} className="flex min-w-0 flex-col rounded-lg bg-muted/30 p-2">
+              <div
+                key={s.key}
+                onDragOver={(e) => {
+                  if (!dragKey) return;
+                  e.preventDefault();
+                  if (overStage !== s.key) setOverStage(s.key);
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node)) setOverStage(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  void dropOn(s.key);
+                }}
+                className={cn(
+                  "flex min-w-0 flex-col rounded-lg bg-muted/30 p-2 transition-colors",
+                  dragKey && "ring-1 ring-dashed ring-border",
+                  overStage === s.key && "bg-primary/10 ring-2 ring-primary/50",
+                )}
+              >
                 <div className="mb-2 flex items-center justify-between gap-2 px-1">
                   <h3 className="text-xs font-medium">{s.label}</h3>
                   <span className="text-[11px] text-muted-foreground">
@@ -226,13 +270,30 @@ export function DemandesBoard({ onOpenRelances }: { onOpenRelances?: () => void 
                     </p>
                   )}
                   {items.map((d) => (
-                    <DemandeCard
+                    <div
                       key={d.key}
-                      demande={d}
-                      all={demandes}
-                      onOpen={() => setOpenKey(d.key)}
-                      onQualified={(id) => setOpenKey(`p:${id}`)}
-                    />
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("text/plain", d.key);
+                        setDragKey(d.key);
+                      }}
+                      onDragEnd={() => {
+                        setDragKey(null);
+                        setOverStage(null);
+                      }}
+                      className={cn(
+                        "cursor-grab active:cursor-grabbing",
+                        dragKey === d.key && "opacity-40",
+                      )}
+                    >
+                      <DemandeCard
+                        demande={d}
+                        all={demandes}
+                        onOpen={() => setOpenKey(d.key)}
+                        onQualified={(id) => setOpenKey(`p:${id}`)}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>

@@ -17,6 +17,7 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as AuthenticatedAValiderRouteImport } from './routes/_authenticated/a-valider'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAssociesRouteImport } from './routes/_authenticated/associes'
 import { Route as AuthenticatedAudienceRouteImport } from './routes/_authenticated/audience'
 import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
@@ -31,6 +32,7 @@ import { Route as AuthenticatedDistributionRouteImport } from './routes/_authent
 import { Route as AuthenticatedEvenementsRouteImport } from './routes/_authenticated/evenements'
 import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
 import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
+import { Route as AuthenticatedManifestRouteImport } from './routes/_authenticated/manifest'
 import { Route as AuthenticatedManuelRouteImport } from './routes/_authenticated/manuel'
 import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
@@ -113,6 +115,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssociesRoute = AuthenticatedAssociesRouteImport.update({
+  id: '/associes',
+  path: '/associes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAudienceRoute = AuthenticatedAudienceRouteImport.update({
   id: '/audience',
   path: '/audience',
@@ -184,6 +191,11 @@ const AuthenticatedExperiencesRoute =
 const AuthenticatedFinancesRoute = AuthenticatedFinancesRouteImport.update({
   id: '/finances',
   path: '/finances',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedManifestRoute = AuthenticatedManifestRouteImport.update({
+  id: '/manifest',
+  path: '/manifest',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedManuelRoute = AuthenticatedManuelRouteImport.update({
@@ -417,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/a-valider': typeof AuthenticatedAValiderRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/associes': typeof AuthenticatedAssociesRoute
   '/audience': typeof AuthenticatedAudienceRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -431,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/evenements': typeof AuthenticatedEvenementsRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/finances': typeof AuthenticatedFinancesRoute
+  '/manifest': typeof AuthenticatedManifestRoute
   '/manuel': typeof AuthenticatedManuelRoute
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -482,6 +496,7 @@ export interface FileRoutesByTo {
   '/a-valider': typeof AuthenticatedAValiderRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/associes': typeof AuthenticatedAssociesRoute
   '/audience': typeof AuthenticatedAudienceRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -496,6 +511,7 @@ export interface FileRoutesByTo {
   '/evenements': typeof AuthenticatedEvenementsRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/finances': typeof AuthenticatedFinancesRoute
+  '/manifest': typeof AuthenticatedManifestRoute
   '/manuel': typeof AuthenticatedManuelRoute
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -549,6 +565,7 @@ export interface FileRoutesById {
   '/_authenticated/a-valider': typeof AuthenticatedAValiderRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/associes': typeof AuthenticatedAssociesRoute
   '/_authenticated/audience': typeof AuthenticatedAudienceRoute
   '/_authenticated/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
@@ -563,6 +580,7 @@ export interface FileRoutesById {
   '/_authenticated/evenements': typeof AuthenticatedEvenementsRoute
   '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/_authenticated/finances': typeof AuthenticatedFinancesRoute
+  '/_authenticated/manifest': typeof AuthenticatedManifestRoute
   '/_authenticated/manuel': typeof AuthenticatedManuelRoute
   '/_authenticated/mediatheque': typeof AuthenticatedMediathequeRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -616,6 +634,7 @@ export interface FileRouteTypes {
     | '/a-valider'
     | '/agents'
     | '/analytics'
+    | '/associes'
     | '/audience'
     | '/billetterie'
     | '/blog'
@@ -630,6 +649,7 @@ export interface FileRouteTypes {
     | '/evenements'
     | '/experiences'
     | '/finances'
+    | '/manifest'
     | '/manuel'
     | '/mediatheque'
     | '/parametres'
@@ -681,6 +701,7 @@ export interface FileRouteTypes {
     | '/a-valider'
     | '/agents'
     | '/analytics'
+    | '/associes'
     | '/audience'
     | '/billetterie'
     | '/blog'
@@ -695,6 +716,7 @@ export interface FileRouteTypes {
     | '/evenements'
     | '/experiences'
     | '/finances'
+    | '/manifest'
     | '/manuel'
     | '/mediatheque'
     | '/parametres'
@@ -747,6 +769,7 @@ export interface FileRouteTypes {
     | '/_authenticated/a-valider'
     | '/_authenticated/agents'
     | '/_authenticated/analytics'
+    | '/_authenticated/associes'
     | '/_authenticated/audience'
     | '/_authenticated/billetterie'
     | '/_authenticated/blog'
@@ -761,6 +784,7 @@ export interface FileRouteTypes {
     | '/_authenticated/evenements'
     | '/_authenticated/experiences'
     | '/_authenticated/finances'
+    | '/_authenticated/manifest'
     | '/_authenticated/manuel'
     | '/_authenticated/mediatheque'
     | '/_authenticated/parametres'
@@ -888,6 +912,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/associes': {
+      id: '/_authenticated/associes'
+      path: '/associes'
+      fullPath: '/associes'
+      preLoaderRoute: typeof AuthenticatedAssociesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/audience': {
       id: '/_authenticated/audience'
       path: '/audience'
@@ -984,6 +1015,13 @@ declare module '@tanstack/react-router' {
       path: '/finances'
       fullPath: '/finances'
       preLoaderRoute: typeof AuthenticatedFinancesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manifest': {
+      id: '/_authenticated/manifest'
+      path: '/manifest'
+      fullPath: '/manifest'
+      preLoaderRoute: typeof AuthenticatedManifestRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/manuel': {
@@ -1428,6 +1466,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAValiderRoute: typeof AuthenticatedAValiderRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedAssociesRoute: typeof AuthenticatedAssociesRoute
   AuthenticatedAudienceRoute: typeof AuthenticatedAudienceRoute
   AuthenticatedBilletterieRoute: typeof AuthenticatedBilletterieRouteWithChildren
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
@@ -1442,6 +1481,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEvenementsRoute: typeof AuthenticatedEvenementsRoute
   AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
   AuthenticatedFinancesRoute: typeof AuthenticatedFinancesRoute
+  AuthenticatedManifestRoute: typeof AuthenticatedManifestRoute
   AuthenticatedManuelRoute: typeof AuthenticatedManuelRoute
   AuthenticatedMediathequeRoute: typeof AuthenticatedMediathequeRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
@@ -1455,6 +1495,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAValiderRoute: AuthenticatedAValiderRoute,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedAssociesRoute: AuthenticatedAssociesRoute,
   AuthenticatedAudienceRoute: AuthenticatedAudienceRoute,
   AuthenticatedBilletterieRoute: AuthenticatedBilletterieRouteWithChildren,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
@@ -1469,6 +1510,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEvenementsRoute: AuthenticatedEvenementsRoute,
   AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
   AuthenticatedFinancesRoute: AuthenticatedFinancesRoute,
+  AuthenticatedManifestRoute: AuthenticatedManifestRoute,
   AuthenticatedManuelRoute: AuthenticatedManuelRoute,
   AuthenticatedMediathequeRoute: AuthenticatedMediathequeRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,

@@ -8,6 +8,8 @@ import {
   Images,
   Library,
   Menu,
+  Plane,
+  ListChecks,
   MessageCircle,
   Send,
   Sun,
@@ -36,7 +38,16 @@ const CM_ITEMS: NavItem[] = [
 
 const TERRAIN_ITEMS: NavItem[] = [
   { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/manifest", module: "manifest", icon: ListChecks, badge: null },
   { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
+];
+
+/** Associés : le quotidien conciergerie, sans la file « À valider » réservée à Rafael. */
+const ASSOCIE_ITEMS: NavItem[] = [
+  { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/crm", module: "crm", icon: Inbox, badge: "crm" },
+  { to: "/voyages", module: "voyages", icon: Plane, badge: null },
+  { to: "/manifest", module: "manifest", icon: ListChecks, badge: null },
 ];
 
 const ITEMS: NavItem[] = [
@@ -50,24 +61,26 @@ const ITEMS: NavItem[] = [
 export function MobileNav() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { setOpenMobile } = useSidebar();
-  const { canManage, roles } = useAuth();
+  const { canManage, canOperate, roles } = useAuth();
   const kind = profileKind(roles);
   const { data: badges = {} } = useQuery({
     queryKey: ["sidebar-badges"],
     queryFn: fetchSidebarBadges,
-    enabled: canManage,
+    enabled: canOperate,
     refetchInterval: 120_000,
   });
 
   const items = canManage
     ? ITEMS
-    : kind === "media"
-      ? MEDIA_ITEMS
-      : kind === "cm"
-        ? CM_ITEMS
-        : kind === "terrain"
-          ? TERRAIN_ITEMS
-          : [];
+    : canOperate
+      ? ASSOCIE_ITEMS
+      : kind === "media"
+        ? MEDIA_ITEMS
+        : kind === "cm"
+          ? CM_ITEMS
+          : kind === "terrain"
+            ? TERRAIN_ITEMS
+            : [];
   if (!items.length) return null;
 
   return (
