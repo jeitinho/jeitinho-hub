@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatTripRange } from "@/lib/trips/list-rules";
+import { PaymentsTracker } from "@/components/quotes/payments-tracker";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
@@ -83,6 +84,7 @@ function QuotesList() {
         </div>
       }
     >
+      <PaymentsTracker />
       <div className="mb-5 flex flex-wrap gap-2">
         {[
           { value: "all", label: "Tous" },

@@ -92,7 +92,9 @@ function Voyages() {
         tripIds.length
           ? supabase
               .from("trip_activities")
-              .select("trip_id,sale_price,supplier_cost,commission_amount,margin_amount,kind,day")
+              .select(
+                "trip_id,sale_price,supplier_cost,commission_amount,margin_amount,kind,day,status",
+              )
               .in("trip_id", tripIds)
           : Promise.resolve({ data: [], error: null }),
         prospectIds.length
@@ -110,7 +112,7 @@ function Voyages() {
       );
       const financials = new Map<
         string,
-        { sale: number; margin: number; activities: number; toPlace: number }
+        { sale: number; margin: number; activities: number; toPlace: number; confirmed: number }
       >();
       for (const a of (activitiesResult.data ?? []) as any[]) {
         const current = financials.get(a.trip_id) ?? {
@@ -118,6 +120,7 @@ function Voyages() {
           margin: 0,
           activities: 0,
           toPlace: 0,
+          confirmed: 0,
         };
         current.sale += Number(a.sale_price ?? 0);
         current.margin += Number(
@@ -129,6 +132,8 @@ function Voyages() {
         if ((a.kind ?? "activity") === "activity") {
           current.activities += 1;
           if (!a.day) current.toPlace += 1;
+          if (["confirmed", "client_informed", "completed", "done"].includes(a.status))
+            current.confirmed += 1;
         }
         financials.set(a.trip_id, current);
       }
@@ -143,6 +148,7 @@ function Voyages() {
         margin_amount: financials.get(r.id)?.margin ?? 0,
         activity_count: financials.get(r.id)?.activities ?? 0,
         to_place: financials.get(r.id)?.toPlace ?? 0,
+        confirmed_count: financials.get(r.id)?.confirmed ?? 0,
       }));
     },
   });
@@ -317,6 +323,25 @@ function Voyages() {
                     </span>
                   )}
                 </div>
+                {trip.activity_count > 0 && (
+                  <div
+                    className="mt-3"
+                    title="Prestations confirmées par les prestataires (comme Tourwriter)"
+                  >
+                    <div className="mb-1 flex justify-between text-[11px] text-muted-foreground">
+                      <span>Confirmations prestataires</span>
+                      <span className="tabular-nums">
+                        {trip.confirmed_count}/{trip.activity_count}
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full ${trip.confirmed_count === trip.activity_count ? "bg-emerald-600" : "bg-amber-500"}`}
+                        style={{ width: `${(trip.confirmed_count / trip.activity_count) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <p className="text-xs text-muted-foreground">Vente activités</p>
