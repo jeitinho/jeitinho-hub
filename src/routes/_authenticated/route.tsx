@@ -9,6 +9,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { useEffect } from "react";
 import { startDomTranslation } from "@/lib/i18n";
 import { PwaSetup } from "@/components/pwa-setup";
+import { ConfirmHost } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -37,7 +38,7 @@ function AuthenticatedLayout() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-10 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center gap-3 border-b border-border bg-card/85 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:px-6">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
             <div className="truncate text-[13.5px] font-semibold text-foreground">{title}</div>
@@ -53,6 +54,7 @@ function AuthenticatedLayout() {
             />
           </header>
           <PwaSetup />
+          <ConfirmHost />
           <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
             {allowed ? (
               <Outlet />

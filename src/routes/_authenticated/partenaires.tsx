@@ -35,6 +35,7 @@ import { PipelineBoard } from "@/components/partenaires/pipeline-board";
 import { PartnersTable } from "@/components/partenaires/partners-table";
 import { PartnerSheet } from "@/components/partenaires/partner-sheet";
 import { QuickCreate } from "@/components/partenaires/quick-create";
+import { LoadingRows } from "@/components/loading-rows";
 
 const FOCUS = ["candidatures", "relancer", "actifs", "relais", "revendeurs"] as const;
 type Focus = (typeof FOCUS)[number];
@@ -287,7 +288,7 @@ function PartnersPage() {
         </div>
       )}
 
-      {list.isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {list.isLoading && <LoadingRows />}
       {list.error && (
         <Card className="border-destructive/40 p-6 text-sm">
           {(list.error as Error).message}

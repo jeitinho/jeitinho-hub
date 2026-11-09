@@ -244,7 +244,7 @@ function AssociesPage() {
       {/* ---------------- À venir */}
       <section className="mb-8">
         <div className="mb-3 flex items-baseline justify-between gap-3">
-          <h2 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+          <h2 className="text-xl font-display font-medium">
             À venir
           </h2>
           <span className="text-sm text-muted-foreground">
@@ -299,7 +299,7 @@ function AssociesPage() {
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="min-w-40 text-center text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+        <div className="min-w-40 text-center text-lg font-display">
           {monthTitle(month)}
         </div>
         <Button
@@ -424,7 +424,7 @@ function AssociesPage() {
               </table>
             </Card>
 
-            <h2 className="mb-3 text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+            <h2 className="mb-3 text-xl font-display font-medium">
               Encaissé ce mois
             </h2>
             {received.length === 0 ? (
@@ -550,7 +550,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <Card className="p-4">
       <p className="tracked text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl tabular-nums" style={{ fontFamily: "Fraunces, serif" }}>
+      <p className="mt-1 text-2xl tabular-nums font-display">
         {value}
       </p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}

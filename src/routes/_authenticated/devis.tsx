@@ -12,6 +12,7 @@ import { Plus, FileText, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { QUOTE_STATUSES, formatMoney, quoteStatusLabel } from "@/lib/quotes/status";
 import { isQuoteToChase } from "@/lib/ops/cockpit-rules";
+import { LoadingRows } from "@/components/loading-rows";
 
 /** ?statut=relance (depuis le cockpit) : devis envoyés à relancer ; sinon un statut de devis. */
 const searchSchema = z.object({ statut: z.string().optional().catch(undefined) });
@@ -101,7 +102,7 @@ function QuotesList() {
         ))}
       </div>
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">Chargement…</div>
+        <LoadingRows />
       ) : error ? (
         <Card className="border-destructive/40 p-8">
           <h2 className="font-semibold">Impossible de charger les devis</h2>
@@ -110,7 +111,7 @@ function QuotesList() {
       ) : !rows.length ? (
         <Card className="border-dashed p-16 text-center">
           <FileText className="mx-auto mb-4 h-8 w-8 text-primary" />
-          <h2 className="text-xl">Aucun devis</h2>
+          <h2 className="text-xl font-display font-medium">Aucun devis</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Créez votre premier devis pour un client.
           </p>

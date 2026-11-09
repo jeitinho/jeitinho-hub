@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BlogFeedList } from "@/components/media/blog-feed-list";
 import { WriterLoad } from "@/components/media/writer-load";
 import { BLOG_URL } from "@/lib/ops/media";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/blog")({
   component: Layout,
@@ -107,7 +108,7 @@ function EditorDrafts() {
         </Link>
       </div>
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">Chargement…</div>
+        <LoadingRows />
       ) : error ? (
         <Card className="border-destructive/40 p-4 text-sm">{(error as Error).message}</Card>
       ) : !data?.length ? (
@@ -147,7 +148,7 @@ function EditorDrafts() {
                       /{String(a.slug ?? "")}
                     </span>
                   </div>
-                  <h3 className="mt-1 truncate text-base" style={{ fontFamily: "Fraunces, serif" }}>
+                  <h3 className="mt-1 truncate text-base font-display">
                     {String(a.title)}
                   </h3>
                   {a.excerpt ? (

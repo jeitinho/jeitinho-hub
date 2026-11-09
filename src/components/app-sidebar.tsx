@@ -242,10 +242,12 @@ export function AppSidebar() {
           if (!visible.length) return null;
           const hasActive = visible.some((i) => path === i.url || path.startsWith(i.url + "/"));
           const groupBadge = visible.reduce((n, i) => n + (badges[i.module] ?? 0), 0);
-          const isFolded = !collapsed && folded.includes(g.id) && !hasActive;
+          // Le premier groupe (Aujourd'hui) est l'entrée du hub : toujours ouvert, sans titre.
+          const headless = g.id === "today";
+          const isFolded = !headless && !collapsed && folded.includes(g.id) && !hasActive;
           return (
             <SidebarGroup key={g.id} className="py-1">
-              {!collapsed && (
+              {!collapsed && !headless && (
                 <SidebarGroupLabel asChild className="h-7 px-2 text-[11.5px] font-medium text-sidebar-foreground/45">
                   <button
                     type="button"

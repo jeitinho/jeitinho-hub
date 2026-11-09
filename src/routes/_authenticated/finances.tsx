@@ -28,6 +28,7 @@ import {
   sumByCurrency,
   totalsByPole,
 } from "@/lib/ops/finances";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/finances")({
   component: FinancesPage,
@@ -151,7 +152,7 @@ function FinancesPage() {
 
       <Card className="p-4">
         <h2 className="mb-3 text-base font-semibold">Derniers encaissements · {periodLabel}</h2>
-        {receiptsQ.isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+        {receiptsQ.isLoading && <LoadingRows />}
         {!receiptsQ.isLoading && !receiptsQ.error && scoped.length === 0 && (
           <div className="py-10 text-center">
             <Wallet className="mx-auto mb-3 h-6 w-6 text-primary" />

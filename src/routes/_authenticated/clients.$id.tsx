@@ -118,7 +118,7 @@ function ClientDetail() {
           <Card className="p-5">
             <h2
               className="mb-4 flex items-center gap-2 text-lg"
-              style={{ fontFamily: "Fraunces, serif" }}
+             
             >
               <History className="h-4 w-4 text-muted-foreground" />
               Chronologie
@@ -147,7 +147,7 @@ function ClientDetail() {
 
           {hasOta && (
             <Card className="p-5">
-              <h2 className="mb-4 text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+              <h2 className="mb-4 text-lg font-display font-medium">
                 Réservations plateformes
               </h2>
               <OtaBookingsList clientId={id} compact />

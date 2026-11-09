@@ -44,7 +44,7 @@ const SALES_CHANNEL: Record<string, string> = {
 function H2({ children, count }: { children: React.ReactNode; count?: number }) {
   return (
     <div className="flex items-baseline gap-2">
-      <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+      <h2 className="text-lg font-display font-medium">
         {children}
       </h2>
       {!!count && <span className="pill">{count}</span>}

@@ -240,7 +240,7 @@ export function BurstMode({
         <div className="mx-auto max-w-2xl space-y-4 px-4 py-5">
           {done ? (
             <div className="space-y-6 py-6 text-center">
-              <h2 className="text-2xl" style={{ fontFamily: "Fraunces, serif" }}>
+              <h2 className="text-2xl font-display font-medium">
                 Série terminée
               </h2>
               <div className="grid grid-cols-3 gap-2">

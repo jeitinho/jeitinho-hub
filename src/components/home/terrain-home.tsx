@@ -30,7 +30,7 @@ export function TerrainHome() {
     );
   return (
     <div className="space-y-3">
-      <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+      <h2 className="text-lg font-display font-medium">
         Tes prochaines sorties
       </h2>
       {data.map((t) => (

@@ -13,6 +13,7 @@ import { RevisionsPanel } from "@/components/workflow/revisions-panel";
 import { PublishPanel } from "@/components/workflow/publish-panel";
 import { DeleteArticleDialog } from "@/components/workflow/delete-article-dialog";
 import { RepublishPanel } from "@/components/workflow/republish-panel";
+import { confirmAction } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/_authenticated/blog/$id")({
   component: EditArticle,
@@ -54,7 +55,7 @@ function EditArticle() {
             variant="ghost"
             className="text-destructive hover:text-destructive"
             onClick={async () => {
-              if (!confirm("Supprimer ce brouillon ? Il ne sera pas publié sur le blog.")) return;
+              if (!(await confirmAction("Supprimer ce brouillon ?", { description: "Il ne sera pas publié sur le blog.", confirmLabel: "Supprimer le brouillon" }))) return;
               const { error } = await supabase.from("contents").delete().eq("id", id);
               if (error) return toast.error(error.message);
               toast.success("Supprimé");

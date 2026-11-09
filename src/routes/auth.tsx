@@ -80,7 +80,7 @@ function AuthPage() {
           <JeitinhoLogo className="h-8 w-auto" />
           <div>
             <p className="tracked mb-6 text-[11px] text-peach/80">Le back-office</p>
-            <h1 className="text-cream max-w-md text-5xl font-medium leading-[1.1]" style={{ fontFamily: "Fraunces, serif" }}>
+            <h1 className="text-cream max-w-md text-5xl font-medium leading-[1.1] font-display">
               Découvrez le Brésil <em className="text-peach not-italic" style={{ fontStyle: "italic" }}>autrement.</em>
             </h1>
             <p className="text-cream/60 mt-6 max-w-sm text-sm leading-relaxed">Le système d'exploitation complet de JEITINHO. Conciergerie, contenus, voyages, blog — une seule interface, une seule vérité.</p>

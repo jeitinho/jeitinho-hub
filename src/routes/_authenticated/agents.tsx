@@ -13,6 +13,7 @@ import {
   type AgentDefinition,
   type AgentRun,
 } from "@/lib/ops/ops";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/agents")({
   component: AgentsPage,
@@ -64,7 +65,7 @@ function AgentsPage() {
       title="Agents"
       description="Les agents IA qui tournent chaque jour, leur dernier passage et leurs rapports."
     >
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <LoadingRows />}
       {error && (
         <Card className="border-destructive/40 p-6 text-sm">{(error as Error).message}</Card>
       )}

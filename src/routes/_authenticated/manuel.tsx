@@ -29,6 +29,7 @@ import {
   setSaleCommissionPaid,
   unpaidCommission,
 } from "@/lib/ops/finances";
+import { LoadingRows } from "@/components/loading-rows";
 
 // Stripe : amount_total et commission_amount sont en centimes.
 const eur = (v: number | null | undefined) => Number(v ?? 0) / 100;
@@ -104,7 +105,7 @@ function ManuelPage() {
       title="Manuel JEITINHO"
       description="Ventes du guide numérique (30 €), canaux de vente trackés ?ref= et commissions."
     >
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <LoadingRows />}
       {error && (
         <Card className="border-destructive/40 p-6 text-sm">{(error as Error).message}</Card>
       )}

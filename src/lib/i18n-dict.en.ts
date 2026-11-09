@@ -1,5 +1,7 @@
 /* Généré à partir des libellés français du hub — anglais. Clé = texte français exact. */
 export const EN_DICT: Record<string, string> = {
+ "Active les notifications du hub.": "Turn on hub notifications.",
+ "personne": "person",
  "Offre": "Offer",
  "Créer": "Create",
  "Demandes clients": "Client requests",

@@ -26,6 +26,7 @@ import {
   type OtaListing,
 } from "@/lib/ops/ops";
 import { OtaBookingsList } from "@/components/ops/ota-bookings";
+import { LoadingRows } from "@/components/loading-rows";
 
 /** ?filtre=a_corriger (depuis le cockpit) : n'affiche que les fiches à corriger. */
 const searchSchema = z.object({
@@ -148,7 +149,7 @@ function DistributionPage() {
           onCancel={() => setCreating(false)}
         />
       )}
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <LoadingRows />}
       {error && (
         <Card className="border-destructive/40 p-6 text-sm">{(error as Error).message}</Card>
       )}

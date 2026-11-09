@@ -59,6 +59,7 @@ import {
   activityStatusLabel,
   tripStatusLabel,
 } from "@/lib/trips/status";
+import { confirmAction } from "@/components/confirm-dialog";
 
 export const Route = createFileRoute("/_authenticated/voyages/$id")({
   component: TripDetail,
@@ -302,7 +303,7 @@ function TripDetail() {
   };
 
   const deleteTraveler = async (travelerId: string, name: string) => {
-    if (!confirm(`Retirer ${name} des voyageurs ?`)) return;
+    if (!(await confirmAction(`Retirer ${name} des voyageurs ?`, { confirmLabel: "Retirer" }))) return;
     const { error: e } = await supabase.from("trip_travelers").delete().eq("id", travelerId);
     if (e) return void toast.error(e.message);
     toast.success("Voyageur retiré");
@@ -337,7 +338,7 @@ function TripDetail() {
   };
 
   const deleteActivity = async (activityId: string) => {
-    if (!confirm("Supprimer cette prestation du voyage ?")) return;
+    if (!(await confirmAction("Supprimer cette prestation du voyage ?", { confirmLabel: "Supprimer la prestation" }))) return;
     const { error: e } = await supabase.from("trip_activities").delete().eq("id", activityId);
     if (e) return void toast.error(e.message);
     toast.success("Prestation supprimée");

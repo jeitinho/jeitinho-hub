@@ -112,7 +112,7 @@ export function BlogFeedList() {
                     target="_blank"
                     rel="noreferrer"
                     className="group inline-flex items-start gap-1.5 text-base hover:text-primary"
-                    style={{ fontFamily: "Fraunces, serif" }}
+                   
                   >
                     {a.title}
                     <ExternalLink className="mt-1 h-3.5 w-3.5 flex-shrink-0 opacity-50 group-hover:opacity-100" />

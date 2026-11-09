@@ -109,7 +109,7 @@ function DemandeDetail({
             </span>
           )}
         </div>
-        <SheetTitle className="text-2xl" style={{ fontFamily: "Fraunces, serif" }}>
+        <SheetTitle className="text-2xl font-display">
           {d.name}
         </SheetTitle>
         <SheetDescription>

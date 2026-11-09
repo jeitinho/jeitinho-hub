@@ -28,6 +28,7 @@ import {
   needsStaff,
   type DispatchItem,
 } from "@/lib/ops/dispatch-rules";
+import { LoadingRows } from "@/components/loading-rows";
 
 export const Route = createFileRoute("/_authenticated/dispatch")({
   head: () => ({ meta: [{ title: "Dispatch — JEITINHO" }] }),
@@ -268,7 +269,7 @@ function DispatchPage() {
         )}
       </div>
 
-      {list.isLoading && <p className="text-sm text-muted-foreground">{t("Chargement…")}</p>}
+      {list.isLoading && <LoadingRows />}
       {list.error && <p className="text-sm text-destructive">{(list.error as Error).message}</p>}
       {!list.isLoading && days.length === 0 && (
         <Card className="p-8 text-center">

@@ -187,7 +187,7 @@ export function ClientsList() {
       ) : !rows.length ? (
         <Card className="border-dashed p-16 text-center">
           <UserRound className="mx-auto mb-4 h-8 w-8 text-primary" />
-          <h2 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+          <h2 className="text-xl font-display font-medium">
             Aucun client pour l'instant
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
