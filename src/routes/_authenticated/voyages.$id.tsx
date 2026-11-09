@@ -89,16 +89,24 @@ function Money({
   value,
   currency,
   highlight = false,
+  unknown = false,
+  hint,
 }: {
   label: string;
   value: number;
   currency: string;
   highlight?: boolean;
+  /** Montant non calculable (données manquantes) : on affiche « — » plutôt qu'un faux zéro. */
+  unknown?: boolean;
+  hint?: string;
 }) {
   return (
-    <Card className={highlight ? "border-primary/20 bg-primary/5 p-4" : "p-4"}>
+    <Card className={highlight && !unknown ? "border-primary/20 bg-primary/5 p-4" : "p-4"}>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-xl font-semibold">{fmtAmount(value, currency)}</p>
+      <p className={`mt-1 text-xl font-semibold tabular-nums ${unknown ? "text-muted-foreground" : ""}`}>
+        {unknown ? "—" : fmtAmount(value, currency)}
+      </p>
+      {hint && <p className="mt-0.5 text-[12px] text-amber-700">{hint}</p>}
     </Card>
   );
 }
@@ -268,6 +276,15 @@ function TripDetail() {
   const totalCost = activities.reduce((s, a) => s + Number(a.supplier_cost || 0), 0);
   const totalCommission = activities.reduce((s, a) => s + Number(a.commission_amount || 0), 0);
   const totalMargin = activities.reduce((s, a) => s + Number(a.margin_amount || 0), 0);
+  // Prestations vendues dont le coût fournisseur n'a pas été saisi : la marge n'est pas connue.
+  const missingCosts = activities.filter(
+    (a) =>
+      (a.kind ?? "activity") === "activity" &&
+      Number(a.sale_price || 0) > 0 &&
+      !Number(a.supplier_cost || 0) &&
+      !Number(a.margin_amount || 0) &&
+      !a.is_offered,
+  ).length;
   const experiences = activities.filter((a) => a.activity_type === "experience");
   const services = activities.filter((a) => a.activity_type === "service");
   const tickets = activities.filter((a) => a.activity_type === "ticket");
@@ -424,9 +441,21 @@ function TripDetail() {
     >
       <div className="grid gap-4 md:grid-cols-4">
         <Money label="Vente" value={totalSale} currency={trip.currency} />
-        <Money label="Coûts fournisseurs" value={totalCost} currency={trip.currency} />
+        <Money
+          label="Coûts fournisseurs"
+          value={totalCost}
+          currency={trip.currency}
+          hint={missingCosts ? `${missingCosts} ${missingCosts > 1 ? "prestations" : "prestation"} sans coût saisi` : undefined}
+        />
         <Money label="Commissions" value={totalCommission} currency={trip.currency} />
-        <Money label="Marge" value={totalMargin} currency={trip.currency} highlight />
+        <Money
+          label="Marge"
+          value={totalMargin}
+          currency={trip.currency}
+          highlight
+          unknown={missingCosts > 0 && totalMargin === 0}
+          hint={missingCosts > 0 ? "Coûts à renseigner" : undefined}
+        />
       </div>
       <QuoteImportBanner
         tripId={id}

@@ -57,11 +57,32 @@ const CATEGORIES = [
 
 /** DA Ketur : couleurs du planning (Sheets + PDF). */
 function cellStyle(a: Pick<PlanningActivity, "kind" | "category"> | null): string {
-  if (!a) return "border-2 border-dashed border-border/60 bg-background text-muted-foreground";
+  // Case vide : discrète, « + Ajouter » n'apparaît qu'au survol (le programme ressort).
+  if (!a)
+    return "group border border-transparent bg-foreground/[0.025] text-muted-foreground hover:border-dashed hover:border-border hover:bg-card";
+  if (a.kind === "note") return "border border-dashed border-[#d9b892] bg-card italic text-foreground/80";
   if (a.kind === "free") return "border border-[#dcd6cc] bg-[#dcd6cc] text-foreground";
   if (a.category === "soiree") return "border border-[#a8603e] bg-[#a8603e] text-white";
   if (a.category === "deplacement") return "border border-[#d9b892] bg-[#d9b892] text-foreground";
   return "border border-[#efc99c] bg-[#efc99c] text-foreground";
+}
+
+/** Statut d'une prestation, lisible d'un coup d'œil sur le planning. */
+const STATUS_SHORT: Record<string, string> = {
+  to_plan: "À confirmer",
+  confirmed: "Confirmé",
+  client_informed: "Client informé",
+  completed: "Fait",
+  done: "Fait",
+};
+function StatusDot({ status }: { status: string }) {
+  const tone =
+    status === "to_plan"
+      ? "bg-transparent ring-2 ring-inset ring-amber-600"
+      : status === "confirmed"
+        ? "bg-emerald-600"
+        : "bg-emerald-700 ring-2 ring-emerald-200";
+  return <span aria-hidden className={`inline-block h-2 w-2 shrink-0 rounded-full ${tone}`} />;
 }
 
 function fmtDayShort(iso: string): string {
@@ -170,14 +191,24 @@ export function TripPlanningTab({
       >
         {activity ? (
           <>
-            <p className="truncate font-medium">{activity.title}</p>
+            <p className="flex items-center gap-1.5 font-medium">
+              {activity.kind === "activity" && <StatusDot status={activity.status} />}
+              <span className="truncate">{activity.title}</span>
+            </p>
             <p className="truncate opacity-80">
-              {activity.display_time ? `${activity.display_time} · ` : ""}
-              {activity.is_offered ? "Offert" : ""}
+              {[
+                activity.display_time,
+                activity.is_offered ? "Offert" : null,
+                activity.kind === "activity" ? STATUS_SHORT[activity.status] : activity.kind === "note" ? "Note" : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           </>
         ) : (
-          <span className="opacity-60">+ Ajouter</span>
+          <span className="opacity-0 transition-opacity group-hover:opacity-70 group-focus-visible:opacity-70">
+            + Ajouter
+          </span>
         )}
       </button>
     );
@@ -187,7 +218,7 @@ export function TripPlanningTab({
     <div className="space-y-6">
       {unplaced.length > 0 && (
         <Card className="space-y-2 p-4">
-          <p className="tracked text-xs text-muted-foreground">À placer</p>
+          <p className="text-[13px] font-semibold">À placer · {unplaced.length}</p>
           <div className="flex flex-wrap gap-2">
             {unplaced.map((a) => (
               <span
@@ -229,8 +260,12 @@ export function TripPlanningTab({
                     <span className="shrink-0 font-medium opacity-70">{s.label}</span>
                     <span className="min-w-0 flex-1 truncate text-right">
                       {activity
-                        ? `${activity.title}${activity.display_time ? ` · ${activity.display_time}` : ""}`
-                        : "+ Ajouter"}
+                        ? `${activity.title}${activity.display_time ? ` · ${activity.display_time}` : ""}${
+                            activity.kind === "activity" && STATUS_SHORT[activity.status]
+                              ? ` · ${STATUS_SHORT[activity.status]}`
+                              : ""
+                          }`
+                        : "+"}
                     </span>
                   </button>
                 );
