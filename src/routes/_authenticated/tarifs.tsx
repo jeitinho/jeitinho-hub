@@ -71,13 +71,13 @@ async function loadRows(): Promise<PricingRow[]> {
       .from("ticket_offers")
       .select("id,title,venue,event_date,currency,pricing_model,public_price,supplier_cost,supplier_net,fixed_cost,commission_pct,is_published,is_active")
       .order("event_date", { ascending: true, nullsFirst: false }),
-    db.from("ticket_offer_variants").select("id,ticket_offer_id,label,public_price,sort_order,is_active").order("sort_order"),
+    db.from("ticket_offer_variants").select("id,ticket_offer_id,label,public_price,supplier_cost,sort_order,is_active").order("sort_order"),
   ]);
   for (const r of [ex, sv, tk, vr]) if (r.error) throw new Error(r.error.message);
-  const variants = new Map<string, { id: string; label: string; price: number | null }[]>();
+  const variants = new Map<string, { id: string; label: string; price: number | null; cost: number | null }[]>();
   for (const v of vr.data ?? []) {
     if (v.is_active === false) continue;
-    variants.set(v.ticket_offer_id, [...(variants.get(v.ticket_offer_id) ?? []), { id: v.id, label: v.label, price: n(v.public_price) }]);
+    variants.set(v.ticket_offer_id, [...(variants.get(v.ticket_offer_id) ?? []), { id: v.id, label: v.label, price: n(v.public_price), cost: n(v.supplier_cost) }]);
   }
   return [
     ...(ex.data ?? []).map((e: Record<string, unknown>) => ({
@@ -179,14 +179,14 @@ function TarifsPage() {
     }
   };
 
-  const saveVariant = async (r: PricingRow, variantId: string, raw: string) => {
+  const saveVariant = async (r: PricingRow, variantId: string, raw: string, field: "price" | "cost" = "price") => {
     const value = raw.trim() === "" ? null : Number(raw.replace(",", "."));
     if (value !== null && (Number.isNaN(value) || value < 0)) return toast.error(t("Montant invalide."));
-    const cell = `${r.key}:v:${variantId}`;
+    const cell = `${r.key}:v${field === "cost" ? "c" : ""}:${variantId}`;
     setSaving((s) => ({ ...s, [cell]: "saving" }));
     try {
-      await updateTicketOfferVariant(variantId, { public_price: value });
-      patchLocal(r.key, { variants: (r.variants ?? []).map((v) => (v.id === variantId ? { ...v, price: value } : v)) });
+      await updateTicketOfferVariant(variantId, field === "cost" ? { supplier_cost: value } : { public_price: value });
+      patchLocal(r.key, { variants: (r.variants ?? []).map((v) => (v.id === variantId ? { ...v, [field]: value } : v)) });
       setSaving((s) => ({ ...s, [cell]: "saved" }));
     } catch (e) {
       setSaving((s) => ({ ...s, [cell]: "error" }));
@@ -297,8 +297,17 @@ function TarifsPage() {
                                     label={`${r.title} — ${v.label}`}
                                   />
                                 </span>
+                                <span className="w-24">
+                                  <MoneyInput
+                                    value={v.cost ?? null}
+                                    state={saving[`${r.key}:vc:${v.id}`]}
+                                    onCommit={(raw) => void saveVariant(r, v.id, raw, "cost")}
+                                    label={`${r.title} — ${v.label} — ${t("coût")}`}
+                                    placeholder={t("coût")}
+                                  />
+                                </span>
                                 {(() => {
-                                  const ve = unitEconomics({ ...r, price: v.price });
+                                  const ve = unitEconomics({ ...r, price: v.price, supplierCost: v.cost ?? r.supplierCost });
                                   return ve.margin === null ? null : (
                                     <span className={`tabular-nums ${ve.margin < 0 ? "text-destructive" : "text-emerald-700"}`}>
                                       {money(ve.margin, r.currency)}

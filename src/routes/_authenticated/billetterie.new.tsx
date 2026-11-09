@@ -1,21 +1,52 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CatalogForm } from "@/components/catalog-form";
 import { PageShell } from "@/components/page-shell";
+import { QuickTicketForm } from "@/components/tickets/quick-ticket-form";
 import { createCatalogItem } from "@/lib/catalog-gateway";
 import { toast } from "sonner";
 import { ONLINE_PRICING_MODEL, ON_REQUEST_PRICING_MODEL } from "@/lib/tickets/online-sale";
+type NewKind = "foot" | "sambodromo" | "autre";
+const KINDS: { value: NewKind; label: string; hint: string }[] = [
+  { value: "foot", label: "Match de foot", hint: "Maracanã, São Januário… équipes, date, prix par secteur" },
+  { value: "sambodromo", label: "Sambódromo", hint: "Une soirée : setores 1 à 13, frisas, camarotes" },
+  { value: "autre", label: "Autre événement", hint: "Concert, spectacle, prix unique ou secteurs" },
+];
+
 export const Route = createFileRoute("/_authenticated/billetterie/new")({
+  validateSearch: (s: Record<string, unknown>): { type?: NewKind } =>
+    s.type === "foot" || s.type === "sambodromo" || s.type === "autre" ? { type: s.type } : {},
   component: NewTicket,
   head: () => ({ meta: [{ title: "Nouvelle billetterie — JEITINHO" }] }),
 });
 function NewTicket() {
   const navigate = useNavigate();
+  const { type: kind = "foot" } = Route.useSearch();
   return (
     <PageShell
       eyebrow="Contenu / Catalogue"
       title="Nouveau billet (catalogue)"
-      description="Créer une offre de match, concert ou événement réutilisable dans les voyages. Les secteurs/variantes de prix s'ajoutent après la création."
+      description="Un billet par match ou par soirée, avec ses prix par secteur. Publié et en achat en ligne, il se vend tout seul sur jeitinho.fr."
     >
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        {KINDS.map((k) => (
+          <button
+            key={k.value}
+            type="button"
+            onClick={() => navigate({ to: "/billetterie/new", search: { type: k.value }, replace: true })}
+            className={`rounded-lg border p-4 text-left transition ${
+              kind === k.value
+                ? "border-primary bg-primary/5 shadow-sm"
+                : "border-border bg-card hover:border-primary/40"
+            }`}
+          >
+            <p className="font-medium">{k.label}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{k.hint}</p>
+          </button>
+        ))}
+      </div>
+      {kind !== "autre" ? (
+        <QuickTicketForm key={kind} kind={kind} />
+      ) : (
       <CatalogForm
         mode="ticket"
         initial={{ online_sale: true }}
@@ -72,6 +103,7 @@ function NewTicket() {
           }
         }}
       />
+      )}
     </PageShell>
   );
 }

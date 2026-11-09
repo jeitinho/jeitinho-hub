@@ -57,17 +57,17 @@ function Ticketing() {
         (supabase as any).from("ticket_offers").select("*").order("event_date").order("title"),
         (supabase as any)
           .from("ticket_offer_variants")
-          .select("ticket_offer_id,public_price")
+          .select("ticket_offer_id,public_price,currency")
           .eq("is_active", true),
       ]);
       if (ticketsRes.error) throw ticketsRes.error;
       if (variantsRes.error) throw variantsRes.error;
       const cheapestByTicket = new Map<string, number>();
-      const variantsByTicket = new Map<string, { public_price: number | null }[]>();
+      const variantsByTicket = new Map<string, { public_price: number | null; currency: string | null }[]>();
       for (const v of (variantsRes.data ?? []) as any[]) {
         variantsByTicket.set(v.ticket_offer_id, [
           ...(variantsByTicket.get(v.ticket_offer_id) ?? []),
-          { public_price: v.public_price },
+          { public_price: v.public_price, currency: v.currency },
         ]);
         if (v.public_price === null) continue;
         const price = Number(v.public_price);

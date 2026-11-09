@@ -11,7 +11,11 @@ export type SaleOffer = {
   event_date: string | null;
 };
 
-export type SaleVariant = { public_price: number | string | null; is_active?: boolean | null };
+export type SaleVariant = {
+  public_price: number | string | null;
+  is_active?: boolean | null;
+  currency?: string | null;
+};
 
 export type SaleBlocker = "unpublished" | "on_request" | "currency" | "past" | "no_price";
 
@@ -42,6 +46,9 @@ export function saleBlocker(offer: SaleOffer, variants: SaleVariant[], today: st
   if ((offer.currency ?? "EUR").toUpperCase() !== "EUR") return "currency";
   if (offer.event_date && offer.event_date < today) return "past";
   const active = variants.filter((v) => v.is_active !== false);
-  const hasPrice = active.length > 0 ? active.some((v) => positive(v.public_price)) : positive(offer.public_price);
+  const hasPrice =
+    active.length > 0
+      ? active.some((v) => positive(v.public_price) && (v.currency ?? "EUR").toUpperCase() === "EUR")
+      : positive(offer.public_price);
   return hasPrice ? null : "no_price";
 }

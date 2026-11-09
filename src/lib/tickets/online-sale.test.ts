@@ -26,5 +26,6 @@ describe("Achat en ligne sur jeitinho.fr", () => {
     assert.equal(saleBlocker({ ...offer, public_price: null }, [{ public_price: 120 }], "2026-11-09"), null);
     assert.equal(saleBlocker(offer, [{ public_price: null }], "2026-11-09"), "no_price");
     assert.equal(saleBlocker(offer, [{ public_price: 50, is_active: false }], "2026-11-09"), null);
+    assert.equal(saleBlocker(offer, [{ public_price: 700, currency: "BRL" }], "2026-11-09"), "no_price");
   });
 });

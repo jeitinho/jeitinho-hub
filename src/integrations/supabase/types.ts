@@ -1026,6 +1026,7 @@ export type Database = {
           client_id: string | null
           created_at: string
           created_by: string | null
+          dedupe_key: string | null
           due_at: string
           handled_at: string | null
           handled_by: string | null
@@ -1039,6 +1040,7 @@ export type Database = {
           stage: number | null
           status: string
           title: string
+          trip_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1046,6 +1048,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          dedupe_key?: string | null
           due_at?: string
           handled_at?: string | null
           handled_by?: string | null
@@ -1059,6 +1062,7 @@ export type Database = {
           stage?: number | null
           status?: string
           title: string
+          trip_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1066,6 +1070,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          dedupe_key?: string | null
           due_at?: string
           handled_at?: string | null
           handled_by?: string | null
@@ -1079,6 +1084,7 @@ export type Database = {
           stage?: number | null
           status?: string
           title?: string
+          trip_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1115,6 +1121,13 @@ export type Database = {
             columns: ["quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -2569,9 +2582,13 @@ export type Database = {
           activity_language: string | null
           activity_title: string | null
           booking_ref: string
+          checked_in_at: string | null
+          checked_in_by: string | null
+          checkin_status: string | null
           client_id: string | null
           created_at: string
           currency: string | null
+          guide_id: string | null
           id: string
           lead_email: string | null
           lead_language: string | null
@@ -2581,6 +2598,7 @@ export type Database = {
           notes: string | null
           participants: number | null
           participants_detail: string | null
+          partner_id: string | null
           platform: string
           price: number | null
           review_requested: boolean
@@ -2594,9 +2612,13 @@ export type Database = {
           activity_language?: string | null
           activity_title?: string | null
           booking_ref: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          checkin_status?: string | null
           client_id?: string | null
           created_at?: string
           currency?: string | null
+          guide_id?: string | null
           id?: string
           lead_email?: string | null
           lead_language?: string | null
@@ -2606,6 +2628,7 @@ export type Database = {
           notes?: string | null
           participants?: number | null
           participants_detail?: string | null
+          partner_id?: string | null
           platform?: string
           price?: number | null
           review_requested?: boolean
@@ -2619,9 +2642,13 @@ export type Database = {
           activity_language?: string | null
           activity_title?: string | null
           booking_ref?: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          checkin_status?: string | null
           client_id?: string | null
           created_at?: string
           currency?: string | null
+          guide_id?: string | null
           id?: string
           lead_email?: string | null
           lead_language?: string | null
@@ -2631,6 +2658,7 @@ export type Database = {
           notes?: string | null
           participants?: number | null
           participants_detail?: string | null
+          partner_id?: string | null
           platform?: string
           price?: number | null
           review_requested?: boolean
@@ -2653,6 +2681,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "ota_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ota_bookings_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
             referencedColumns: ["id"]
           },
         ]
@@ -2728,9 +2763,13 @@ export type Database = {
       partner_ledger_entries: {
         Row: {
           apporteur_id: string | null
+          cash_status: string
           created_at: string
           created_by: string | null
           direct_cost: number
+          expected_amount: number | null
+          expected_currency: string | null
+          expected_on: string | null
           guide_id: string | null
           guided_internally: boolean
           id: string
@@ -2739,6 +2778,7 @@ export type Database = {
           occurred_on: string
           original_amount: number | null
           original_currency: string | null
+          received_on: string | null
           revenue: number
           source_id: string | null
           source_type: string
@@ -2747,9 +2787,13 @@ export type Database = {
         }
         Insert: {
           apporteur_id?: string | null
+          cash_status?: string
           created_at?: string
           created_by?: string | null
           direct_cost?: number
+          expected_amount?: number | null
+          expected_currency?: string | null
+          expected_on?: string | null
           guide_id?: string | null
           guided_internally?: boolean
           id?: string
@@ -2758,6 +2802,7 @@ export type Database = {
           occurred_on?: string
           original_amount?: number | null
           original_currency?: string | null
+          received_on?: string | null
           revenue?: number
           source_id?: string | null
           source_type?: string
@@ -2766,9 +2811,13 @@ export type Database = {
         }
         Update: {
           apporteur_id?: string | null
+          cash_status?: string
           created_at?: string
           created_by?: string | null
           direct_cost?: number
+          expected_amount?: number | null
+          expected_currency?: string | null
+          expected_on?: string | null
           guide_id?: string | null
           guided_internally?: boolean
           id?: string
@@ -2777,6 +2826,7 @@ export type Database = {
           occurred_on?: string
           original_amount?: number | null
           original_currency?: string | null
+          received_on?: string | null
           revenue?: number
           source_id?: string | null
           source_type?: string
@@ -2792,6 +2842,7 @@ export type Database = {
           display_name: string
           sort_order: number
           user_id: string
+          whatsapp: string | null
         }
         Insert: {
           active?: boolean
@@ -2799,6 +2850,7 @@ export type Database = {
           display_name: string
           sort_order?: number
           user_id: string
+          whatsapp?: string | null
         }
         Update: {
           active?: boolean
@@ -2806,6 +2858,7 @@ export type Database = {
           display_name?: string
           sort_order?: number
           user_id?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -2818,6 +2871,8 @@ export type Database = {
           id: number
           pro_labore: number
           reserve_pct: number
+          start_date: string
+          tax_confirmed: boolean
           tax_pct: number
           updated_at: string
           updated_by: string | null
@@ -2831,6 +2886,8 @@ export type Database = {
           id?: number
           pro_labore?: number
           reserve_pct?: number
+          start_date?: string
+          tax_confirmed?: boolean
           tax_pct?: number
           updated_at?: string
           updated_by?: string | null
@@ -2844,6 +2901,8 @@ export type Database = {
           id?: number
           pro_labore?: number
           reserve_pct?: number
+          start_date?: string
+          tax_confirmed?: boolean
           tax_pct?: number
           updated_at?: string
           updated_by?: string | null
@@ -3269,6 +3328,96 @@ export type Database = {
           },
         ]
       }
+      push_outbox: {
+        Row: {
+          body: string | null
+          created_at: string
+          error: string | null
+          id: number
+          sent_at: string | null
+          tag: string | null
+          title: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          error?: string | null
+          id?: never
+          sent_at?: string | null
+          tag?: string | null
+          title: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          error?: string | null
+          id?: never
+          sent_at?: string | null
+          tag?: string | null
+          title?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_vapid: {
+        Row: {
+          created_at: string
+          id: number
+          private_key: string
+          public_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          private_key: string
+          public_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          private_key?: string
+          public_key?: string
+        }
+        Relationships: []
+      }
       quote_lines: {
         Row: {
           amount: number | null
@@ -3408,6 +3557,7 @@ export type Database = {
       quotes: {
         Row: {
           accepted_at: string | null
+          balance_due_on: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
@@ -3450,6 +3600,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          balance_due_on?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -3492,6 +3643,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          balance_due_on?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -3920,6 +4072,51 @@ export type Database = {
         }
         Relationships: []
       }
+      site_booking_assignments: {
+        Row: {
+          assignee_id: string | null
+          booking_id: string
+          checkin_status: string | null
+          item_index: number
+          partner_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          booking_id: string
+          checkin_status?: string | null
+          item_index: number
+          partner_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          booking_id?: string
+          checkin_status?: string | null
+          item_index?: number
+          partner_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_booking_assignments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_booking_assignments_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_directory: {
         Row: {
           avatar_url: string | null
@@ -4070,6 +4267,7 @@ export type Database = {
           label: string
           public_price: number | null
           sort_order: number
+          supplier_cost: number | null
           ticket_offer_id: string
           updated_at: string
         }
@@ -4082,6 +4280,7 @@ export type Database = {
           label: string
           public_price?: number | null
           sort_order?: number
+          supplier_cost?: number | null
           ticket_offer_id: string
           updated_at?: string
         }
@@ -4094,6 +4293,7 @@ export type Database = {
           label?: string
           public_price?: number | null
           sort_order?: number
+          supplier_cost?: number | null
           ticket_offer_id?: string
           updated_at?: string
         }
@@ -4412,6 +4612,7 @@ export type Database = {
       trip_activities: {
         Row: {
           activity_type: string
+          assignee_id: string | null
           category: string | null
           client_informed_at: string | null
           commission_amount: number
@@ -4448,6 +4649,7 @@ export type Database = {
         }
         Insert: {
           activity_type?: string
+          assignee_id?: string | null
           category?: string | null
           client_informed_at?: string | null
           commission_amount?: number
@@ -4484,6 +4686,7 @@ export type Database = {
         }
         Update: {
           activity_type?: string
+          assignee_id?: string | null
           category?: string | null
           client_informed_at?: string | null
           commission_amount?: number
@@ -5308,6 +5511,31 @@ export type Database = {
       }
     }
     Functions: {
+      _dispatch_items: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          assignee_id: string
+          checkin: string
+          client_name: string
+          client_phone: string
+          confirmed: boolean
+          day: string
+          done: boolean
+          item_index: number
+          language: string
+          meeting_point: string
+          notes: string
+          partner_id: string
+          pax: number
+          ref: string
+          sort_at: string
+          source: string
+          source_id: string
+          time_label: string
+          title: string
+          trip_id: string
+        }[]
+      }
       ask_rafael: {
         Args: {
           p_details?: string
@@ -5359,10 +5587,82 @@ export type Database = {
         Args: { p_quote_id: string }
         Returns: string
       }
+      crm_generate_payment_reminders: { Args: never; Returns: number }
+      crm_generate_quote_followups: { Args: never; Returns: number }
+      crm_generate_trip_messages: { Args: never; Returns: number }
+      dispatch_assign: {
+        Args: {
+          p_assignee: string
+          p_id: string
+          p_index: number
+          p_partner: string
+          p_set_assignee?: boolean
+          p_set_partner?: boolean
+          p_source: string
+        }
+        Returns: undefined
+      }
+      dispatch_checkin: {
+        Args: {
+          p_id: string
+          p_index: number
+          p_source: string
+          p_status: string
+        }
+        Returns: undefined
+      }
+      dispatch_list: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          assignee_id: string
+          checkin: string
+          client_name: string
+          client_phone: string
+          confirmed: boolean
+          day: string
+          done: boolean
+          item_index: number
+          language: string
+          meeting_point: string
+          notes: string
+          partner_id: string
+          pax: number
+          ref: string
+          sort_at: string
+          source: string
+          source_id: string
+          time_label: string
+          title: string
+          trip_id: string
+        }[]
+      }
+      dispatch_set_time: {
+        Args: {
+          p_day: string
+          p_id: string
+          p_index: number
+          p_source: string
+          p_time: string
+        }
+        Returns: undefined
+      }
+      dispatch_team: {
+        Args: never
+        Returns: {
+          name: string
+          roles: string[]
+          user_id: string
+          whatsapp: string
+        }[]
+      }
       editorial_item_done: { Args: { p_token: string }; Returns: string }
       ensure_tracking_links: { Args: { p_event: string }; Returns: number }
       get_current_hub_user: { Args: never; Returns: Json }
       get_hub_user_by_auth_uid: { Args: { _user_id: string }; Returns: Json }
+      guide_planning_text: {
+        Args: { _day: string; _user_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5412,27 +5712,70 @@ export type Database = {
       }
       my_short_name: { Args: never; Returns: string }
       next_invoice_number: { Args: never; Returns: string }
+      next_quote_display_number: { Args: never; Returns: string }
       next_quote_number: { Args: never; Returns: string }
       next_trip_reference: { Args: { p_year?: number }; Returns: string }
+      notify_push: {
+        Args: {
+          p_body: string
+          p_tag?: string
+          p_title: string
+          p_url: string
+          p_users: string[]
+        }
+        Returns: undefined
+      }
       notify_rafael: { Args: { msg: string }; Returns: number }
       notify_whatsapp: {
         Args: { msg: string; person: string }
         Returns: number
       }
+      ota_guide_draft: {
+        Args: { b: Database["public"]["Tables"]["ota_bookings"]["Row"] }
+        Returns: string
+      }
       partner_ledger_import_month: {
         Args: { p_month: string }
         Returns: number
       }
+      partner_ledger_start: { Args: never; Returns: string }
       person_key: { Args: { _user_id: string }; Returns: string }
       push_editorial_reminders: { Args: never; Returns: number }
       push_next_whatsapp_post: { Args: never; Returns: string }
+      push_operators: { Args: never; Returns: string[] }
+      push_public_key: { Args: never; Returns: string }
+      push_unanswered_leads: { Args: never; Returns: number }
+      push_wake: { Args: never; Returns: undefined }
+      quote_followup_draft: {
+        Args: {
+          amount: number
+          client_name: string
+          currency: string
+          period_start: string
+          quote_number: string
+          stage: number
+          title: string
+        }
+        Returns: string
+      }
       quote_refresh_paid_status: {
         Args: { p_quote_id: string }
         Returns: undefined
       }
       safe_date: { Args: { p: string }; Returns: string }
+      sell_ticket_quote: {
+        Args: {
+          p_client: string
+          p_language?: string
+          p_offer: string
+          p_qty: number
+          p_variant: string
+        }
+        Returns: string
+      }
       send_cm_briefs: { Args: never; Returns: string }
       send_daily_brief: { Args: never; Returns: string }
+      send_guide_plannings: { Args: never; Returns: string }
       send_lili_brief: { Args: never; Returns: string }
       set_sale_commission_paid: {
         Args: { p_paid: boolean; p_sale_id: string }
@@ -5456,6 +5799,7 @@ export type Database = {
       }
       ticketing_snapshot: { Args: { p_event: string }; Returns: undefined }
       ticketing_sync: { Args: never; Returns: undefined }
+      trip_client_language: { Args: { p_quote_id: string }; Returns: string }
       urlencode: { Args: { t: string }; Returns: string }
       whatsapp_apply_action: {
         Args: {

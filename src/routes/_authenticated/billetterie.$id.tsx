@@ -5,13 +5,16 @@ import { TicketOfferVariantsEditor } from "@/components/ticket-offer-variants-ed
 import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Archive, Trash2 } from "lucide-react";
+import { ArrowLeft, Archive, Copy, Trash2 } from "lucide-react";
 import {
   fetchCatalogItem,
   updateCatalogItem,
   deleteCatalogItem,
   fetchTicketOfferVariants,
+  createCatalogItem,
+  createTicketOfferVariant,
 } from "@/lib/catalog-gateway";
+import { slugify } from "@/lib/tickets/quick-offer";
 import { toast } from "sonner";
 import { ONLINE_PRICING_MODEL, ON_REQUEST_PRICING_MODEL } from "@/lib/tickets/online-sale";
 import { confirmAction } from "@/components/confirm-dialog";
@@ -61,6 +64,40 @@ function EditTicket() {
       toast.error(e instanceof Error ? e.message : "Archivage impossible.");
     }
   };
+  // Another day of the same event (Sambódromo nights, a rematch): same
+  // sectors and prices as a starting point, unpublished until the new date
+  // and prices are checked.
+  const duplicate = async () => {
+    try {
+      const {
+        id: _id,
+        created_at: _c,
+        updated_at: _u,
+        created_by: _b,
+        slug: _s,
+        ...rest
+      } = data as Record<string, unknown>;
+      const title = `${data.title} (copie)`;
+      const copy = await createCatalogItem<{ id: string }>("ticket_offers", {
+        ...rest,
+        title,
+        event_date: null,
+        is_published: false,
+        is_active: true,
+        slug: slugify(String(data.title)),
+      });
+      const source = await fetchTicketOfferVariants<Record<string, unknown>>(id);
+      for (const v of source) {
+        const { id: _vid, created_at: _vc, updated_at: _vu, ticket_offer_id: _t, ...vrest } = v;
+        await createTicketOfferVariant({ ...vrest, ticket_offer_id: copy.id });
+      }
+      await qc.invalidateQueries({ queryKey: ["ticket-offers"] });
+      toast.success("Copie créée : renseigne la date et vérifie les prix, puis publie.");
+      navigate({ to: "/billetterie/$id", params: { id: copy.id } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Duplication impossible.");
+    }
+  };
   const remove = async () => {
     if (!(await confirmAction("Supprimer définitivement cette offre ?", { confirmLabel: "Supprimer l'offre" }))) return;
     try {
@@ -84,6 +121,10 @@ function EditTicket() {
               Billets
             </Button>
           </Link>
+          <Button variant="outline" onClick={duplicate} title="Même billet, autre date">
+            <Copy className="mr-2 h-4 w-4" />
+            Dupliquer
+          </Button>
           <Button variant="outline" onClick={archive}>
             <Archive className="mr-2 h-4 w-4" />
             Archiver
