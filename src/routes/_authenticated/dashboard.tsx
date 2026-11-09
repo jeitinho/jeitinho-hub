@@ -75,18 +75,18 @@ function Tile({
       title={error ? `Chargement impossible : ${error}` : undefined}
     >
       <Card
-        className={`flex h-full items-center gap-3 p-4 transition-colors group-hover:bg-muted/40 ${
-          hot ? "border-primary/40 bg-primary/5" : ""
-        } ${value === 0 && !error ? "opacity-60" : ""}`}
+        className={`relative flex h-full items-start gap-3 overflow-hidden p-4 transition-[border-color,box-shadow] group-hover:border-foreground/20 group-hover:shadow-[0_4px_16px_-8px_rgb(34_30_26/0.18)] ${
+          hot ? "before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-primary" : ""
+        } ${value === 0 && !error ? "opacity-55" : ""}`}
       >
         <div
-          className={`rounded-md p-2 ${hot ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+          className={`rounded-lg p-2 ${hot ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
         >
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-2xl font-semibold leading-none">{error ? "—" : value}</p>
-          <p className="mt-1 truncate text-xs text-muted-foreground">{label}</p>
+          <p className="font-display text-[28px] leading-none">{error ? "—" : value}</p>
+          <p className="mt-1.5 truncate text-[13px] font-medium text-foreground/80">{label}</p>
           {error ? (
             <p className="truncate text-[11px] text-destructive">Erreur de chargement</p>
           ) : (
@@ -230,7 +230,7 @@ function CockpitPage() {
 
           {/* 2. À traiter */}
           <section>
-            <h2 className="mb-3 text-xs font-semibold text-muted-foreground">
+            <h2 className="mb-3 font-sans text-[13px] font-semibold text-foreground">
               À traiter
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
