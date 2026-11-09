@@ -13,8 +13,11 @@ alter table public.crm_tasks add column if not exists dedupe_key text;
 create unique index if not exists crm_tasks_dedupe_key on public.crm_tasks (dedupe_key) where dedupe_key is not null;
 alter table public.crm_tasks add column if not exists trip_id uuid references public.trips(id) on delete cascade;
 
-update public.partner_members set whatsapp = '+55 79 99198-0280'
- where display_name = 'Rafael' and whatsapp is null;
+update public.partner_members set whatsapp = case display_name
+    when 'Rafael' then '+55 79 99198-0280'
+    when 'Luan' then '+55 32 99842-7186'
+    when 'Patricia' then '+55 21 97901-6897' end
+ where whatsapp is null;
 
 -- ---------------------------------------------------------------- 1. registre auto
 create or replace function public.partner_ledger_from_ota() returns trigger
@@ -233,10 +236,10 @@ begin
     if coalesce(t.end_date, t.start_date) = d - 1 then
       insert into crm_tasks (kind, channel, status, title, message_draft, due_at, client_id, trip_id, dedupe_key)
       values ('demande_avis','whatsapp','a_valider', 'Avis — ' || coalesce(t.title, t.reference),
-        case when lang = 'en' then 'Hi ' || first || ', thank you for travelling with JEITINHO! If you have one minute, your review helps us a lot: [LIEN AVIS GOOGLE]'
-             when lang = 'pt' then 'Olá ' || first || ', obrigado por viajar com a JEITINHO! Se tiver um minuto, sua avaliação ajuda muito: [LIEN AVIS GOOGLE]'
-             else 'Bonjour ' || first || ', merci d''avoir voyagé avec JEITINHO ! Si vous avez une minute, votre avis nous aide énormément : [LIEN AVIS GOOGLE]' end
-          || E'\n\n— Remplacer [LIEN AVIS GOOGLE] par le lien d''avis avant envoi.',
+        case when lang = 'en' then 'Hi ' || first || ', thank you for travelling with JEITINHO! If you have one minute, your review helps us a lot: https://share.google/FGnQrBlszRSKoESDE'
+             when lang = 'pt' then 'Olá ' || first || ', obrigado por viajar com a JEITINHO! Se tiver um minuto, sua avaliação ajuda muito: https://share.google/FGnQrBlszRSKoESDE'
+             else 'Bonjour ' || first || ', merci d''avoir voyagé avec JEITINHO ! Si vous avez une minute, votre avis nous aide énormément : https://share.google/FGnQrBlszRSKoESDE' end
+          || '',
         now(), t.client_id, t.id, 'avis:' || t.id)
       on conflict (dedupe_key) where dedupe_key is not null do nothing;
       if found then n := n + 1; end if;
