@@ -144,6 +144,7 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
   /** Manifeste du jour : guides et prestataires voient les sorties qui leur sont assignées. */
   manifest: ["admin", "manager", "associe", "guide", "prestataire"],
   dispatch: ["admin", "manager", "associe", "guide", "prestataire"],
+  tarifs: ["admin", "manager", "associe"],
 };
 
 export function canAccessModule(module: string, roles: AppRole[]) {

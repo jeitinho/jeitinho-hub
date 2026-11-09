@@ -37,6 +37,7 @@ import {
   Send,
   Images,
   Plus,
+  Calculator,
   Search,
   ChevronRight,
 } from "lucide-react";
@@ -109,6 +110,7 @@ const GROUPS: { id: string; label: string; items: Item[] }[] = [
       { url: "/services", icon: Wrench, module: "services" },
       { url: "/billetterie", icon: Ticket, module: "billetterie" },
       { url: "/distribution", icon: Store, module: "distribution" },
+      { url: "/tarifs", icon: Calculator, module: "tarifs" },
     ],
   },
   {
