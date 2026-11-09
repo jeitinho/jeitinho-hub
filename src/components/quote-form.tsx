@@ -1182,12 +1182,18 @@ export function QuoteForm({
                   <span className="text-muted-foreground">Marge estimée</span>
                   <span className="text-right font-medium tabular-nums text-emerald-700">
                     {formatMoney(totals.estimatedMargin, currency)}
-                    {totals.marginCoverage < 0.99 && (
+                    {totals.marginRate != null && (
                       <span className="ml-1 font-normal text-muted-foreground">
-                        ({Math.round(totals.marginCoverage * 100)} % du total)
+                        · {Math.round(totals.marginRate * 100)} %
                       </span>
                     )}
                   </span>
+                  {totals.uncostedLines > 0 && (
+                    <span className="col-span-2 text-[12px] leading-snug text-amber-700">
+                      Calculée sur {Math.round(totals.marginCoverage * 100)} % du devis :{" "}
+                      {totals.uncostedLines} {totals.uncostedLines > 1 ? "lignes" : "ligne"} sans coût fournisseur.
+                    </span>
+                  )}
                 </>
               )}
             </div>

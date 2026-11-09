@@ -40,6 +40,10 @@ export function quoteTotals(
     /** Marge sur les lignes dont le coût est connu, et part du total couverte par ce calcul. */
     estimatedMargin: costed.length ? Math.round((costedRevenue - knownCost) * 100) / 100 : null,
     marginCoverage: total > 0 ? costedRevenue / total : 0,
+    /** Taux de marge sur les lignes chiffrées (marge / vente de ces lignes). */
+    marginRate: costedRevenue > 0 ? (costedRevenue - knownCost) / costedRevenue : null,
+    /** Lignes facturées (ni offertes ni en option) sans coût fournisseur saisi. */
+    uncostedLines: valid.filter((l) => !l.is_optional && !l.is_offered && l.supplier_cost == null).length,
   };
 }
 
