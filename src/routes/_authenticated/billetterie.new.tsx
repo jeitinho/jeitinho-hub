@@ -3,6 +3,7 @@ import { CatalogForm } from "@/components/catalog-form";
 import { PageShell } from "@/components/page-shell";
 import { createCatalogItem } from "@/lib/catalog-gateway";
 import { toast } from "sonner";
+import { ONLINE_PRICING_MODEL, ON_REQUEST_PRICING_MODEL } from "@/lib/tickets/online-sale";
 export const Route = createFileRoute("/_authenticated/billetterie/new")({
   component: NewTicket,
   head: () => ({ meta: [{ title: "Nouvelle billetterie — JEITINHO" }] }),
@@ -17,12 +18,16 @@ function NewTicket() {
     >
       <CatalogForm
         mode="ticket"
+        initial={{ online_sale: true }}
         onSubmit={async (v) => {
           try {
             const created = await createCatalogItem<{ id: string }>("ticket_offers", {
               title: v.title.trim(),
               venue: v.venue || null,
               event_date: v.event_date || null,
+              event_time: v.event_time || null,
+              description: v.description.trim() || null,
+              pricing_model: v.online_sale ? ONLINE_PRICING_MODEL : ON_REQUEST_PRICING_MODEL,
               public_price: v.public_price,
               supplier_net: v.supplier_net,
               commission_pct: v.commission_pct,
@@ -55,7 +60,10 @@ function NewTicket() {
               slug: `${v.title
                 .trim()
                 .toLowerCase()
-                .replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`,
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "")}-${Date.now().toString(36)}`,
             });
             toast.success("Offre créée");
             navigate({ to: "/billetterie/$id", params: { id: created.id } });

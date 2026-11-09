@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BLOCKER_LABELS, saleBlocker, type SaleBlocker } from "@/lib/tickets/online-sale";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, RefreshCw, Ticket, ShoppingBag } from "lucide-react";
@@ -62,7 +63,12 @@ function Ticketing() {
       if (ticketsRes.error) throw ticketsRes.error;
       if (variantsRes.error) throw variantsRes.error;
       const cheapestByTicket = new Map<string, number>();
+      const variantsByTicket = new Map<string, { public_price: number | null }[]>();
       for (const v of (variantsRes.data ?? []) as any[]) {
+        variantsByTicket.set(v.ticket_offer_id, [
+          ...(variantsByTicket.get(v.ticket_offer_id) ?? []),
+          { public_price: v.public_price },
+        ]);
         if (v.public_price === null) continue;
         const price = Number(v.public_price);
         const current = cheapestByTicket.get(v.ticket_offer_id);
@@ -72,6 +78,7 @@ function Ticketing() {
       return ((ticketsRes.data ?? []) as any[]).map((t) => ({
         ...t,
         cheapestVariantPrice: cheapestByTicket.get(t.id) ?? null,
+        saleBlocker: saleBlocker(t, variantsByTicket.get(t.id) ?? []),
       }));
     },
   });
@@ -95,7 +102,7 @@ function Ticketing() {
     <PageShell
       eyebrow="Contenu / Catalogue"
       title="Billets (catalogue)"
-      description="Catalogue des billets proposés dans les voyages (matchs, concerts…) : prix de vente, coûts fournisseurs et marge. Les soirées JEITINHO se gèrent dans « Soirées »."
+      description="Matchs, concerts, carnaval… Les offres « Achat en ligne » se paient directement sur jeitinho.fr ; les autres passent par WhatsApp ou un devis (bouton « Vendre »). Les soirées JEITINHO se gèrent dans « Soirées »."
       actions={
         <Link to="/billetterie/new">
           <Button className="btn-primary">
@@ -236,6 +243,20 @@ function Ticketing() {
                           <Badge variant={t.is_published ? "default" : "outline"}>
                             {OFFER_STATE_LABEL[offerState(t)]}
                           </Badge>
+                          {offerState(t) !== "archived" &&
+                            (t.saleBlocker === null ? (
+                              <Badge className="border-transparent bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                                Achat en ligne
+                              </Badge>
+                            ) : t.pricing_model !== "quote_only" && t.saleBlocker !== "unpublished" ? (
+                              <Badge
+                                variant="outline"
+                                className="border-amber-300 text-amber-800"
+                                title="Achat en ligne activé mais bloqué"
+                              >
+                                {BLOCKER_LABELS[t.saleBlocker as SaleBlocker]}
+                              </Badge>
+                            ) : null)}
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
                           {t.venue ?? "Lieu à confirmer"}

@@ -38,6 +38,8 @@ type Values = {
   is_active: boolean;
   venue: string;
   event_date: string;
+  event_time: string;
+  online_sale: boolean;
   public_price: number | null;
   notes: string;
   photo_url: string;
@@ -79,6 +81,8 @@ const emptyValues: Values = {
   is_active: true,
   venue: "",
   event_date: "",
+  event_time: "",
+  online_sale: false,
   public_price: null,
   notes: "",
   photo_url: "",
@@ -122,9 +126,12 @@ export function CatalogForm({
   mode,
   initial,
   onSubmit,
+  hasVariantPrices = false,
 }: {
   mode: Mode;
   initial?: Partial<Values>;
+  /** Ticket offers: at least one active sector has a price. */
+  hasVariantPrices?: boolean;
   onSubmit: (values: Values) => Promise<unknown>;
 }) {
   const [v, setV] = useState<Values>({ ...emptyValues, ...initial });
@@ -237,18 +244,28 @@ export function CatalogForm({
             </>
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Lieu</Label>
                   <Input value={v.venue} onChange={(e) => set("venue", e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                  <Label>Date</Label>
-                  <Input
-                    type="date"
-                    value={v.event_date}
-                    onChange={(e) => set("event_date", e.target.value)}
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Date</Label>
+                    <Input
+                      type="date"
+                      value={v.event_date}
+                      onChange={(e) => set("event_date", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Heure</Label>
+                    <Input
+                      type="time"
+                      value={v.event_time}
+                      onChange={(e) => set("event_time", e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Catégorie</Label>
@@ -267,8 +284,17 @@ export function CatalogForm({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea rows={5} value={v.notes} onChange={(e) => set("notes", e.target.value)} />
+                <Label>Description (affichée sur jeitinho.fr)</Label>
+                <Textarea
+                  rows={4}
+                  value={v.description}
+                  onChange={(e) => set("description", e.target.value)}
+                  placeholder="Ce qui est inclus, le secteur, l'ambiance…"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Notes internes</Label>
+                <Textarea rows={3} value={v.notes} onChange={(e) => set("notes", e.target.value)} />
               </div>
             </>
           )}
@@ -454,6 +480,42 @@ export function CatalogForm({
             </div>
             <Switch checked={v.is_active} onCheckedChange={(x) => set("is_active", x)} />
           </div>
+          {mode === "ticket" && (
+            <div className="mt-5 border-t border-border/60 pt-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label>Achat en ligne</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Paiement Stripe direct sur jeitinho.fr. Désactivé : sur demande (WhatsApp, devis).
+                  </p>
+                </div>
+                <Switch checked={v.online_sale} onCheckedChange={(x) => set("online_sale", x)} />
+              </div>
+              {v.online_sale && (
+                <ul className="mt-3 space-y-1 text-xs">
+                  {[
+                    { ok: v.is_active, label: "Offre publiée" },
+                    { ok: (v.currency || "EUR").toUpperCase() === "EUR", label: "Prix en euros (EUR)" },
+                    {
+                      ok: !v.event_date || v.event_date >= new Date().toISOString().slice(0, 10),
+                      label: "Date à venir",
+                    },
+                    {
+                      ok: Number(v.public_price ?? 0) > 0 || hasVariantPrices,
+                      label: "Un prix (offre ou secteurs)",
+                    },
+                  ].map((c) => (
+                    <li
+                      key={c.label}
+                      className={c.ok ? "text-muted-foreground" : "font-medium text-destructive"}
+                    >
+                      {c.ok ? "✓" : "✕"} {c.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
           <Button
             type="submit"
             disabled={saving || !v.title.trim()}

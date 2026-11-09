@@ -6,8 +6,14 @@ import { PageShell } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Archive, Trash2 } from "lucide-react";
-import { fetchCatalogItem, updateCatalogItem, deleteCatalogItem } from "@/lib/catalog-gateway";
+import {
+  fetchCatalogItem,
+  updateCatalogItem,
+  deleteCatalogItem,
+  fetchTicketOfferVariants,
+} from "@/lib/catalog-gateway";
 import { toast } from "sonner";
+import { ONLINE_PRICING_MODEL, ON_REQUEST_PRICING_MODEL } from "@/lib/tickets/online-sale";
 import { confirmAction } from "@/components/confirm-dialog";
 export const Route = createFileRoute("/_authenticated/billetterie/$id")({
   component: EditTicket,
@@ -21,6 +27,16 @@ function EditTicket() {
     queryKey: ["ticket-offer", id],
     queryFn: () => fetchCatalogItem<any>("ticket_offers", id),
   });
+  // Same key as TicketOfferVariantsEditor, so saving sectors refreshes the
+  // « Achat en ligne » checklist.
+  const { data: variants = [] } = useQuery({
+    queryKey: ["ticket-offer-variants", id],
+    queryFn: () =>
+      fetchTicketOfferVariants<{ public_price: number | null; is_active: boolean }>(id),
+  });
+  const hasVariantPrices = variants.some(
+    (v) => v.is_active !== false && Number(v.public_price ?? 0) > 0,
+  );
   if (isLoading)
     return (
       <PageShell title="Chargement…">
@@ -86,13 +102,23 @@ function EditTicket() {
       <div className="space-y-6">
         <CatalogForm
           mode="ticket"
-          initial={{ ...data, is_active: Boolean(data.is_published) }}
+          initial={{
+            ...data,
+            description: data.description ?? "",
+            event_time: toTimeInput(data.event_time),
+            online_sale: data.pricing_model !== ON_REQUEST_PRICING_MODEL,
+            is_active: Boolean(data.is_published),
+          }}
+          hasVariantPrices={hasVariantPrices}
           onSubmit={async (v) => {
             try {
               await updateCatalogItem("ticket_offers", id, {
                 title: v.title.trim(),
                 venue: v.venue || null,
                 event_date: v.event_date || null,
+                event_time: v.event_time || null,
+                description: v.description.trim() || null,
+                pricing_model: v.online_sale ? ONLINE_PRICING_MODEL : ON_REQUEST_PRICING_MODEL,
                 public_price: v.public_price,
                 supplier_net: v.supplier_net,
                 commission_pct: v.commission_pct,
@@ -138,4 +164,11 @@ function EditTicket() {
       </div>
     </PageShell>
   );
+}
+
+/** DB event_time is free text ("21:30", "21h30") — the time input needs HH:MM. */
+function toTimeInput(raw: string | null | undefined): string {
+  const m = (raw ?? "").trim().match(/^(\d{1,2})\s*[:hH]\s*(\d{2})?/);
+  if (!m || Number(m[1]) > 23) return "";
+  return `${m[1].padStart(2, "0")}:${m[2] ?? "00"}`;
 }
