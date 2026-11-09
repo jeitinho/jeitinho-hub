@@ -9,6 +9,9 @@ export type ScheduleQuote = {
   deposit_pct: number | null;
   accepted_at: string | null;
   balance_due_on: string | null;
+  /** Dernier jour de la prestation (période du devis), si connu. */
+  period_end?: string | null;
+  period_start?: string | null;
 };
 export type SchedulePayment = {
   amount: number;
@@ -18,7 +21,13 @@ export type SchedulePayment = {
 };
 
 export type ScheduleState =
-  "solde" | "en_retard" | "solde_a_venir" | "acompte_attendu" | "acompte_recu";
+  | "solde"
+  | "en_retard"
+  | "prestation_passee"
+  | "autre_devise"
+  | "solde_a_venir"
+  | "acompte_attendu"
+  | "acompte_recu";
 
 export function paymentSchedule(q: ScheduleQuote, payments: SchedulePayment[], today: string) {
   const cur = (q.currency ?? "EUR").toUpperCase();
@@ -48,8 +57,16 @@ export function paymentSchedule(q: ScheduleQuote, payments: SchedulePayment[], t
       )
     : null;
 
+  const serviceEnd = q.period_end ?? q.period_start ?? null;
+  const servicePassed = !!serviceEnd && serviceEnd < today;
+
   let state: ScheduleState;
   if (total > 0 && remaining <= 0.005) state = "solde";
+  // Rien dans la devise du devis mais un paiement dans une autre : probablement réglé, à rapprocher
+  // à la main (on ne convertit jamais de montant).
+  else if (paid <= 0.005 && otherCurrency.length > 0) state = "autre_devise";
+  // La prestation a eu lieu et le devis n'est pas soldé : c'est le cas le plus urgent.
+  else if (servicePassed) state = "prestation_passee";
   else if (!depositPaid) state = "acompte_attendu";
   else if (daysToBalance != null && daysToBalance < 0) state = "en_retard";
   else if (daysToBalance != null) state = "solde_a_venir";
@@ -74,6 +91,8 @@ export function paymentSchedule(q: ScheduleQuote, payments: SchedulePayment[], t
 export const SCHEDULE_LABEL: Record<ScheduleState, string> = {
   solde: "Soldé",
   en_retard: "Solde en retard",
+  prestation_passee: "Prestation passée · non soldé",
+  autre_devise: "Payé dans une autre devise · à vérifier",
   solde_a_venir: "Solde à venir",
   acompte_attendu: "Acompte attendu",
   acompte_recu: "Acompte reçu",

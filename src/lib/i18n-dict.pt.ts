@@ -1,5 +1,9 @@
 /* Généré à partir des libellés français du hub — portugais (Brésil). Clé = texte français exact. */
 export const PT_DICT: Record<string, string> = {
+ "Prestation passée · non soldé": "Serviço realizado · não quitado",
+ "Payé dans une autre devise · à vérifier": "Pago em outra moeda · a verificar",
+ "Sans guide": "Sem guia",
+ "Prestataire externe": "Prestador externo",
  "Préparation du voyage": "Preparação da viagem",
  "Tout est prêt pour le départ.": "Tudo pronto para a partida.",
  "à faire": "a fazer",

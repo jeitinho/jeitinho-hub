@@ -16,16 +16,20 @@ const today = () => new Date().toLocaleDateString("fr-CA", { timeZone: "America/
 
 const TONE: Record<ScheduleState, string> = {
   en_retard: "bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20",
+  prestation_passee: "bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20",
+  autre_devise: "bg-muted text-foreground/80 ring-1 ring-inset ring-border",
   acompte_attendu: "bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-300/60",
   solde_a_venir: "bg-primary/10 text-primary ring-1 ring-inset ring-primary/20",
   acompte_recu: "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200",
   solde: "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200",
 };
 const ORDER: ScheduleState[] = [
+  "prestation_passee",
   "en_retard",
   "acompte_attendu",
   "solde_a_venir",
   "acompte_recu",
+  "autre_devise",
   "solde",
 ];
 
@@ -42,7 +46,7 @@ export function PaymentsTracker() {
       const { data: quotes, error } = await db
         .from("quotes")
         .select(
-          "id,number,reference,title,status,total_amount,currency,deposit_pct,accepted_at,balance_due_on,period_start,client:clients(full_name),payments(amount,currency,kind,paid_at)",
+          "id,number,reference,title,status,total_amount,currency,deposit_pct,accepted_at,balance_due_on,period_start,period_end,client:clients(full_name),payments(amount,currency,kind,paid_at)",
         )
         .in("status", ["accepted", "ready", "paid"])
         .order("period_start", { ascending: true, nullsFirst: false });

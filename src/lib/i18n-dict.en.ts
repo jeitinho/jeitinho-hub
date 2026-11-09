@@ -1,5 +1,9 @@
 /* Généré à partir des libellés français du hub — anglais. Clé = texte français exact. */
 export const EN_DICT: Record<string, string> = {
+ "Prestation passée · non soldé": "Service done · not settled",
+ "Payé dans une autre devise · à vérifier": "Paid in another currency · to check",
+ "Sans guide": "No guide",
+ "Prestataire externe": "External provider",
  "Préparation du voyage": "Trip readiness",
  "Tout est prêt pour le départ.": "Everything is ready for departure.",
  "à faire": "to do",
