@@ -10,7 +10,7 @@ export const NAV_LABELS: Record<string, string> = {
   dashboard: "Aujourd'hui",
   "a-valider": "À envoyer",
   calendrier: "Calendrier",
-  crm: "Demandes",
+  crm: "Demandes clients",
   clients: "Clients",
   devis: "Devis & factures",
   voyages: "Voyages",

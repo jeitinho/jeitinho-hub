@@ -1,5 +1,8 @@
 /* Généré à partir des libellés français du hub — anglais. Clé = texte français exact. */
 export const EN_DICT: Record<string, string> = {
+ "Offre": "Offer",
+ "Créer": "Create",
+ "Demandes clients": "Client requests",
  "Sorties sans guide (14 jours)": "Outings without a guide (14 days)",
  "+ Ajouter": "+ Add",
  "+2 j": "+2 d",

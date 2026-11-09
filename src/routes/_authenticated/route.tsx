@@ -22,6 +22,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigating = useRouterState({ select: (r) => r.status === "pending" });
   const { status, loading, isRejected, roles, canManage } = useAuth();
   const title = pathnameToTitle(pathname, { canManage, kind: profileKind(roles) });
   const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
@@ -43,6 +44,13 @@ function AuthenticatedLayout() {
             <div className="ml-auto">
               <GlobalSearch roles={roles} />
             </div>
+            {/* Barre de progression pendant un changement de page */}
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute inset-x-0 bottom-[-1px] h-[2px] origin-left bg-primary transition-[transform,opacity] duration-500 ease-out ${
+                navigating ? "scale-x-75 opacity-100" : "scale-x-100 opacity-0"
+              }`}
+            />
           </header>
           <PwaSetup />
           <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">

@@ -56,7 +56,7 @@ const ITEMS: NavItem[] = [
   { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
   { to: "/a-valider", module: "a-valider", icon: ClipboardCheck, badge: "a-valider" },
   { to: "/crm", module: "crm", icon: Inbox, badge: "crm" },
-  { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
+  { to: "/dispatch", module: "dispatch", icon: Waypoints, badge: null },
 ];
 
 /** Barre d'onglets du téléphone : les 4 écrans du quotidien + le menu complet. */
