@@ -129,7 +129,7 @@ export function EditorialWeek({
               <div className="flex items-start justify-between gap-2 sm:flex-col sm:justify-start">
                 <div>
                   <p
-                    className={`text-xs uppercase tracking-wide ${isToday ? "font-semibold text-primary" : "text-muted-foreground"}`}
+                    className={`text-xs ${isToday ? "font-semibold text-primary" : "text-muted-foreground"}`}
                   >
                     {fmtDayKey(d, { weekday: "long" })}
                   </p>
@@ -163,7 +163,7 @@ export function EditorialWeek({
 
       {unplanned.length > 0 && (
         <div className="space-y-2">
-          <p className="tracked text-[10px] text-muted-foreground">
+          <p className="tracked text-xs text-muted-foreground">
             Sans date de publication · {unplanned.length}
           </p>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">

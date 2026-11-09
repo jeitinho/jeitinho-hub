@@ -30,6 +30,7 @@ export const NAV_LABELS: Record<string, string> = {
   finances: "Finances",
   associes: "Associés",
   manifest: "Sorties du jour",
+  dispatch: "Dispatch terrain",
   agents: "Agents",
   analytics: "Analytics",
   parametres: "Paramètres",

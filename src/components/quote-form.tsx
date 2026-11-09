@@ -860,7 +860,7 @@ export function QuoteForm({
               catalogue
             </span>
           </div>
-          <div className="hidden px-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground sm:grid sm:grid-cols-[1fr_96px_64px_92px_96px_68px] sm:gap-2">
+          <div className="hidden px-1 pb-1 text-[11px] text-muted-foreground sm:grid sm:grid-cols-[1fr_96px_64px_92px_96px_68px] sm:gap-2">
             <span>Prestation</span>
             <span>Unité</span>
             <span className="text-right">Qté</span>
@@ -899,7 +899,7 @@ export function QuoteForm({
                       <button
                         type="button"
                         onClick={() => updateLine(index, { is_offered: !line.is_offered })}
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
                           line.is_offered
                             ? "bg-emerald-600 text-white"
                             : "bg-muted text-muted-foreground hover:text-foreground"
@@ -912,7 +912,7 @@ export function QuoteForm({
                       <button
                         type="button"
                         onClick={() => updateLine(index, { is_optional: !line.is_optional })}
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
                           line.is_optional
                             ? "bg-amber-500 text-white"
                             : "bg-muted text-muted-foreground hover:text-foreground"
@@ -923,7 +923,7 @@ export function QuoteForm({
                         En option
                       </button>
                       {cost != null && !line.is_offered && Number(line.unit_price) > 0 && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           marge{" "}
                           {Math.round(
                             ((Number(line.unit_price) - cost) / Number(line.unit_price)) * 100,
@@ -1022,7 +1022,7 @@ export function QuoteForm({
           </button>
           <div className="mt-5 space-y-1.5 border-t border-border/60 pt-4">
             <div className="flex items-center justify-between">
-              <span className="tracked text-[10px] text-muted-foreground">TOTAL</span>
+              <span className="tracked text-xs text-muted-foreground">TOTAL</span>
               <span className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
                 {formatMoney(totals.total, currency)}
               </span>
@@ -1148,7 +1148,7 @@ export function QuoteForm({
       <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
         <Card className="overflow-hidden p-0">
           <div className="bg-primary/5 p-5">
-            <p className="tracked text-[10px] text-muted-foreground">TOTAL DU DEVIS</p>
+            <p className="tracked text-xs text-muted-foreground">TOTAL DU DEVIS</p>
             <p className="mt-1 text-3xl tabular-nums" style={{ fontFamily: "Fraunces, serif" }}>
               {formatMoney(totals.total, currency)}
             </p>
@@ -1211,12 +1211,12 @@ export function QuoteForm({
                   </span>
                 </>
               )}
-              <span className="ml-auto text-[10px] text-muted-foreground/70">⌘S</span>
+              <span className="ml-auto text-[11px] text-muted-foreground/70">⌘S</span>
             </div>
           )}
         </Card>
         <Card className="p-5">
-          <p className="tracked mb-2 text-[10px] text-muted-foreground">NUMÉRO DU DEVIS</p>
+          <p className="tracked mb-2 text-xs text-muted-foreground">NUMÉRO DU DEVIS</p>
           <Input
             className="mb-5 mt-1.5"
             value={number}

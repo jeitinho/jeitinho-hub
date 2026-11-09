@@ -313,7 +313,7 @@ function ManifestPage() {
                           {i.cancelled && ` · ${t("Annulée")}`}
                         </p>
                       </div>
-                      <Badge variant="outline" className="text-[10px] capitalize">
+                      <Badge variant="outline" className="text-[11px] capitalize">
                         {i.source}
                       </Badge>
                     </div>

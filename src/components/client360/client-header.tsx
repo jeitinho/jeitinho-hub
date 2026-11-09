@@ -59,7 +59,7 @@ export function ClientHeader({
           </span>
         )}
         {client.status && client.status !== "client" && (
-          <span className="pill !px-2 !py-0.5 !text-[10px]">{client.status}</span>
+          <span className="pill !px-2 !py-0.5 !text-[11px]">{client.status}</span>
         )}
         {client.legal_type === "company" && client.company_name && (
           <span className="text-muted-foreground">{client.company_name}</span>

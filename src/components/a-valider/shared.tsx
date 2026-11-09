@@ -264,7 +264,7 @@ export function NotesBox({ notes }: { notes: string[] }) {
   if (!notes.length) return null;
   return (
     <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100">
-      <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
+      <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold ">
         <TriangleAlert className="h-3.5 w-3.5" />À vérifier
       </p>
       <ul className="space-y-1">

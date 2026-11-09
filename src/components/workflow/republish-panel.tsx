@@ -25,7 +25,7 @@ export function RepublishPanel({ contentId, onDone }: { contentId: string; onDon
 
   return (
     <Card className="border-primary/30 space-y-3 p-4">
-      <p className="tracked text-[10px] text-muted-foreground flex items-center gap-2">
+      <p className="tracked text-xs text-muted-foreground flex items-center gap-2">
         <RotateCcw className="h-3 w-3" />Article archivé
       </p>
       <p className="text-sm text-muted-foreground">

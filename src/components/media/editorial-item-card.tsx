@@ -33,7 +33,7 @@ export function StatusPill({ status }: { status: string }) {
 export function OverdueBadge({ item }: { item: Pick<EditorialItem, "deadline" | "planned_at"> }) {
   const since = overdueSince(item);
   return (
-    <span className="inline-flex items-center gap-1 rounded bg-destructive px-1.5 py-0.5 text-[10px] font-semibold text-destructive-foreground">
+    <span className="inline-flex items-center gap-1 rounded bg-destructive px-1.5 py-0.5 text-[11px] font-semibold text-destructive-foreground">
       <AlertTriangle className="h-3 w-3" />
       En retard{since ? ` · ${fmtDayKey(since, { day: "numeric", month: "short" })}` : ""}
     </span>
@@ -51,7 +51,7 @@ const CHANNEL_TONE: Record<string, string> = {
 export function ChannelBadge({ channel }: { channel: string | null }) {
   if (!channel) return null;
   return (
-    <Badge variant="outline" className={`text-[10px] ${CHANNEL_TONE[channel] ?? ""}`}>
+    <Badge variant="outline" className={`text-[11px] ${CHANNEL_TONE[channel] ?? ""}`}>
       {channelName(channel, true)}
     </Badge>
   );
@@ -111,12 +111,12 @@ export function EditorialItemCard({
     >
       <div className="flex flex-wrap items-center gap-1.5">
         <StatusMenu item={item} />
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[11px]">
           {EDITORIAL_KINDS[item.kind] ?? item.kind}
         </Badge>
         <ChannelBadge channel={item.channel} />
         {item.priority && (
-          <Badge variant="outline" className={`text-[10px] ${PRIORITY_TONE[item.priority] ?? ""}`}>
+          <Badge variant="outline" className={`text-[11px] ${PRIORITY_TONE[item.priority] ?? ""}`}>
             {item.priority}
           </Badge>
         )}

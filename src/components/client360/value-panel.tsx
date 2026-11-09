@@ -77,7 +77,7 @@ export function ValuePanel({ view }: { view: Client360 }) {
                       {q.label} · {q.title}
                     </Link>
                     <p className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-                      <span className="rounded border border-border px-1.5 text-[10px]">
+                      <span className="rounded border border-border px-1.5 text-[11px]">
                         {quoteStatus(q.status)}
                       </span>
                       <span className="tabular-nums">

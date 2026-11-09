@@ -58,7 +58,7 @@ export function AgendaView({
           >
             {fmtDayLong(g.day)}
             {g.day === today && (
-              <span className="block text-[10px] uppercase tracking-wide">Aujourd'hui</span>
+              <span className="block text-[11px] ">Aujourd'hui</span>
             )}
           </h3>
           <div className="min-w-0">

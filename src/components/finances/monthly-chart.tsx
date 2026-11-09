@@ -116,7 +116,7 @@ export function MonthlyChart({
         {data.map((d) => (
           <span
             key={d.month}
-            className={`min-w-0 flex-1 truncate text-center text-[10px] ${
+            className={`min-w-0 flex-1 truncate text-center text-[11px] ${
               selected === d.month ? "font-semibold" : "text-muted-foreground"
             }`}
           >

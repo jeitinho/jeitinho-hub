@@ -667,7 +667,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             </div>
             <div className="mt-5 flex justify-end border-t border-border/60 pt-4">
               <div className="text-right">
-                <p className="tracked text-[10px] text-muted-foreground">TOTAL TTC</p>
+                <p className="tracked text-xs text-muted-foreground">TOTAL TTC</p>
                 <p className="mt-1 text-2xl" style={{ fontFamily: "Fraunces, serif" }}>
                   {formatMoney(total, currency)}
                 </p>
@@ -687,7 +687,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         <Card className="h-fit p-5 lg:sticky lg:top-6">
           <div className="space-y-4">
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Numéro</p>
+              <p className="text-xs st text-muted-foreground">Numéro</p>
               <Input
                 className="mt-1.5"
                 value={number}
@@ -696,7 +696,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
               />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Statut</p>
+              <p className="text-xs st text-muted-foreground">Statut</p>
               <Select value={status} onValueChange={(value) => setStatus(value as InvoiceStatus)}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue />
@@ -717,7 +717,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                 <p className="mt-1 font-semibold">{formatMoney(total, currency)}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">Devise</p>
+                <p className="text-xs st text-muted-foreground">Devise</p>
                 <Select value={currency} onValueChange={setCurrency}>
                   <SelectTrigger className="mt-1.5">
                     <SelectValue />
@@ -731,7 +731,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
               </div>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs st text-muted-foreground">
                 Langue du PDF
               </p>
               <Select value={language} onValueChange={setLanguage}>

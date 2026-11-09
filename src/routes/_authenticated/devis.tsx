@@ -124,7 +124,7 @@ function QuotesList() {
             <Card key={q.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
               <Link to="/devis/$id" params={{ id: q.id }} className="min-w-0 flex-1">
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="tracked text-[10px] text-muted-foreground">
+                  <span className="tracked text-xs text-muted-foreground">
                     {q.number ?? q.reference}
                   </span>
                   <span className="pill">{quoteStatusLabel(q.status)}</span>

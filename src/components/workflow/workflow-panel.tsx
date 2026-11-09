@@ -62,7 +62,7 @@ export function WorkflowPanel({ contentId, status, onChanged }: { contentId: str
 
   return (
     <Card className="border-border/60 space-y-3 p-4">
-      <div className="flex items-center justify-between"><p className="tracked text-[10px] text-muted-foreground">Workflow</p><span className="pill">{STATUS_LABEL[status]}</span></div>
+      <div className="flex items-center justify-between"><p className="tracked text-xs text-muted-foreground">Workflow</p><span className="pill">{STATUS_LABEL[status]}</span></div>
       {nexts.length === 0 ? <p className="text-xs text-muted-foreground">Aucune action disponible avec vos rôles.</p> : <>
         <Textarea rows={2} placeholder="Note de transition (optionnel)" value={note} onChange={(e) => setNote(e.target.value)} />
         <div className="flex flex-wrap gap-2">{nexts.map((n) => <Button key={n} size="sm" variant="outline" disabled={busy !== null} onClick={() => move(n)}><ArrowRight className="mr-1 h-3 w-3" />{STATUS_LABEL[n]}</Button>)}</div>

@@ -14,16 +14,18 @@ export function PageShell({
   children: ReactNode;
 }) {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          {eyebrow && <p className="tracked mb-2 text-[10px] text-muted-foreground">{eyebrow}</p>}
-          <h1 className="text-3xl sm:text-4xl" style={{ fontFamily: "Fraunces, serif", fontWeight: 500, letterSpacing: "-0.01em" }}>
-            {title}
-          </h1>
-          {description && <p className="mt-2 max-w-xl text-sm text-muted-foreground">{description}</p>}
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-border pb-5">
+        <div className="min-w-0">
+          {eyebrow && <p className="mb-1 text-[12.5px] font-medium text-muted-foreground">{eyebrow}</p>}
+          <h1 className="text-[26px] leading-tight sm:text-[30px]">{title}</h1>
+          {description && (
+            <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+          )}
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {children}
     </div>
@@ -33,8 +35,8 @@ export function PageShell({
 export function ComingSoon({ label }: { label: string }) {
   return (
     <div className="rounded-lg border border-dashed border-border/60 bg-card/50 p-16 text-center">
-      <p className="tracked mb-3 text-[10px] text-muted-foreground">Module en préparation</p>
-      <h2 className="text-2xl" style={{ fontFamily: "Fraunces, serif" }}>{label}</h2>
+      <p className="tracked mb-3 text-xs text-muted-foreground">Module en préparation</p>
+      <h2 className="text-2xl">{label}</h2>
       <p className="mt-3 text-sm text-muted-foreground">
         L'architecture est en place. L'interface complète de ce module arrive dans une prochaine itération.
       </p>

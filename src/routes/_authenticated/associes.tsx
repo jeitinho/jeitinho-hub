@@ -266,7 +266,7 @@ function AssociesPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="truncate text-sm font-medium">{e.label}</span>
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-[11px]">
                       {SOURCE_LABEL[e.source_type] ?? e.source_type}
                     </Badge>
                   </div>
@@ -385,7 +385,7 @@ function AssociesPage() {
 
             <Card className="mb-8 overflow-x-auto p-0">
               <table className="w-full text-sm">
-                <thead className="border-b border-border/60 text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                <thead className="border-b border-border/60 text-left text-[11px] text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3">Associé</th>
                     <th className="px-4 py-3 text-right">Pró-labore</th>
@@ -440,7 +440,7 @@ function AssociesPage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-medium">{e.label}</span>
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-[11px]">
                             {SOURCE_LABEL[e.source_type] ?? e.source_type}
                           </Badge>
                         </div>
@@ -549,7 +549,7 @@ function AssociesPage() {
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <Card className="p-4">
-      <p className="tracked text-[10px] text-muted-foreground">{label}</p>
+      <p className="tracked text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl tabular-nums" style={{ fontFamily: "Fraunces, serif" }}>
         {value}
       </p>

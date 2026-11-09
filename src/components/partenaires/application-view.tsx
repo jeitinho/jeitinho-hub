@@ -87,7 +87,7 @@ export function ApplicationView({ application }: { application: PartnerApplicati
     <div className="space-y-4">
       {visible.map((s) => (
         <div key={s.title}>
-          <p className="tracked mb-1.5 text-[10px] text-muted-foreground">{s.title}</p>
+          <p className="tracked mb-1.5 text-xs text-muted-foreground">{s.title}</p>
           <dl className="grid gap-x-3 gap-y-1.5 text-xs sm:grid-cols-[9rem_1fr]">
             {s.rows.map((r) => (
               <div key={r.key} className="contents">

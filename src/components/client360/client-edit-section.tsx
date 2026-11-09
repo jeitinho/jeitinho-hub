@@ -117,7 +117,7 @@ export function ClientEditSection({
         <CollapsibleContent>
           <div className="space-y-6 border-t border-border/60 p-5">
             <div className="space-y-4">
-              <p className="tracked text-[10px] text-muted-foreground">Coordonnées</p>
+              <p className="tracked text-xs text-muted-foreground">Coordonnées</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label>Nom complet</Label>
@@ -156,7 +156,7 @@ export function ClientEditSection({
             </div>
 
             <div className="space-y-4">
-              <p className="tracked text-[10px] text-muted-foreground">Facturation</p>
+              <p className="tracked text-xs text-muted-foreground">Facturation</p>
               <div>
                 <Label>Type</Label>
                 <Select value={legalType} onValueChange={(v) => setLegalType(v as LegalType)}>

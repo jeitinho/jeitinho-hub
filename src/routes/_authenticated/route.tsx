@@ -6,6 +6,9 @@ import { pathnameToTitle } from "@/lib/nav-labels";
 import { PendingValidationScreen } from "@/components/pending-validation-screen";
 import { GlobalSearch } from "@/components/global-search";
 import { MobileNav } from "@/components/mobile-nav";
+import { useEffect } from "react";
+import { startDomTranslation } from "@/lib/i18n";
+import { PwaSetup } from "@/components/pwa-setup";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -23,6 +26,7 @@ function AuthenticatedLayout() {
   const title = pathnameToTitle(pathname, { canManage, kind: profileKind(roles) });
   const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
   const allowed = loading || !(seg in MODULE_ACCESS) || canAccessModule(seg, roles);
+  useEffect(() => startDomTranslation(), []);
 
   if (!loading && status && status !== "active") {
     return <PendingValidationScreen rejected={isRejected} />;
@@ -33,19 +37,20 @@ function AuthenticatedLayout() {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur">
+          <header className="sticky top-0 z-10 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center gap-3 border-b border-border bg-card/85 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md lg:px-6">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-            <div className="tracked text-[11px] text-muted-foreground">{title}</div>
+            <div className="truncate text-[13.5px] font-semibold text-foreground">{title}</div>
             <div className="ml-auto">
-              <GlobalSearch />
+              <GlobalSearch roles={roles} />
             </div>
           </header>
-          <main className="flex-1 pb-20 md:pb-0">
+          <PwaSetup />
+          <main className="flex-1 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
             {allowed ? (
               <Outlet />
             ) : (
               <div className="mx-auto max-w-xl px-4 py-16 text-center">
-                <p className="tracked mb-3 text-[10px] text-muted-foreground">Accès réservé</p>
+                <p className="tracked mb-3 text-xs text-muted-foreground">Accès réservé</p>
                 <p className="text-sm text-muted-foreground">
                   Cette page ne fait pas partie de ton espace.
                 </p>

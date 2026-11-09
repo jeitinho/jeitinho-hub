@@ -17,6 +17,7 @@ import {
   LogOut,
   Languages,
   ListChecks,
+  Waypoints,
   ClipboardCheck,
   Bot,
   PartyPopper,
@@ -46,7 +47,7 @@ import {
 import { JeitinhoLogo } from "./jeitinho-logo";
 import { useAuth, canAccessModule, displayName, profileKind } from "@/hooks/use-auth";
 import { NAV_LABELS, navLabel } from "@/lib/nav-labels";
-import { getLang, setLang, t } from "@/lib/i18n";
+import { HUB_LANGS, getLang, setLang, t } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
@@ -69,6 +70,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { url: "/a-valider", icon: ClipboardCheck, module: "a-valider" },
       { url: "/calendrier", icon: Calendar, module: "calendrier" },
       { url: "/manifest", icon: ListChecks, module: "manifest" },
+      { url: "/dispatch", icon: Waypoints, module: "dispatch" },
       { url: "/demandes", icon: Send, module: "demandes" },
     ],
   },
@@ -136,20 +138,20 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/60">
-      <SidebarHeader className="border-b border-border/60 px-4 py-4">
+    <Sidebar collapsible="icon" className="border-r-0">
+      <SidebarHeader className="px-4 pb-3 pt-5">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <JeitinhoLogo className={collapsed ? "h-6 w-auto" : "h-7 w-auto"} />
+          <JeitinhoLogo className={collapsed ? "h-5 w-auto text-sidebar-foreground" : "h-6 w-auto text-sidebar-foreground"} />
         </Link>
       </SidebarHeader>
-      <SidebarContent className="px-1">
+      <SidebarContent className="px-2">
         {GROUPS.map((g) => {
           const visible = g.items.filter((i) => canAccessModule(i.module, roles));
           if (!visible.length) return null;
           return (
             <SidebarGroup key={g.label}>
               {!collapsed && (
-                <SidebarGroupLabel className="tracked text-[10px] text-muted-foreground/70">
+                <SidebarGroupLabel className="h-7 px-2 text-[11.5px] font-medium text-sidebar-foreground/45">
                   {t(g.label)}
                 </SidebarGroupLabel>
               )}
@@ -161,14 +163,19 @@ export function AppSidebar() {
                     const title = navLabel(item.module, { canManage, kind });
                     return (
                       <SidebarMenuItem key={item.url}>
-                        <SidebarMenuButton asChild isActive={active} tooltip={title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          tooltip={title}
+                          className="relative h-8 text-[13.5px] text-sidebar-foreground/75 hover:text-sidebar-foreground data-[active=true]:text-sidebar-accent-foreground data-[active=true]:before:absolute data-[active=true]:before:-left-2 data-[active=true]:before:top-1.5 data-[active=true]:before:h-5 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-r data-[active=true]:before:bg-primary data-[active=true]:[&>svg]:text-sidebar-primary"
+                        >
                           <Link to={item.url}>
                             <item.icon className="h-4 w-4" />
                             <span>{title}</span>
                           </Link>
                         </SidebarMenuButton>
                         {badge > 0 && (
-                          <SidebarMenuBadge className="bg-primary/15 text-primary">
+                          <SidebarMenuBadge className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
                             {badge}
                           </SidebarMenuBadge>
                         )}
@@ -183,7 +190,7 @@ export function AppSidebar() {
         {canManage && (
           <SidebarGroup>
             {!collapsed && (
-              <SidebarGroupLabel className="tracked text-[10px] text-muted-foreground/70">
+              <SidebarGroupLabel className="h-7 px-2 text-[11.5px] font-medium text-sidebar-foreground/45">
                 Système
               </SidebarGroupLabel>
             )}
@@ -206,28 +213,43 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
       </SidebarContent>
-      <SidebarFooter className="border-t border-border/60 p-3">
+      <SidebarFooter className="border-t border-sidebar-border p-3">
         {!collapsed && user && (
           <div className="mb-2 min-w-0 px-2">
-            <div className="truncate text-xs font-medium text-foreground">{displayName(user)}</div>
-            <div className="truncate text-[11px] text-muted-foreground">{user.email}</div>
-            <div className="tracked text-[10px] text-muted-foreground">{roles[0] ?? "membre"}</div>
+            <div className="truncate text-[13px] font-semibold text-sidebar-foreground">{displayName(user)}</div>
+            <div className="truncate text-[11.5px] text-sidebar-foreground/50">{user.email}</div>
+            
           </div>
         )}
-        <button
-          onClick={() => setLang(getLang() === "pt" ? "fr" : "pt")}
-          className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+        <div
+          data-no-translate
+          className={`mb-1 flex items-center gap-1 px-2 py-1 ${collapsed ? "flex-col" : ""}`}
           title={t("Langue de l'interface")}
         >
-          <Languages className="h-4 w-4" />
-          {!collapsed && <span>{getLang() === "pt" ? "Français" : "Português"}</span>}
-        </button>
+          <Languages className="mr-1 h-4 w-4 text-sidebar-foreground/50" />
+          {HUB_LANGS.map((l) => (
+            <button
+              key={l.value}
+              type="button"
+              onClick={() => l.value !== getLang() && setLang(l.value)}
+              aria-pressed={getLang() === l.value}
+              title={l.label}
+              className={`rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold transition-colors ${
+                getLang() === l.value
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/50 hover:text-sidebar-foreground"
+              }`}
+            >
+              {l.short}
+            </button>
+          ))}
+        </div>
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-[13px] text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>{getLang() === "pt" ? "Sair" : "Se déconnecter"}</span>}
+          {!collapsed && <span>{t("Se déconnecter")}</span>}
         </button>
       </SidebarFooter>
     </Sidebar>

@@ -187,7 +187,7 @@ export function TripPlanningTab({
     <div className="space-y-6">
       {unplaced.length > 0 && (
         <Card className="space-y-2 p-4">
-          <p className="tracked text-[10px] text-muted-foreground">À placer</p>
+          <p className="tracked text-xs text-muted-foreground">À placer</p>
           <div className="flex flex-wrap gap-2">
             {unplaced.map((a) => (
               <span

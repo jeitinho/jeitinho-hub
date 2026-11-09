@@ -91,7 +91,7 @@ export function AmountLines({
 
 export function PanelTitle({ children, icon }: { children: ReactNode; icon?: ReactNode }) {
   return (
-    <h2 className="tracked mb-3 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+    <h2 className="tracked mb-3 flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
       {children}
     </h2>

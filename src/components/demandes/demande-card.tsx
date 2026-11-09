@@ -59,7 +59,7 @@ export function DemandeCard({
         <div className="min-w-0">
           <div className="mb-1 flex flex-wrap items-center gap-1.5">
             {d.stage !== "gagnee" && <TemperatureBadge demande={d} />}
-            <span className="text-[10px] text-muted-foreground" title={fmtDateTime(d.createdAt)}>
+            <span className="text-[11px] text-muted-foreground" title={fmtDateTime(d.createdAt)}>
               {ageLabel(d.createdAt)}
             </span>
           </div>
@@ -112,14 +112,14 @@ export function DemandeCard({
           {d.activities.slice(0, MAX_ACTIVITIES).map((a) => (
             <span
               key={a}
-              className="max-w-full truncate rounded-full border border-border/70 px-2 py-0.5 text-[10px] text-muted-foreground"
+              className="max-w-full truncate rounded-full border border-border/70 px-2 py-0.5 text-[11px] text-muted-foreground"
             >
               {a}
             </span>
           ))}
           {extra > 0 && (
             <span
-              className="rounded-full px-1.5 py-0.5 text-[10px] text-muted-foreground"
+              className="rounded-full px-1.5 py-0.5 text-[11px] text-muted-foreground"
               title={d.activities.slice(MAX_ACTIVITIES).join(" · ")}
             >
               +{extra}

@@ -109,7 +109,7 @@ function RequestCard({ r, canAnswer }: { r: TeamRequest; canAnswer: boolean }) {
         </div>
       ) : r.answer ? (
         <div className="rounded-md bg-muted/50 p-3 text-sm">
-          <p className="tracked mb-1 text-[10px] text-muted-foreground">Réponse de Rafael</p>
+          <p className="tracked mb-1 text-xs text-muted-foreground">Réponse de Rafael</p>
           <p className="whitespace-pre-wrap">{r.answer}</p>
         </div>
       ) : null}

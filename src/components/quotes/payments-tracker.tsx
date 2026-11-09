@@ -15,11 +15,11 @@ const db = supabase as any;
 const today = () => new Date().toLocaleDateString("fr-CA", { timeZone: "America/Sao_Paulo" });
 
 const TONE: Record<ScheduleState, string> = {
-  en_retard: "bg-destructive text-white",
-  acompte_attendu: "bg-amber-500 text-white",
-  solde_a_venir: "bg-primary/15 text-primary",
-  acompte_recu: "bg-sky-100 text-sky-800",
-  solde: "bg-emerald-600 text-white",
+  en_retard: "bg-destructive/10 text-destructive ring-1 ring-inset ring-destructive/20",
+  acompte_attendu: "bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-300/60",
+  solde_a_venir: "bg-primary/10 text-primary ring-1 ring-inset ring-primary/20",
+  acompte_recu: "bg-sky-50 text-sky-800 ring-1 ring-inset ring-sky-200",
+  solde: "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200",
 };
 const ORDER: ScheduleState[] = [
   "en_retard",

@@ -94,7 +94,7 @@ function NewLead() {
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
           <Card className="space-y-5 border-border/60 p-6">
-            <p className="tracked text-[10px] text-muted-foreground">Contact</p>
+            <p className="tracked text-xs text-muted-foreground">Contact</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Label>Nom</Label>
@@ -128,7 +128,7 @@ function NewLead() {
             </div>
           </Card>
           <Card className="space-y-5 border-border/60 p-6">
-            <p className="tracked text-[10px] text-muted-foreground">Projet de voyage</p>
+            <p className="tracked text-xs text-muted-foreground">Projet de voyage</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label>Arrivée</Label>
@@ -200,7 +200,7 @@ function NewLead() {
           </Card>
         </div>
         <Card className="h-fit border-border/60 p-6">
-          <p className="tracked mb-4 text-[10px] text-muted-foreground">Enregistrement</p>
+          <p className="tracked mb-4 text-xs text-muted-foreground">Enregistrement</p>
           <p className="text-sm text-muted-foreground">
             La demande sera créée avec le statut <strong>Nouveau</strong>. Elle apparaîtra
             immédiatement dans la colonne « Nouvelle » des Demandes.

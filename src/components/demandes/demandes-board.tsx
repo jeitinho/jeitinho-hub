@@ -360,7 +360,7 @@ function CounterCard({
 }) {
   const body = (
     <>
-      <p className="tracked text-[10px] text-muted-foreground">{label}</p>
+      <p className="tracked text-xs text-muted-foreground">{label}</p>
       <p
         className={cn("mt-1 text-3xl", tone === "alert" && "text-destructive")}
         style={{ fontFamily: "Fraunces, serif" }}

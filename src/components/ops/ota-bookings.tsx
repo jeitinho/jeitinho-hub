@@ -192,7 +192,7 @@ export function OtaBookingsList({ clientId, compact }: { clientId?: string; comp
     <div className="space-y-5">
       {upcoming.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-xs font-semibold text-muted-foreground">
             À venir ({upcoming.length})
           </h3>
           {upcoming.map(row)}
@@ -200,7 +200,7 @@ export function OtaBookingsList({ clientId, compact }: { clientId?: string; comp
       )}
       {past.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-xs font-semibold text-muted-foreground">
             Passées / annulées ({past.length})
           </h3>
           {past.map(row)}

@@ -40,7 +40,7 @@ export function Commissions({
 
       {channels.length > 0 && (
         <>
-          <h3 className="tracked mb-1 mt-2 text-[10px] text-muted-foreground">
+          <h3 className="tracked mb-1 mt-2 text-xs text-muted-foreground">
             Manuel · revendeurs
           </h3>
           <ul className="divide-y divide-border/50">
@@ -71,7 +71,7 @@ export function Commissions({
 
       {relays.length > 0 && (
         <>
-          <h3 className="tracked mb-1 mt-4 text-[10px] text-muted-foreground">
+          <h3 className="tracked mb-1 mt-4 text-xs text-muted-foreground">
             Événements · relais
           </h3>
           <ul className="divide-y divide-border/50">

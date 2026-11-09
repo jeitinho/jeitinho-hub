@@ -25,7 +25,7 @@ const SECONDARY = "h-12 gap-1.5 px-2 text-[13px] sm:px-3 sm:text-sm";
 
 function Kbd({ children }: { children: string }) {
   return (
-    <kbd className="ml-1 hidden rounded border border-current/30 px-1 font-sans text-[10px] opacity-70 sm:inline">
+    <kbd className="ml-1 hidden rounded border border-current/30 px-1 font-sans text-[11px] opacity-70 sm:inline">
       {children}
     </kbd>
   );

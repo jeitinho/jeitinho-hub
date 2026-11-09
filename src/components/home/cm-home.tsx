@@ -139,7 +139,7 @@ function EventCard({ ev }: { ev: CmEvent }) {
 
       {links.length > 0 && (
         <div className="space-y-2">
-          <p className="tracked text-[10px] text-muted-foreground">Liens de vente (tracking)</p>
+          <p className="tracked text-xs text-muted-foreground">Liens de vente (tracking)</p>
           <ul className="divide-y divide-border/60 rounded-md border border-border/60">
             {shown.map((l) => (
               <li key={l.utm_source} className="flex items-center gap-2 px-3 py-2 text-sm">
@@ -223,7 +223,7 @@ function IgStats() {
             </div>
             {top.length > 0 && (
               <div className="mt-4 space-y-2">
-                <p className="tracked text-[10px] text-muted-foreground">Ce qui marche le mieux</p>
+                <p className="tracked text-xs text-muted-foreground">Ce qui marche le mieux</p>
                 {top.map((p) => (
                   <a
                     key={p.id}

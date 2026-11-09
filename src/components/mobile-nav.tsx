@@ -10,6 +10,7 @@ import {
   Menu,
   Plane,
   ListChecks,
+  Waypoints,
   MessageCircle,
   Send,
   Sun,
@@ -39,6 +40,7 @@ const CM_ITEMS: NavItem[] = [
 const TERRAIN_ITEMS: NavItem[] = [
   { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
   { to: "/manifest", module: "manifest", icon: ListChecks, badge: null },
+  { to: "/dispatch", module: "dispatch", icon: Waypoints, badge: null },
   { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
 ];
 
@@ -47,7 +49,7 @@ const ASSOCIE_ITEMS: NavItem[] = [
   { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
   { to: "/crm", module: "crm", icon: Inbox, badge: "crm" },
   { to: "/voyages", module: "voyages", icon: Plane, badge: null },
-  { to: "/manifest", module: "manifest", icon: ListChecks, badge: null },
+  { to: "/dispatch", module: "dispatch", icon: Waypoints, badge: null },
 ];
 
 const ITEMS: NavItem[] = [
@@ -85,7 +87,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 shadow-[0_-8px_24px_-16px_rgb(34_30_26/0.25)] backdrop-blur-md md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Navigation principale"
     >
@@ -100,8 +102,10 @@ export function MobileNav() {
             <li key={item.to}>
               <Link
                 to={item.to}
-                className={`relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] ${
-                  active ? "text-primary" : "text-muted-foreground"
+                className={`relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${
+                  active
+                    ? "text-foreground before:absolute before:top-0 before:h-[3px] before:w-8 before:rounded-b before:bg-primary [&>svg]:text-primary"
+                    : "text-muted-foreground"
                 }`}
               >
                 <item.icon className="h-5 w-5" />
@@ -109,7 +113,7 @@ export function MobileNav() {
                   {navLabel(item.module, { canManage, kind })}
                 </span>
                 {n > 0 && (
-                  <span className="absolute right-[22%] top-2 min-w-4 rounded-full bg-primary px-1 text-center text-[10px] font-semibold leading-4 text-primary-foreground">
+                  <span className="absolute right-[22%] top-2 min-w-4 rounded-full bg-primary px-1 text-center text-[11px] font-semibold leading-4 text-primary-foreground">
                     {n > 99 ? "99+" : n}
                   </span>
                 )}

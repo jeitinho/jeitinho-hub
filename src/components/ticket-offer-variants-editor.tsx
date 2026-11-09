@@ -101,7 +101,7 @@ export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: st
     <Card className="space-y-5 border-border/60 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="tracked text-[10px] text-muted-foreground">Secteurs / variantes de prix</p>
+          <p className="tracked text-xs text-muted-foreground">Secteurs / variantes de prix</p>
           <p className="mt-1 text-xs text-muted-foreground">Un billet peut se vendre à plusieurs prix selon le secteur. Laissez le prix vide tant qu'il n'est pas confirmé.</p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={addRow}><Plus className="mr-2 h-3.5 w-3.5" />Ajouter un secteur</Button>

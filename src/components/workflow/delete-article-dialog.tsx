@@ -89,7 +89,7 @@ export function DeleteArticleDialog({
                 <div className="flex items-start gap-3">
                   <Archive className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
-                    <div className="font-medium">Archiver <span className="ml-2 text-[10px] uppercase tracking-wider text-primary">Recommandé</span></div>
+                    <div className="font-medium">Archiver <span className="ml-2 text-[11px] r text-primary">Recommandé</span></div>
                     <p className="mt-1 text-sm text-muted-foreground">
                       L'article reste dans le dépôt mais est masqué du site (published=false).
                       Réversible depuis le panneau Publishers.

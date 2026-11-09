@@ -159,12 +159,12 @@ function TimelineRow({
       </div>
       <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
         {future && (
-          <span className="rounded border border-primary/40 px-1.5 py-px text-[10px] text-primary">
+          <span className="rounded border border-primary/40 px-1.5 py-px text-[11px] text-primary">
             à venir · {relativeDays(it.ts, now)}
           </span>
         )}
         {it.status && (
-          <span className="rounded border border-border px-1.5 py-px text-[10px]">{it.status}</span>
+          <span className="rounded border border-border px-1.5 py-px text-[11px]">{it.status}</span>
         )}
         {it.detail && (
           <span className={`min-w-0 break-words ${compact ? "line-clamp-2" : ""}`}>

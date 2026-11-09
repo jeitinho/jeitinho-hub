@@ -30,7 +30,7 @@ export function MonthView({
     <div className="overflow-hidden rounded-lg border border-border/60 bg-card">
       <div className="grid grid-cols-7 border-b border-border/60">
         {WEEKDAYS.map((w) => (
-          <div key={w} className="tracked px-2 py-2 text-[10px] uppercase text-muted-foreground">
+          <div key={w} className="tracked px-2 py-2 text-xs text-muted-foreground">
             {w}
           </div>
         ))}
@@ -83,7 +83,7 @@ export function MonthView({
                     />
                   ))}
                   {list.length > MAX_DOTS && (
-                    <span className="text-[10px] leading-none text-muted-foreground">
+                    <span className="text-[11px] leading-none text-muted-foreground">
                       +{list.length - MAX_DOTS}
                     </span>
                   )}

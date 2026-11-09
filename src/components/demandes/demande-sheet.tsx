@@ -64,7 +64,7 @@ export function DemandeSheet({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="border-t border-border/60 pt-4">
-      <h3 className="tracked mb-3 text-[10px] text-muted-foreground">{title}</h3>
+      <h3 className="tracked mb-3 text-xs text-muted-foreground">{title}</h3>
       {children}
     </section>
   );
@@ -104,7 +104,7 @@ function DemandeDetail({
           {d.stage !== "gagnee" && <TemperatureBadge demande={d} />}
           <StagePill stage={d.stage} />
           {d.kind === "lead" && (
-            <span className="rounded-full border border-border/70 px-2 py-0.5 text-[10px] text-muted-foreground">
+            <span className="rounded-full border border-border/70 px-2 py-0.5 text-[11px] text-muted-foreground">
               Non qualifiée
             </span>
           )}
@@ -254,7 +254,7 @@ function DemandeDetail({
                     <span className="flex items-center gap-1.5 font-medium">
                       <FileText className="h-3.5 w-3.5 shrink-0" />
                       {q.number ?? q.reference}
-                      <span className="rounded-full border border-border/70 px-1.5 text-[10px] font-normal text-muted-foreground">
+                      <span className="rounded-full border border-border/70 px-1.5 text-[11px] font-normal text-muted-foreground">
                         {QUOTE_STATUS_LABEL[q.status] ?? q.status}
                       </span>
                     </span>
@@ -344,7 +344,7 @@ function LeadEntry({ lead: l, onDelete }: { lead: DemandeLead; onDelete: () => v
             {fmtDateTime(l.received_at)}
             <span
               className={cn(
-                "ml-2 rounded-full border px-1.5 text-[10px] font-normal",
+                "ml-2 rounded-full border px-1.5 text-[11px] font-normal",
                 l.status === "spam" || l.status === "lost"
                   ? "border-destructive/40 text-destructive"
                   : "border-border/70 text-muted-foreground",
