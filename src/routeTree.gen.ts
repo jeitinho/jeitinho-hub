@@ -32,6 +32,7 @@ import { Route as AuthenticatedDistributionRouteImport } from './routes/_authent
 import { Route as AuthenticatedEvenementsRouteImport } from './routes/_authenticated/evenements'
 import { Route as AuthenticatedExperiencesRouteImport } from './routes/_authenticated/experiences'
 import { Route as AuthenticatedFinancesRouteImport } from './routes/_authenticated/finances'
+import { Route as AuthenticatedManifestRouteImport } from './routes/_authenticated/manifest'
 import { Route as AuthenticatedManuelRouteImport } from './routes/_authenticated/manuel'
 import { Route as AuthenticatedMediathequeRouteImport } from './routes/_authenticated/mediatheque'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
@@ -190,6 +191,11 @@ const AuthenticatedExperiencesRoute =
 const AuthenticatedFinancesRoute = AuthenticatedFinancesRouteImport.update({
   id: '/finances',
   path: '/finances',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedManifestRoute = AuthenticatedManifestRouteImport.update({
+  id: '/manifest',
+  path: '/manifest',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedManuelRoute = AuthenticatedManuelRouteImport.update({
@@ -438,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/evenements': typeof AuthenticatedEvenementsRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/finances': typeof AuthenticatedFinancesRoute
+  '/manifest': typeof AuthenticatedManifestRoute
   '/manuel': typeof AuthenticatedManuelRoute
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -504,6 +511,7 @@ export interface FileRoutesByTo {
   '/evenements': typeof AuthenticatedEvenementsRoute
   '/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/finances': typeof AuthenticatedFinancesRoute
+  '/manifest': typeof AuthenticatedManifestRoute
   '/manuel': typeof AuthenticatedManuelRoute
   '/mediatheque': typeof AuthenticatedMediathequeRoute
   '/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -572,6 +580,7 @@ export interface FileRoutesById {
   '/_authenticated/evenements': typeof AuthenticatedEvenementsRoute
   '/_authenticated/experiences': typeof AuthenticatedExperiencesRouteWithChildren
   '/_authenticated/finances': typeof AuthenticatedFinancesRoute
+  '/_authenticated/manifest': typeof AuthenticatedManifestRoute
   '/_authenticated/manuel': typeof AuthenticatedManuelRoute
   '/_authenticated/mediatheque': typeof AuthenticatedMediathequeRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRouteWithChildren
@@ -640,6 +649,7 @@ export interface FileRouteTypes {
     | '/evenements'
     | '/experiences'
     | '/finances'
+    | '/manifest'
     | '/manuel'
     | '/mediatheque'
     | '/parametres'
@@ -706,6 +716,7 @@ export interface FileRouteTypes {
     | '/evenements'
     | '/experiences'
     | '/finances'
+    | '/manifest'
     | '/manuel'
     | '/mediatheque'
     | '/parametres'
@@ -773,6 +784,7 @@ export interface FileRouteTypes {
     | '/_authenticated/evenements'
     | '/_authenticated/experiences'
     | '/_authenticated/finances'
+    | '/_authenticated/manifest'
     | '/_authenticated/manuel'
     | '/_authenticated/mediatheque'
     | '/_authenticated/parametres'
@@ -1003,6 +1015,13 @@ declare module '@tanstack/react-router' {
       path: '/finances'
       fullPath: '/finances'
       preLoaderRoute: typeof AuthenticatedFinancesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manifest': {
+      id: '/_authenticated/manifest'
+      path: '/manifest'
+      fullPath: '/manifest'
+      preLoaderRoute: typeof AuthenticatedManifestRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/manuel': {
@@ -1462,6 +1481,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEvenementsRoute: typeof AuthenticatedEvenementsRoute
   AuthenticatedExperiencesRoute: typeof AuthenticatedExperiencesRouteWithChildren
   AuthenticatedFinancesRoute: typeof AuthenticatedFinancesRoute
+  AuthenticatedManifestRoute: typeof AuthenticatedManifestRoute
   AuthenticatedManuelRoute: typeof AuthenticatedManuelRoute
   AuthenticatedMediathequeRoute: typeof AuthenticatedMediathequeRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRouteWithChildren
@@ -1490,6 +1510,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEvenementsRoute: AuthenticatedEvenementsRoute,
   AuthenticatedExperiencesRoute: AuthenticatedExperiencesRouteWithChildren,
   AuthenticatedFinancesRoute: AuthenticatedFinancesRoute,
+  AuthenticatedManifestRoute: AuthenticatedManifestRoute,
   AuthenticatedManuelRoute: AuthenticatedManuelRoute,
   AuthenticatedMediathequeRoute: AuthenticatedMediathequeRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRouteWithChildren,

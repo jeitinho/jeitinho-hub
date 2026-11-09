@@ -9,6 +9,7 @@ import {
   Library,
   Menu,
   Plane,
+  ListChecks,
   MessageCircle,
   Send,
   Sun,
@@ -37,6 +38,7 @@ const CM_ITEMS: NavItem[] = [
 
 const TERRAIN_ITEMS: NavItem[] = [
   { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
+  { to: "/manifest", module: "manifest", icon: ListChecks, badge: null },
   { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
 ];
 
@@ -45,7 +47,7 @@ const ASSOCIE_ITEMS: NavItem[] = [
   { to: "/dashboard", module: "dashboard", icon: Sun, badge: null },
   { to: "/crm", module: "crm", icon: Inbox, badge: "crm" },
   { to: "/voyages", module: "voyages", icon: Plane, badge: null },
-  { to: "/calendrier", module: "calendrier", icon: Calendar, badge: null },
+  { to: "/manifest", module: "manifest", icon: ListChecks, badge: null },
 ];
 
 const ITEMS: NavItem[] = [

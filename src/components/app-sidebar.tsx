@@ -15,6 +15,8 @@ import {
   Ticket,
   Settings,
   LogOut,
+  Languages,
+  ListChecks,
   ClipboardCheck,
   Bot,
   PartyPopper,
@@ -44,6 +46,7 @@ import {
 import { JeitinhoLogo } from "./jeitinho-logo";
 import { useAuth, canAccessModule, displayName, profileKind } from "@/hooks/use-auth";
 import { NAV_LABELS, navLabel } from "@/lib/nav-labels";
+import { getLang, setLang, t } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
@@ -65,6 +68,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { url: "/dashboard", icon: Sun, module: "dashboard" },
       { url: "/a-valider", icon: ClipboardCheck, module: "a-valider" },
       { url: "/calendrier", icon: Calendar, module: "calendrier" },
+      { url: "/manifest", icon: ListChecks, module: "manifest" },
       { url: "/demandes", icon: Send, module: "demandes" },
     ],
   },
@@ -146,7 +150,7 @@ export function AppSidebar() {
             <SidebarGroup key={g.label}>
               {!collapsed && (
                 <SidebarGroupLabel className="tracked text-[10px] text-muted-foreground/70">
-                  {g.label}
+                  {t(g.label)}
                 </SidebarGroupLabel>
               )}
               <SidebarGroupContent>
@@ -211,11 +215,19 @@ export function AppSidebar() {
           </div>
         )}
         <button
+          onClick={() => setLang(getLang() === "pt" ? "fr" : "pt")}
+          className="mb-1 flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          title={t("Langue de l'interface")}
+        >
+          <Languages className="h-4 w-4" />
+          {!collapsed && <span>{getLang() === "pt" ? "Français" : "Português"}</span>}
+        </button>
+        <button
           onClick={handleSignOut}
           className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Se déconnecter</span>}
+          {!collapsed && <span>{getLang() === "pt" ? "Sair" : "Se déconnecter"}</span>}
         </button>
       </SidebarFooter>
     </Sidebar>
