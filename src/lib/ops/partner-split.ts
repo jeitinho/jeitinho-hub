@@ -27,6 +27,9 @@ export type LedgerEntry = {
   guide_id: string | null;
   apporteur_id: string | null;
   vehicle_used: boolean;
+  /** « a_recevoir » : vente faite, argent pas encore sur le compte (ex. versement GetYourGuide). Non partagée. */
+  cash_status?: "a_recevoir" | "recu";
+  expected_amount?: number | null;
 };
 
 export type Member = { user_id: string; display_name: string };
@@ -59,6 +62,9 @@ export type MonthSplit = {
   members: MemberShare[];
   /** Le mois ne couvre pas pró-labore + primes : le manque vient de la réserve (règle de saison basse). */
   shortfall: number;
+  /** Ventes faites dont l'argent n'est pas encore reçu : montants attendus, hors partage. */
+  pending_count: number;
+  pending_by_currency: Record<string, number>;
   warnings: string[];
 };
 
@@ -71,11 +77,19 @@ export function entryMargin(e: LedgerEntry, s: Pick<PartnerSettings, "tax_pct">)
 }
 
 export function computeMonthSplit(
-  entries: LedgerEntry[],
+  allEntries: (LedgerEntry & { expected_currency?: string | null })[],
   members: Member[],
   settings: PartnerSettings,
 ): MonthSplit {
   const warnings: string[] = [];
+  // Seul l'argent réellement reçu est partagé.
+  const entries = allEntries.filter((e) => (e.cash_status ?? "recu") === "recu");
+  const pendingEntries = allEntries.filter((e) => e.cash_status === "a_recevoir");
+  const pending_by_currency: Record<string, number> = {};
+  for (const e of pendingEntries) {
+    const cur = (e.expected_currency ?? "BRL").toUpperCase();
+    pending_by_currency[cur] = r2((pending_by_currency[cur] ?? 0) + n(e.expected_amount));
+  }
   const memberIds = new Set(members.map((m) => m.user_id));
   const revenue = entries.reduce((a, e) => a + n(e.revenue), 0);
   const taxes = revenue * (n(settings.tax_pct) / 100);
@@ -158,6 +172,8 @@ export function computeMonthSplit(
     unassigned_guide_margin: r2(unassigned_guide_margin),
     members: shares,
     shortfall: r2(shortfall),
+    pending_count: pendingEntries.length,
+    pending_by_currency,
     warnings,
   };
 }

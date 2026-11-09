@@ -4,12 +4,14 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertTriangle,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Download,
   Plus,
-  Trash2,
   Settings2,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
@@ -29,9 +31,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { fmtMoney } from "@/lib/ops/ops";
 import { useAuth } from "@/hooks/use-auth";
@@ -58,15 +60,21 @@ type Row = LedgerEntry & {
   occurred_on: string;
   label: string;
   source_type: string;
-  original_amount: number | null;
-  original_currency: string | null;
+  cash_status: "a_recevoir" | "recu";
+  expected_amount: number | null;
+  expected_currency: string | null;
+  expected_on: string | null;
+  received_on: string | null;
   notes: string | null;
 };
-type Settings = PartnerSettings & { currency: string; eur_brl: number };
+type Settings = PartnerSettings & {
+  currency: string;
+  start_date: string;
+  tax_confirmed: boolean;
+};
 
-function thisMonth() {
-  return new Date().toLocaleDateString("fr-CA", { timeZone: "America/Sao_Paulo" }).slice(0, 7);
-}
+const today = () => new Date().toLocaleDateString("fr-CA", { timeZone: "America/Sao_Paulo" });
+const thisMonth = () => today().slice(0, 7);
 function shift(month: string, delta: number) {
   const [y, m] = month.split("-").map(Number);
   const d = new Date(Date.UTC(y, m - 1 + delta, 1));
@@ -81,6 +89,8 @@ function monthTitle(month: string) {
   });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+const frDate = (iso: string | null) => (iso ? iso.split("-").reverse().join("/") : "—");
+const num = (v: unknown) => (v == null ? null : Number(v));
 const SOURCE_LABEL: Record<string, string> = {
   manual: "Saisie",
   ota_booking: "GetYourGuide",
@@ -94,6 +104,7 @@ function AssociesPage() {
   const [month, setMonth] = useState(thisMonth());
   const [adding, setAdding] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [receiving, setReceiving] = useState<Row | null>(null);
   const { from, to } = monthBounds(month);
 
   const membersQ = useQuery({
@@ -116,46 +127,63 @@ function AssociesPage() {
       return data as Settings;
     },
   });
-  const entriesQ = useQuery({
-    queryKey: ["partner-ledger", month],
+  const normalize = (r: Row): Row => ({
+    ...r,
+    revenue: Number(r.revenue),
+    direct_cost: Number(r.direct_cost),
+    expected_amount: num(r.expected_amount),
+  });
+  // Partage du mois = argent REÇU pendant le mois (date de réception).
+  const receivedQ = useQuery({
+    queryKey: ["partner-ledger", "recu", month],
     queryFn: async () => {
       const { data, error } = await db
         .from("partner_ledger_entries")
         .select("*")
-        .gte("occurred_on", from)
-        .lte("occurred_on", to)
-        .order("occurred_on", { ascending: false });
+        .eq("cash_status", "recu")
+        .gte("received_on", from)
+        .lte("received_on", to)
+        .order("received_on", { ascending: false });
       if (error) throw new Error(error.message);
-      return (data ?? []).map((r: Row) => ({
-        ...r,
-        revenue: Number(r.revenue),
-        direct_cost: Number(r.direct_cost),
-      })) as Row[];
+      return ((data ?? []) as Row[]).map(normalize);
+    },
+  });
+  // À venir = toutes les ventes faites dont l'argent n'est pas encore arrivé, quel que soit le mois.
+  const pendingQ = useQuery({
+    queryKey: ["partner-ledger", "a_recevoir"],
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("partner_ledger_entries")
+        .select("*")
+        .eq("cash_status", "a_recevoir")
+        .order("occurred_on", { ascending: true });
+      if (error) throw new Error(error.message);
+      return ((data ?? []) as Row[]).map(normalize);
     },
   });
 
   const members = membersQ.data ?? [];
   const settings = settingsQ.data;
-  const entries = entriesQ.data ?? [];
+  const received = receivedQ.data ?? [];
+  const pending = pendingQ.data ?? [];
   const cur = settings?.currency ?? "BRL";
   const split = useMemo(
-    () => (settings ? computeMonthSplit(entries, members, settings) : null),
-    [entries, members, settings],
+    () => (settings ? computeMonthSplit([...received, ...pending], members, settings) : null),
+    [received, pending, members, settings],
   );
-  const nameOf = (id: string | null) => members.find((m) => m.user_id === id)?.display_name ?? "—";
-  const refresh = () => qc.invalidateQueries({ queryKey: ["partner-ledger", month] });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["partner-ledger"] });
+  const beforeStart = settings?.start_date ? to < settings.start_date : false;
 
   const importMonth = async () => {
     const { data, error } = await db.rpc("partner_ledger_import_month", { p_month: from });
     if (error) return toast.error(error.message);
     toast.success(
       data
-        ? `${data} vente(s) ajoutée(s) au registre.`
+        ? `${data} vente(s) ajoutée(s), en « À venir ».`
         : "Rien de nouveau à importer pour ce mois.",
     );
     refresh();
   };
-
   const patch = async (id: string, values: Partial<Row>) => {
     const { error } = await db.from("partner_ledger_entries").update(values).eq("id", id);
     if (error) return toast.error(error.message);
@@ -167,16 +195,20 @@ function AssociesPage() {
     toast.success("Ligne supprimée.");
     refresh();
   };
-
-  const missing = entries.filter(
+  const missing = received.filter(
     (e) => (e.guided_internally && !e.guide_id) || !e.apporteur_id,
   ).length;
+  const pendingTotal = split
+    ? Object.entries(split.pending_by_currency)
+        .map(([c, v]) => fmtMoney(v, c))
+        .join(" + ")
+    : "";
 
   return (
     <PageShell
       eyebrow="Association JEITINHO"
       title="Registre des parts"
-      description="Chaque vente du mois, qui l'a guidée, qui a amené le client, et ce que touche chacun selon le modèle validé : pró-labore, primes, réserve, solde à parts égales."
+      description={`Les comptes de l'association depuis le ${frDate(settings?.start_date ?? "2026-11-09")}. On ne partage que l'argent réellement arrivé sur le compte, au montant reçu.`}
       actions={
         <>
           {isAdmin && (
@@ -200,7 +232,65 @@ function AssociesPage() {
         </>
       }
     >
-      <div className="mb-6 flex items-center gap-2">
+      {(membersQ.error || settingsQ.error || receivedQ.error || pendingQ.error) && (
+        <Card className="mb-6 border-destructive/40 p-4 text-sm text-destructive">
+          Chargement impossible :{" "}
+          {String(
+            (membersQ.error || settingsQ.error || receivedQ.error || pendingQ.error)?.message,
+          )}
+        </Card>
+      )}
+
+      {/* ---------------- À venir */}
+      <section className="mb-8">
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h2 className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+            À venir
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            {pending.length
+              ? `${pending.length} vente(s) pas encore payée(s) · attendu ${pendingTotal}`
+              : "Rien en attente"}
+          </span>
+        </div>
+        {pending.length === 0 ? (
+          <Card className="p-6 text-center text-sm text-muted-foreground">
+            Les réservations GetYourGuide et les paiements enregistrés arrivent ici automatiquement,
+            jusqu'à ce que l'argent soit sur le compte.
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {pending.map((e) => (
+              <Card key={e.id} className="flex flex-wrap items-center gap-3 p-3">
+                <Clock className="h-4 w-4 shrink-0 text-amber-600" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate text-sm font-medium">{e.label}</span>
+                    <Badge variant="outline" className="text-[10px]">
+                      {SOURCE_LABEL[e.source_type] ?? e.source_type}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Vente du {frDate(e.occurred_on)}
+                    {e.expected_amount != null &&
+                      ` · attendu ${fmtMoney(e.expected_amount, e.expected_currency ?? "BRL")}`}
+                    {e.source_type === "ota_booking" &&
+                      " (prix client, commission plateforme à déduire)"}
+                  </p>
+                </div>
+                <Button size="sm" className="btn-primary" onClick={() => setReceiving(e)}>
+                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                  Marquer reçu
+                </Button>
+                <ConfirmDelete onConfirm={() => remove(e.id)} />
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ---------------- Mois */}
+      <div className="mb-4 flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
@@ -227,210 +317,221 @@ function AssociesPage() {
         )}
       </div>
 
-      {(membersQ.error || settingsQ.error || entriesQ.error) && (
-        <Card className="mb-6 border-destructive/40 p-4 text-sm text-destructive">
-          Chargement impossible :{" "}
-          {String((membersQ.error || settingsQ.error || entriesQ.error)?.message)}
-        </Card>
-      )}
-
-      {split && (
-        <>
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat
-              label="Encaissé"
-              value={fmtMoney(split.revenue, cur)}
-              hint={`${entries.length} vente(s)`}
-            />
-            <Stat
-              label="Marge"
-              value={fmtMoney(split.margin, cur)}
-              hint={`après impôts (${settings?.tax_pct} %) et coûts`}
-            />
-            <Stat
-              label="Réserve société"
-              value={fmtMoney(split.reserve, cur)}
-              hint={`${settings?.reserve_pct} % du reste`}
-            />
-            <Stat
-              label="Solde partagé"
-              value={fmtMoney(split.balance, cur)}
-              hint={members.length ? `${fmtMoney(split.balance / members.length, cur)} chacun` : ""}
-            />
-          </div>
-
-          {(split.warnings.length > 0 || missing > 0) && (
-            <Card className="mb-6 border-amber-500/40 bg-amber-500/5 p-4 text-sm">
-              <div className="flex gap-2">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                <ul className="space-y-1">
-                  {missing > 0 && (
-                    <li>
-                      {missing} vente(s) sans guide ou sans apporteur : complète-les pour que les
-                      primes soient justes.
-                    </li>
-                  )}
-                  {split.warnings.map((w) => (
-                    <li key={w}>
-                      {w}
-                      {w.includes("réserve") ? ` Manque : ${fmtMoney(split.shortfall, cur)}.` : ""}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Card>
-          )}
-
-          <Card className="mb-8 overflow-x-auto p-0">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border/60 text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3">Associé</th>
-                  <th className="px-4 py-3 text-right">Pró-labore</th>
-                  <th className="px-4 py-3 text-right">Prime guide</th>
-                  <th className="px-4 py-3 text-right">Prime apporteur</th>
-                  <th className="px-4 py-3 text-right">Part du solde</th>
-                  <th className="px-4 py-3 text-right">Total</th>
-                  <th className="px-4 py-3 text-right">Frais véhicule</th>
-                </tr>
-              </thead>
-              <tbody>
-                {split.members.map((m) => (
-                  <tr key={m.user_id} className="border-b border-border/40 last:border-0">
-                    <td className="px-4 py-3 font-medium">{m.display_name}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {fmtMoney(m.pro_labore, cur)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {fmtMoney(m.guide_bonus, cur)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {fmtMoney(m.apporteur_bonus, cur)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {fmtMoney(m.balance_share, cur)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold tabular-nums">
-                      {fmtMoney(m.total, cur)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
-                      {m.vehicle_refund ? fmtMoney(m.vehicle_refund, cur) : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-        </>
-      )}
-
-      <h2 className="mb-3 text-xl" style={{ fontFamily: "Fraunces, serif" }}>
-        Ventes du mois
-      </h2>
-      {entries.length === 0 && !entriesQ.isLoading ? (
+      {beforeStart ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">
-          Aucune vente pour ce mois. « Importer les ventes » reprend les réservations GetYourGuide
-          et les paiements clients ; « Ajouter une vente » sert pour le reste (tour payé en espèces,
-          prestation…).
+          Le registre commence le {frDate(settings?.start_date ?? null)}. Rien n'est compté avant.
         </Card>
       ) : (
-        <div className="space-y-2">
-          {entries.map((e) => (
-            <Card key={e.id} className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{e.label}</span>
-                    <Badge variant="outline" className="text-[10px]">
-                      {SOURCE_LABEL[e.source_type] ?? e.source_type}
-                    </Badge>
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {e.occurred_on.split("-").reverse().join("/")}
-                    {e.original_currency &&
-                      e.original_currency !== cur &&
-                      e.original_amount != null &&
-                      ` · ${fmtMoney(e.original_amount, e.original_currency)} converti`}
-                    {e.notes ? ` · ${e.notes}` : ""}
-                  </div>
+        split && (
+          <>
+            <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat
+                label="Reçu ce mois"
+                value={fmtMoney(split.revenue, cur)}
+                hint={`${received.length} encaissement(s)`}
+              />
+              <Stat
+                label="Marge"
+                value={fmtMoney(split.margin, cur)}
+                hint={
+                  settings?.tax_confirmed
+                    ? `après impôts (${settings.tax_pct} %) et coûts`
+                    : "impôts non déduits : taux à confirmer"
+                }
+              />
+              <Stat
+                label="Réserve société"
+                value={fmtMoney(split.reserve, cur)}
+                hint={`${settings?.reserve_pct} % du reste`}
+              />
+              <Stat
+                label="Solde partagé"
+                value={fmtMoney(split.balance, cur)}
+                hint={
+                  members.length ? `${fmtMoney(split.balance / members.length, cur)} chacun` : ""
+                }
+              />
+            </div>
+
+            {(!settings?.tax_confirmed || split.warnings.length > 0 || missing > 0) && (
+              <Card className="mb-6 border-amber-500/40 bg-amber-500/5 p-4 text-sm">
+                <div className="flex gap-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                  <ul className="space-y-1">
+                    {!settings?.tax_confirmed && (
+                      <li>
+                        Le taux d'impôt n'est pas encore connu : aucun impôt n'est déduit. À
+                        renseigner dès que le contador l'a donné.
+                      </li>
+                    )}
+                    {missing > 0 && (
+                      <li>
+                        {missing} encaissement(s) sans guide ou sans apporteur : complète-les pour
+                        des primes justes.
+                      </li>
+                    )}
+                    {split.warnings.map((w) => (
+                      <li key={w}>
+                        {w}
+                        {w.includes("réserve")
+                          ? ` Manque : ${fmtMoney(split.shortfall, cur)}.`
+                          : ""}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="text-right text-sm">
-                  <div className="font-semibold tabular-nums">{fmtMoney(e.revenue, cur)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    marge {settings ? fmtMoney(entryMargin(e, settings), cur) : "—"}
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                <MoneyField
-                  key={`${e.id}-${e.direct_cost}`}
-                  label="Coûts directs"
-                  value={e.direct_cost}
-                  onSave={(v) => patch(e.id, { direct_cost: v })}
-                />
-                <PersonSelect
-                  label="Apporteur"
-                  value={e.apporteur_id}
-                  members={members}
-                  onChange={(v) => patch(e.id, { apporteur_id: v })}
-                />
-                <div className="flex items-end gap-2">
-                  <Switch
-                    checked={e.guided_internally}
-                    onCheckedChange={(v) => patch(e.id, { guided_internally: v })}
-                    id={`g-${e.id}`}
-                  />
-                  <Label htmlFor={`g-${e.id}`} className="pb-0.5 text-xs">
-                    Guidé par un associé
-                  </Label>
-                </div>
-                {e.guided_internally ? (
-                  <PersonSelect
-                    label="Guide"
-                    value={e.guide_id}
-                    members={members}
-                    onChange={(v) => patch(e.id, { guide_id: v })}
-                  />
-                ) : (
-                  <div />
-                )}
-                <div className="flex items-end justify-between gap-2">
-                  <div className="flex items-end gap-2">
-                    <Switch
-                      checked={e.vehicle_used}
-                      onCheckedChange={(v) => patch(e.id, { vehicle_used: v })}
-                      id={`v-${e.id}`}
-                    />
-                    <Label htmlFor={`v-${e.id}`} className="pb-0.5 text-xs">
-                      Véhicule
-                    </Label>
-                  </div>
-                  <ConfirmDelete onConfirm={() => remove(e.id)} />
-                </div>
-              </div>
-              {e.guided_internally && !e.guide_id && (
-                <p className="mt-2 text-xs text-amber-700">Indique qui a guidé ce tour.</p>
-              )}
-              {!e.apporteur_id && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Sans apporteur, la prime de 10 % reste dans le solde partagé.
-                </p>
-              )}
+              </Card>
+            )}
+
+            <Card className="mb-8 overflow-x-auto p-0">
+              <table className="w-full text-sm">
+                <thead className="border-b border-border/60 text-left text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3">Associé</th>
+                    <th className="px-4 py-3 text-right">Pró-labore</th>
+                    <th className="px-4 py-3 text-right">Prime guide</th>
+                    <th className="px-4 py-3 text-right">Prime apporteur</th>
+                    <th className="px-4 py-3 text-right">Part du solde</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                    <th className="px-4 py-3 text-right">Frais véhicule</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {split.members.map((m) => (
+                    <tr key={m.user_id} className="border-b border-border/40 last:border-0">
+                      <td className="px-4 py-3 font-medium">{m.display_name}</td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {fmtMoney(m.pro_labore, cur)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {fmtMoney(m.guide_bonus, cur)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {fmtMoney(m.apporteur_bonus, cur)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {fmtMoney(m.balance_share, cur)}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold tabular-nums">
+                        {fmtMoney(m.total, cur)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                        {m.vehicle_refund ? fmtMoney(m.vehicle_refund, cur) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </Card>
-          ))}
-        </div>
+
+            <h2 className="mb-3 text-xl" style={{ fontFamily: "Fraunces, serif" }}>
+              Encaissé ce mois
+            </h2>
+            {received.length === 0 ? (
+              <Card className="p-8 text-center text-sm text-muted-foreground">
+                Aucun argent reçu ce mois-ci. Quand un versement arrive, clique « Marquer reçu »
+                dans « À venir », ou ajoute une vente payée sur place.
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {received.map((e) => (
+                  <Card key={e.id} className="p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium">{e.label}</span>
+                          <Badge variant="outline" className="text-[10px]">
+                            {SOURCE_LABEL[e.source_type] ?? e.source_type}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          Vente du {frDate(e.occurred_on)} · reçu le {frDate(e.received_on)}
+                          {e.expected_amount != null &&
+                            ` · attendu ${fmtMoney(e.expected_amount, e.expected_currency ?? "BRL")}`}
+                        </div>
+                      </div>
+                      <div className="text-right text-sm">
+                        <div className="font-semibold tabular-nums">{fmtMoney(e.revenue, cur)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          marge {settings ? fmtMoney(entryMargin(e, settings), cur) : "—"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                      <MoneyField
+                        key={`${e.id}-${e.direct_cost}`}
+                        label="Coûts directs"
+                        value={e.direct_cost}
+                        onSave={(v) => patch(e.id, { direct_cost: v })}
+                      />
+                      <PersonSelect
+                        label="Apporteur"
+                        value={e.apporteur_id}
+                        members={members}
+                        onChange={(v) => patch(e.id, { apporteur_id: v })}
+                      />
+                      <div className="flex items-end gap-2">
+                        <Switch
+                          checked={e.guided_internally}
+                          onCheckedChange={(v) => patch(e.id, { guided_internally: v })}
+                          id={`g-${e.id}`}
+                        />
+                        <Label htmlFor={`g-${e.id}`} className="pb-0.5 text-xs">
+                          Guidé par un associé
+                        </Label>
+                      </div>
+                      {e.guided_internally ? (
+                        <PersonSelect
+                          label="Guide"
+                          value={e.guide_id}
+                          members={members}
+                          onChange={(v) => patch(e.id, { guide_id: v })}
+                        />
+                      ) : (
+                        <div />
+                      )}
+                      <div className="flex items-end justify-between gap-2">
+                        <div className="flex items-end gap-2">
+                          <Switch
+                            checked={e.vehicle_used}
+                            onCheckedChange={(v) => patch(e.id, { vehicle_used: v })}
+                            id={`v-${e.id}`}
+                          />
+                          <Label htmlFor={`v-${e.id}`} className="pb-0.5 text-xs">
+                            Véhicule
+                          </Label>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-xs"
+                          onClick={() => patch(e.id, { cash_status: "a_recevoir" } as Partial<Row>)}
+                          title="Remettre en « À venir »"
+                        >
+                          Annuler la réception
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        )
       )}
 
+      <ReceiveDialog
+        row={receiving}
+        currency={cur}
+        onClose={() => setReceiving(null)}
+        onSaved={refresh}
+      />
       <AddEntryDialog
         open={adding}
         onOpenChange={setAdding}
         members={members}
         currency={cur}
-        defaultDate={
-          month === thisMonth()
-            ? new Date().toLocaleDateString("fr-CA", { timeZone: "America/Sao_Paulo" })
-            : from
-        }
+        minDate={settings?.start_date ?? "2026-11-09"}
         onSaved={refresh}
       />
       {settings && isAdmin && (
@@ -488,6 +589,11 @@ function PersonSelect({
   );
 }
 
+function parseAmount(v: string) {
+  const n = Number(v.replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : NaN;
+}
+
 function MoneyField({
   label,
   value,
@@ -507,12 +613,12 @@ function MoneyField({
         value={v}
         onChange={(e) => setV(e.target.value)}
         onBlur={() => {
-          const num = Number(v.replace(",", "."));
-          if (!Number.isFinite(num) || num < 0) {
+          const n = parseAmount(v);
+          if (!(n >= 0)) {
             setV(String(value));
             return toast.error("Montant invalide.");
           }
-          if (num !== value) onSave(num);
+          if (n !== value) onSave(n);
         }}
       />
     </div>
@@ -549,64 +655,140 @@ function ConfirmDelete({ onConfirm }: { onConfirm: () => void }) {
   );
 }
 
+function ReceiveDialog({
+  row,
+  currency,
+  onClose,
+  onSaved,
+}: {
+  row: Row | null;
+  currency: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(today());
+  const [saving, setSaving] = useState(false);
+  const save = async () => {
+    if (!row) return;
+    const n = parseAmount(amount);
+    if (!(n > 0)) return toast.error("Indique le montant réellement reçu sur le compte.");
+    setSaving(true);
+    const { error } = await db
+      .from("partner_ledger_entries")
+      .update({ cash_status: "recu", revenue: n, received_on: date })
+      .eq("id", row.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Encaissement enregistré.");
+    setAmount("");
+    onClose();
+    onSaved();
+  };
+  return (
+    <Dialog open={!!row} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Argent reçu</DialogTitle>
+        </DialogHeader>
+        {row && (
+          <div className="grid gap-4">
+            <p className="text-sm text-muted-foreground">
+              {row.label}
+              {row.expected_amount != null &&
+                ` — attendu ${fmtMoney(row.expected_amount, row.expected_currency ?? "BRL")}`}
+              . Saisis le montant exact arrivé sur le compte (après commission, change et frais).
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Montant reçu ({currency})</Label>
+                <Input
+                  className="mt-1.5"
+                  inputMode="decimal"
+                  autoFocus
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Reçu le</Label>
+                <Input
+                  className="mt-1.5"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        <DialogFooter>
+          <Button className="btn-primary" onClick={save} disabled={saving}>
+            {saving ? "Enregistrement…" : "Confirmer"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function AddEntryDialog({
   open,
   onOpenChange,
   members,
   currency,
-  defaultDate,
+  minDate,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   members: Member[];
   currency: string;
-  defaultDate: string;
+  minDate: string;
   onSaved: () => void;
 }) {
-  const [f, setF] = useState({
+  const empty = {
     label: "",
-    date: "",
-    revenue: "",
+    date: today(),
+    amount: "",
     cost: "",
+    paid: true,
     guided: true,
     guide: NONE,
     apporteur: NONE,
     vehicle: false,
-  });
+  };
+  const [f, setF] = useState(empty);
   const [saving, setSaving] = useState(false);
-  const date = f.date || defaultDate;
   const save = async () => {
-    const revenue = Number(f.revenue.replace(",", "."));
-    const cost = Number((f.cost || "0").replace(",", "."));
-    if (!f.label.trim()) return toast.error("Décris la vente (ex. « Rocinha — 4 pers. »).");
-    if (!Number.isFinite(revenue) || revenue <= 0) return toast.error("Montant encaissé invalide.");
-    if (!Number.isFinite(cost) || cost < 0) return toast.error("Coût invalide.");
+    const amount = parseAmount(f.amount);
+    const cost = f.cost ? parseAmount(f.cost) : 0;
+    if (!f.label.trim())
+      return toast.error("Décris la vente (ex. « Rocinha — 4 pers., espèces »).");
+    if (!(amount > 0))
+      return toast.error(f.paid ? "Montant reçu invalide." : "Montant attendu invalide.");
+    if (!(cost >= 0)) return toast.error("Coût invalide.");
+    if (f.date < minDate) return toast.error(`Le registre commence le ${frDate(minDate)}.`);
     setSaving(true);
     const { error } = await db.from("partner_ledger_entries").insert({
-      occurred_on: date,
+      occurred_on: f.date,
       label: f.label.trim(),
-      revenue,
+      source_type: "manual",
+      cash_status: f.paid ? "recu" : "a_recevoir",
+      revenue: f.paid ? amount : 0,
+      received_on: f.paid ? f.date : null,
+      expected_amount: f.paid ? null : amount,
+      expected_currency: f.paid ? null : currency,
       direct_cost: cost,
       guided_internally: f.guided,
       guide_id: f.guided && f.guide !== NONE ? f.guide : null,
       apporteur_id: f.apporteur !== NONE ? f.apporteur : null,
       vehicle_used: f.vehicle,
-      source_type: "manual",
     });
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success("Vente ajoutée.");
-    setF({
-      label: "",
-      date: "",
-      revenue: "",
-      cost: "",
-      guided: true,
-      guide: NONE,
-      apporteur: NONE,
-      vehicle: false,
-    });
+    toast.success(f.paid ? "Vente encaissée ajoutée." : "Vente ajoutée en « À venir ».");
+    setF(empty);
     onOpenChange(false);
     onSaved();
   };
@@ -626,23 +808,38 @@ function AddEntryDialog({
               onChange={(e) => setF({ ...f, label: e.target.value })}
             />
           </div>
+          <div className="flex items-center gap-2 rounded-md bg-muted/50 p-2.5">
+            <Switch
+              id="add-paid"
+              checked={f.paid}
+              onCheckedChange={(v) => setF({ ...f, paid: v })}
+            />
+            <Label htmlFor="add-paid" className="text-sm">
+              {f.paid
+                ? "Argent déjà reçu (espèces, Pix, virement arrivé)"
+                : "Pas encore payé : va dans « À venir »"}
+            </Label>
+          </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label>Date</Label>
+              <Label>Date de la vente</Label>
               <Input
                 className="mt-1.5"
                 type="date"
-                value={date}
+                min={minDate}
+                value={f.date}
                 onChange={(e) => setF({ ...f, date: e.target.value })}
               />
             </div>
             <div>
-              <Label>Encaissé ({currency})</Label>
+              <Label>
+                {f.paid ? "Reçu" : "Attendu"} ({currency})
+              </Label>
               <Input
                 className="mt-1.5"
                 inputMode="decimal"
-                value={f.revenue}
-                onChange={(e) => setF({ ...f, revenue: e.target.value })}
+                value={f.amount}
+                onChange={(e) => setF({ ...f, amount: e.target.value })}
               />
             </div>
             <div>
@@ -712,26 +909,26 @@ function SettingsDialog({
 }) {
   const fields: { key: keyof Settings; label: string }[] = [
     { key: "pro_labore", label: "Pró-labore par associé" },
-    { key: "tax_pct", label: "Impôts (% du CA)" },
+    { key: "tax_pct", label: "Impôts (% du reçu)" },
     { key: "guide_pct", label: "Prime guide (% de la marge)" },
     { key: "apporteur_pct", label: "Prime apporteur (% de la marge)" },
     { key: "reserve_pct", label: "Réserve (% du reste)" },
     { key: "vehicle_fee", label: "Forfait véhicule par tour" },
-    { key: "eur_brl", label: "Taux EUR → BRL" },
   ];
   const [v, setV] = useState<Record<string, string>>(() =>
-    Object.fromEntries(fields.map((f) => [f.key, String(settings[f.key])])),
+    Object.fromEntries(fields.map((f) => [f.key, String(settings[f.key] ?? 0)])),
   );
+  const [taxConfirmed, setTaxConfirmed] = useState(!!settings.tax_confirmed);
   const save = async () => {
     const values: Record<string, number> = {};
     for (const f of fields) {
-      const num = Number(String(v[f.key]).replace(",", "."));
-      if (!Number.isFinite(num) || num < 0) return toast.error(`${f.label} : valeur invalide.`);
-      values[f.key] = num;
+      const n = parseAmount(String(v[f.key]));
+      if (!(n >= 0)) return toast.error(`${f.label} : valeur invalide.`);
+      values[f.key] = n;
     }
     const { error } = await db
       .from("partner_settings")
-      .update({ ...values, updated_at: new Date().toISOString() })
+      .update({ ...values, tax_confirmed: taxConfirmed, updated_at: new Date().toISOString() })
       .eq("id", 1);
     if (error) return toast.error(error.message);
     toast.success("Paramètres enregistrés.");
@@ -756,6 +953,12 @@ function SettingsDialog({
               />
             </div>
           ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch id="tax-ok" checked={taxConfirmed} onCheckedChange={setTaxConfirmed} />
+          <Label htmlFor="tax-ok" className="text-sm">
+            Taux d'impôt confirmé par le contador
+          </Label>
         </div>
         <p className="text-xs text-muted-foreground">
           Changer ces règles demande l'accord des trois associés (unanimité).

@@ -117,3 +117,25 @@ test("rôle associé : conciergerie oui, AFRO LOVE / finances non", () => {
   for (const m of ["evenements", "audience", "agents", "finances", "parametres", "a-valider"])
     assert.ok(!canAccessModule(m, ["associe"]), m);
 });
+
+test("argent à venir : hors partage, totalisé à part", () => {
+  const r = computeMonthSplit(
+    [
+      {
+        ...e({ revenue: 0, guided_internally: true, guide_id: "luan" }),
+        cash_status: "a_recevoir",
+        expected_amount: 600,
+        expected_currency: "BRL",
+      },
+      {
+        ...e({ revenue: 20000, direct_cost: 0, guided_internally: true, guide_id: "luan" }),
+        cash_status: "recu",
+      },
+    ],
+    M,
+    S,
+  );
+  assert.equal(r.revenue, 20000);
+  assert.equal(r.pending_count, 1);
+  assert.deepEqual(r.pending_by_currency, { BRL: 600 });
+});

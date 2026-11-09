@@ -13,6 +13,8 @@ export type CatalogLineSelection = {
   unit: string;
   /** True when the catalog price is per person (price_model = "per_person"): quantity should follow the party size. */
   perPerson?: boolean;
+  /** Coût fournisseur unitaire connu dans le catalogue (sert au calcul de marge estimée). */
+  supplierCost?: number | null;
 };
 
 type CatalogLinePickerProps = {
@@ -49,17 +51,17 @@ export async function fetchCatalogLineOptions(currency: string): Promise<Catalog
   ] = await Promise.all([
     supabase
       .from("experiences")
-      .select("id,title,price_from,currency,price_model,is_published")
+      .select("id,title,price_from,currency,price_model,is_published,supplier_cost,fixed_cost")
       .eq("is_published", true)
       .order("title"),
     supabase
       .from("services")
-      .select("id,title,price_from,currency,price_model,is_active")
+      .select("id,title,price_from,currency,price_model,is_active,supplier_cost,fixed_cost")
       .eq("is_active", true)
       .order("title"),
     supabase
       .from("ticket_offers")
-      .select("id,title,public_price,currency,event_date,is_active")
+      .select("id,title,public_price,currency,event_date,is_active,supplier_cost")
       .eq("is_active", true)
       .order("title"),
   ]);
@@ -77,6 +79,7 @@ export async function fetchCatalogLineOptions(currency: string): Promise<Catalog
       unitPrice: Number(item.price_from ?? 0),
       currency: item.currency ?? currency,
       ...catalogUnit(item.price_model),
+      supplierCost: item.supplier_cost == null ? null : Number(item.supplier_cost),
       kindLabel: "Activité",
     });
   }
@@ -89,6 +92,7 @@ export async function fetchCatalogLineOptions(currency: string): Promise<Catalog
       unitPrice: Number(item.price_from ?? 0),
       currency: item.currency ?? currency,
       ...catalogUnit(item.price_model),
+      supplierCost: item.supplier_cost == null ? null : Number(item.supplier_cost),
       kindLabel: "Service",
     });
   }
@@ -101,6 +105,7 @@ export async function fetchCatalogLineOptions(currency: string): Promise<Catalog
       unitPrice: Number(item.public_price ?? 0),
       currency: item.currency ?? currency,
       unit: "Billet",
+      supplierCost: item.supplier_cost == null ? null : Number(item.supplier_cost),
       kindLabel: "Billet",
     });
   }
@@ -130,7 +135,11 @@ export function CatalogLinePicker({
 
   const comboboxOptions: ComboboxOption[] = (options as CatalogOption[]).map((option) => ({
     value: option.value,
-    label: `${option.kindLabel} — ${option.label}`,
+    label: `${option.kindLabel} — ${option.label}${
+      option.unitPrice
+        ? ` · ${option.unitPrice.toLocaleString("fr-FR")} ${option.currency}${option.perPerson ? "/pers." : ""}`
+        : ""
+    }`,
   }));
 
   const effectiveValue = value || descriptionValue;

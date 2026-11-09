@@ -17,7 +17,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, FileDown, Save } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  FileDown,
+  Save,
+  Copy,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  Check,
+  Loader2,
+  Gift,
+  Sparkles,
+} from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  diffQuoteLines,
+  lineAmount as lineAmountRule,
+  moveItem,
+  quoteTotals,
+} from "@/lib/quotes/quote-lines";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TextListEditor } from "@/components/quotes/text-list-editor";
 import { QUOTE_STATUSES, formatMoney, type QuoteStatus } from "@/lib/quotes/status";
@@ -49,6 +69,8 @@ type LineDraft = {
   is_offered: boolean;
   /** « En option » : hors total principal, inclus dans le total « avec options ». */
   is_optional: boolean;
+  /** Coût fournisseur unitaire (catalogue) — sert à la marge estimée, jamais imprimé. */
+  supplier_cost?: number | null;
 };
 const NEW_CLIENT = "__new__";
 const NO_PROSPECT = "__none__";
@@ -74,6 +96,7 @@ function catalogLinePatch(selection: CatalogLineSelection, partySize?: number): 
     experience_id: selection.sourceType === "experience" ? selection.sourceId : null,
     service_id: selection.sourceType === "service" ? selection.sourceId : null,
     ticket_offer_id: selection.sourceType === "ticket" ? selection.sourceId : null,
+    supplier_cost: selection.supplierCost ?? null,
   };
 }
 
@@ -118,6 +141,13 @@ export function QuoteForm({
   const [number, setNumber] = useState("");
   const [lines, setLines] = useState<LineDraft[]>([emptyLine()]);
   const [saving, setSaving] = useState(false);
+  /** Identifiants des lignes en base : seules les lignes retirées sont supprimées à l'enregistrement. */
+  const persistedLineIds = useRef<string[]>([]);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [autosaveIssue, setAutosaveIssue] = useState<string | null>(null);
+  const lastSavedSnapshot = useRef<string | null>(null);
+  const hydrating = useRef(false);
+  const savingRef = useRef(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const { data: clients = [], isFetched: clientsFetched } = useQuery({
     queryKey: ["clients", "options"],
@@ -203,6 +233,8 @@ export function QuoteForm({
     setPreservedItinerary(Array.isArray(q.itinerary) ? q.itinerary : []);
     if (q.client_id) setClientId(q.client_id);
     if (q.prospect_id) setProspectId(q.prospect_id);
+    persistedLineIds.current = (existing as any).lineRows.map((l: any) => l.id);
+    hydrating.current = true;
     setLines(
       (existing as any).lineRows.length
         ? (existing as any).lineRows.map((l: any) => ({
@@ -302,8 +334,22 @@ export function QuoteForm({
     catalogOptions,
     initialProspectId,
   ]);
-  const lineAmount = (line: LineDraft) =>
-    line.is_offered ? 0 : (Number(line.quantity) || 0) * (Number(line.unit_price) || 0);
+  const lineAmount = (line: LineDraft) => lineAmountRule(line);
+  const costOf = (line: LineDraft) =>
+    line.supplier_cost ??
+    (catalogOptions as CatalogOption[]).find(
+      (o) => o.value === line.catalogValue && o.currency === currency,
+    )?.supplierCost ??
+    null;
+  const totals = useMemo(
+    () =>
+      quoteTotals(
+        lines.map((l) => ({ ...l, supplier_cost: costOf(l) })),
+        { partySize: Number(partySize) || null, depositPct: Number(depositPct) || 0 },
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- costOf dépend du catalogue et de la devise
+    [lines, partySize, depositPct, catalogOptions, currency],
+  );
   // Les lignes « Offert » sortent à 0 € ; les lignes « En option » restent hors total principal
   // (affichées « En option », avec un total « avec options » séparé en pied de devis).
   const total = useMemo(
@@ -382,13 +428,25 @@ export function QuoteForm({
     itinerary: preservedItinerary as QuotePdfData["itinerary"],
   });
 
-  const save = async () => {
-    if (!title.trim()) return toast.error("Le titre du devis est obligatoire.");
-    if (clientId === NEW_CLIENT && !clientName.trim())
-      return toast.error("Renseignez le nom du client.");
+  const save = async ({ silent = false }: { silent?: boolean } = {}) => {
+    const problem = !title.trim()
+      ? "Le titre du devis est obligatoire."
+      : clientId === NEW_CLIENT && !clientName.trim()
+        ? "Renseignez le nom du client."
+        : !lines.some((line) => line.label.trim())
+          ? "Ajoutez au moins une ligne de prestation."
+          : quoteId && !number.trim()
+            ? "Renseignez le numéro du devis."
+            : null;
+    if (problem) {
+      if (silent) setAutosaveIssue(problem);
+      else toast.error(problem);
+      return;
+    }
+    if (savingRef.current) return;
     const validLines = lines.filter((line) => line.label.trim());
-    if (!validLines.length) return toast.error("Ajoutez au moins une ligne de prestation.");
-    if (quoteId && !number.trim()) return toast.error("Renseignez le numéro du devis.");
+    const snapshotAtStart = snapshot;
+    savingRef.current = true;
     setSaving(true);
     try {
       let resolvedClientId = clientId === NEW_CLIENT ? null : clientId;
@@ -475,30 +533,70 @@ export function QuoteForm({
           throw new Error(error.message);
         }
       }
-      const { error: deleteError } = await supabase
-        .from("quote_lines")
-        .delete()
-        .eq("quote_id", id!);
-      if (deleteError) throw new Error(deleteError.message);
-      const { error: lineError } = await supabase.from("quote_lines").insert(
-        validLines.map((line, position) => ({
-          quote_id: id!,
-          position,
-          label: line.label.trim(),
-          unit: line.unit.trim() || "Forfait",
-          quantity: Number(line.quantity) || 0,
-          unit_price: Number(line.unit_price) || 0,
-          currency,
-          experience_id: line.experience_id ?? null,
-          service_id: line.service_id ?? null,
-          ticket_offer_id: line.ticket_offer_id ?? null,
-          trip_activity_id: line.trip_activity_id ?? null,
-          is_offered: line.is_offered,
-          is_optional: line.is_optional,
-        })) as any,
-      );
-      if (lineError) throw new Error(lineError.message);
+      // Lignes : mise à jour / insertion / suppression ciblées (identifiants stables).
+      const toRow = (line: LineDraft, position: number) => ({
+        quote_id: id!,
+        position,
+        label: line.label.trim(),
+        unit: line.unit.trim() || "Forfait",
+        quantity: Number(line.quantity) || 0,
+        unit_price: Number(line.unit_price) || 0,
+        currency,
+        experience_id: line.experience_id ?? null,
+        service_id: line.service_id ?? null,
+        ticket_offer_id: line.ticket_offer_id ?? null,
+        trip_activity_id: line.trip_activity_id ?? null,
+        is_offered: line.is_offered,
+        is_optional: line.is_optional,
+      });
+      const diff = diffQuoteLines(validLines, quoteId ? persistedLineIds.current : []);
+      if (diff.toDelete.length) {
+        const { error: deleteError } = await supabase
+          .from("quote_lines")
+          .delete()
+          .in("id", diff.toDelete);
+        if (deleteError) throw new Error(deleteError.message);
+      }
+      if (diff.toUpdate.length) {
+        const { error: updateError } = await supabase.from("quote_lines").upsert(
+          diff.toUpdate.map(({ line, position }) => ({
+            id: line.id!,
+            ...toRow(line, position),
+          })) as any,
+        );
+        if (updateError) throw new Error(updateError.message);
+      }
+      let insertedIds: string[] = [];
+      if (diff.toInsert.length) {
+        const { data: inserted, error: lineError } = await supabase
+          .from("quote_lines")
+          .insert(diff.toInsert.map(({ line, position }) => toRow(line, position)) as any)
+          .select("id,position");
+        if (lineError) throw new Error(lineError.message);
+        const byPos = new Map(
+          ((inserted ?? []) as any[]).map((r) => [Number(r.position), String(r.id)]),
+        );
+        insertedIds = diff.toInsert.map(({ position }) => byPos.get(position) ?? "");
+        // Les nouvelles lignes reçoivent leur identifiant sans perdre la saisie en cours.
+        let k = 0;
+        const newIds = diff.toInsert.map(() => insertedIds[k++]);
+        let j = 0;
+        setLines((current) =>
+          current.map((l) =>
+            !l.id && l.label.trim() && j < newIds.length
+              ? { ...l, id: newIds[j++] || undefined }
+              : l,
+          ),
+        );
+      }
+      persistedLineIds.current = [
+        ...diff.toUpdate.map(({ line }) => line.id!),
+        ...insertedIds.filter(Boolean),
+      ];
       setLoadedStatus(status);
+      lastSavedSnapshot.current = snapshotAtStart;
+      setSavedAt(Date.now());
+      setAutosaveIssue(null);
       await Promise.all(
         [
           ["quotes"],
@@ -510,14 +608,88 @@ export function QuoteForm({
           ["finances"],
         ].map((queryKey) => qc.invalidateQueries({ queryKey })),
       );
-      toast.success(quoteId ? "Devis enregistré." : "Devis créé.");
+      if (!silent) toast.success(quoteId ? "Devis enregistré." : "Devis créé.");
       if (!quoteId) navigate({ to: "/devis/$id", params: { id: id! } });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Enregistrement impossible.");
+      const message = error instanceof Error ? error.message : "Enregistrement impossible.";
+      if (silent) setAutosaveIssue(message);
+      else toast.error(message);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
+
+  // ----- Enregistrement automatique (devis existant), Ctrl/Cmd+S, alerte avant de quitter
+  const snapshot = JSON.stringify([
+    clientId,
+    clientName,
+    clientEmail,
+    clientPhone,
+    prospectId,
+    title,
+    eyebrow,
+    description,
+    equipmentGroups,
+    includedItems,
+    excludedItems,
+    projectLabel,
+    location,
+    periodStart,
+    periodEnd,
+    partySize,
+    currency,
+    language,
+    depositPct,
+    validityDays,
+    status,
+    notes,
+    number,
+    lines.map((l) => [
+      l.label,
+      l.unit,
+      l.quantity,
+      l.unit_price,
+      l.catalogValue,
+      l.is_offered,
+      l.is_optional,
+    ]),
+  ]);
+  const dirty = lastSavedSnapshot.current !== null && snapshot !== lastSavedSnapshot.current;
+  useEffect(() => {
+    if (!quoteId) return;
+    if (hydrating.current) {
+      hydrating.current = false;
+      lastSavedSnapshot.current = snapshot;
+      return;
+    }
+    if (lastSavedSnapshot.current === null || snapshot === lastSavedSnapshot.current) return;
+    const t = setTimeout(() => void save({ silent: true }), 1500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- déclenché par le contenu du devis
+  }, [snapshot, quoteId]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        void save();
+      }
+    };
+    const onLeave = (e: BeforeUnloadEvent) => {
+      if (
+        savingRef.current ||
+        (lastSavedSnapshot.current !== null && snapshot !== lastSavedSnapshot.current)
+      ) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("beforeunload", onLeave);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("beforeunload", onLeave);
+    };
+  });
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -679,109 +851,186 @@ export function QuoteForm({
           </div>
         </Card>
         <Card className="p-5">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg" style={{ fontFamily: "Fraunces, serif" }}>
               Prestations
             </h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLines((current) => [...current, emptyLine()])}
-            >
-              <Plus className="mr-2 h-3.5 w-3.5" />
-              Ligne
-            </Button>
+            <span className="text-xs text-muted-foreground">
+              {lines.filter((l) => l.label.trim()).length} ligne(s) · tapez pour chercher dans le
+              catalogue
+            </span>
           </div>
-          <div className="space-y-4">
-            {lines.map((line, index) => (
-              <div key={line.id ?? index} className="rounded-lg border border-border/60 p-3">
-                <Label className="mb-1.5 block text-xs">Description</Label>
-                <CatalogLinePicker
-                  value={line.catalogValue}
-                  descriptionValue={line.label}
-                  onDescriptionChange={(text) =>
-                    updateLine(index, {
-                      label: text,
-                      catalogValue: "",
-                      experience_id: null,
-                      service_id: null,
-                      ticket_offer_id: null,
-                    })
-                  }
-                  currency={currency}
-                  onSelect={(selection) => applyCatalogSelection(index, selection)}
-                />
-                <div className="mt-3 grid gap-2 sm:grid-cols-[110px_90px_110px_36px] sm:items-end">
-                  <div>
-                    <Label className="mb-1.5 block text-xs">Unité</Label>
-                    <UnitSelect
-                      value={line.unit}
-                      onChange={(unit) => updateLine(index, { unit })}
+          <div className="hidden px-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground sm:grid sm:grid-cols-[1fr_96px_64px_92px_96px_68px] sm:gap-2">
+            <span>Prestation</span>
+            <span>Unité</span>
+            <span className="text-right">Qté</span>
+            <span className="text-right">Prix unit.</span>
+            <span className="text-right">Montant</span>
+            <span />
+          </div>
+          <div className="divide-y divide-border/50 rounded-lg border border-border/60">
+            {lines.map((line, index) => {
+              const cost = costOf(line);
+              return (
+                <div
+                  key={line.id ?? `new-${index}`}
+                  className={`group grid gap-2 p-2 transition-colors hover:bg-muted/30 sm:grid-cols-[1fr_96px_64px_92px_96px_68px] sm:items-center ${
+                    line.is_optional ? "bg-amber-50/40" : ""
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <CatalogLinePicker
+                      value={line.catalogValue}
+                      descriptionValue={line.label}
+                      onDescriptionChange={(text) =>
+                        updateLine(index, {
+                          label: text,
+                          catalogValue: "",
+                          experience_id: null,
+                          service_id: null,
+                          ticket_offer_id: null,
+                          supplier_cost: null,
+                        })
+                      }
+                      currency={currency}
+                      onSelect={(selection) => applyCatalogSelection(index, selection)}
                     />
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => updateLine(index, { is_offered: !line.is_offered })}
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                          line.is_offered
+                            ? "bg-emerald-600 text-white"
+                            : "bg-muted text-muted-foreground hover:text-foreground"
+                        }`}
+                        title="Affiché 0 sur le PDF, hors total"
+                      >
+                        <Gift className="h-3 w-3" />
+                        Offert
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateLine(index, { is_optional: !line.is_optional })}
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                          line.is_optional
+                            ? "bg-amber-500 text-white"
+                            : "bg-muted text-muted-foreground hover:text-foreground"
+                        }`}
+                        title="Hors total principal, inclus dans le total « avec options »"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        En option
+                      </button>
+                      {cost != null && !line.is_offered && Number(line.unit_price) > 0 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          marge{" "}
+                          {Math.round(
+                            ((Number(line.unit_price) - cost) / Number(line.unit_price)) * 100,
+                          )}{" "}
+                          %
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label className="mb-1.5 block text-xs">Qté</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.5"
-                      value={line.quantity}
-                      onChange={(e) => updateLine(index, { quantity: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <Label className="mb-1.5 block text-xs">Prix unitaire</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      value={line.unit_price}
-                      onChange={(e) => updateLine(index, { unit_price: Number(e.target.value) })}
-                    />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Supprimer la ligne"
-                    onClick={() =>
-                      setLines((current) =>
-                        current.length > 1 ? current.filter((_, i) => i !== index) : current,
-                      )
-                    }
+                  <UnitSelect value={line.unit} onChange={(unit) => updateLine(index, { unit })} />
+                  <Input
+                    aria-label="Quantité"
+                    className="h-9 text-right tabular-nums"
+                    type="number"
+                    min={0}
+                    step="0.5"
+                    value={line.quantity}
+                    onChange={(e) => updateLine(index, { quantity: Number(e.target.value) })}
+                  />
+                  <Input
+                    aria-label="Prix unitaire"
+                    className="h-9 text-right tabular-nums"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={line.unit_price}
+                    onChange={(e) => updateLine(index, { unit_price: Number(e.target.value) })}
+                  />
+                  <div
+                    className={`text-right text-sm tabular-nums ${line.is_offered ? "text-emerald-700 line-through decoration-1" : line.is_optional ? "text-amber-700" : "font-medium"}`}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    {formatMoney(
+                      (Number(line.quantity) || 0) * (Number(line.unit_price) || 0),
+                      currency,
+                    )}
+                  </div>
+                  <div className="flex justify-end gap-0.5 opacity-60 transition-opacity group-hover:opacity-100">
+                    <div className="flex flex-col">
+                      <button
+                        type="button"
+                        aria-label="Monter"
+                        className="rounded p-0.5 hover:bg-muted disabled:opacity-30"
+                        disabled={index === 0}
+                        onClick={() => setLines((c) => moveItem(c, index, index - 1))}
+                      >
+                        <ArrowUp className="h-3 w-3" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Descendre"
+                        className="rounded p-0.5 hover:bg-muted disabled:opacity-30"
+                        disabled={index === lines.length - 1}
+                        onClick={() => setLines((c) => moveItem(c, index, index + 1))}
+                      >
+                        <ArrowDown className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Dupliquer la ligne"
+                      className="rounded p-1.5 hover:bg-muted"
+                      onClick={() =>
+                        setLines((c) => [
+                          ...c.slice(0, index + 1),
+                          { ...line, id: undefined, trip_activity_id: null },
+                          ...c.slice(index + 1),
+                        ])
+                      }
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Supprimer la ligne"
+                      className="rounded p-1.5 hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() =>
+                        setLines((c) =>
+                          c.length > 1 ? c.filter((_, i) => i !== index) : [emptyLine()],
+                        )
+                      }
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="mt-2 flex gap-4">
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={line.is_offered}
-                      onCheckedChange={(v) => updateLine(index, { is_offered: !!v })}
-                    />
-                    Offert (0 €, hors total)
-                  </label>
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={line.is_optional}
-                      onCheckedChange={(v) => updateLine(index, { is_optional: !!v })}
-                    />
-                    En option (hors total, ex. version privée, hélico, drone)
-                  </label>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          <button
+            type="button"
+            onClick={() => setLines((current) => [...current, emptyLine()])}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter une prestation
+          </button>
           <div className="mt-5 space-y-1.5 border-t border-border/60 pt-4">
             <div className="flex items-center justify-between">
               <span className="tracked text-[10px] text-muted-foreground">TOTAL</span>
               <span className="text-xl" style={{ fontFamily: "Fraunces, serif" }}>
-                {formatMoney(total, currency)}
+                {formatMoney(totals.total, currency)}
               </span>
             </div>
-            {hasOptionalLines && (
+            {totals.hasOptions && (
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>Total avec options</span>
-                <span>{formatMoney(totalWithOptions, currency)}</span>
+                <span>{formatMoney(totals.totalWithOptions, currency)}</span>
               </div>
             )}
           </div>
@@ -795,88 +1044,177 @@ export function QuoteForm({
             maxLength={2000}
           />
         </Card>
-        <Card className="p-5">
-          <h2 className="mb-1 text-lg" style={{ fontFamily: "Fraunces, serif" }}>
-            Contenu avancé du PDF
-          </h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Optionnel — chaque bloc n'apparaît sur le PDF que s'il contient des lignes.
-          </p>
-          <div className="space-y-5">
-            <div>
-              <Label>Matériel & prestations techniques</Label>
-              <div className="mt-2 space-y-3">
-                {equipmentGroups.map((group, gi) => (
-                  <div key={gi} className="rounded-md border border-border/60 p-3">
-                    <div className="mb-2 flex gap-2">
-                      <Input
-                        className="h-8 text-xs"
-                        placeholder="Nom du groupe (ex. Matériel photo)"
-                        value={group.label}
-                        onChange={(e) =>
-                          setEquipmentGroups((gs) =>
-                            gs.map((g, i) => (i === gi ? { ...g, label: e.target.value } : g)),
-                          )
-                        }
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0"
-                        aria-label="Supprimer ce groupe"
-                        onClick={() => setEquipmentGroups((gs) => gs.filter((_, i) => i !== gi))}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    <TextListEditor
-                      items={group.items}
-                      placeholder="Élément"
-                      addLabel="Ajouter un élément"
-                      onChange={(items) =>
-                        setEquipmentGroups((gs) =>
-                          gs.map((g, i) => (i === gi ? { ...g, items } : g)),
-                        )
+        <Collapsible
+          defaultOpen={
+            equipmentGroups.length > 0 || includedItems.length > 0 || excludedItems.length > 0
+          }
+          key={String(
+            equipmentGroups.length > 0 || includedItems.length > 0 || excludedItems.length > 0,
+          )}
+        >
+          <Card className="p-5">
+            <CollapsibleTrigger className="group flex w-full items-center justify-between text-left">
+              <span>
+                <span className="block text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+                  Contenu avancé du PDF
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Inclus / non inclus, matériel — chaque bloc n'apparaît que s'il est rempli.
+                </span>
+              </span>
+              <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <div className="space-y-5">
+                <div>
+                  <Label>Matériel & prestations techniques</Label>
+                  <div className="mt-2 space-y-3">
+                    {equipmentGroups.map((group, gi) => (
+                      <div key={gi} className="rounded-md border border-border/60 p-3">
+                        <div className="mb-2 flex gap-2">
+                          <Input
+                            className="h-8 text-xs"
+                            placeholder="Nom du groupe (ex. Matériel photo)"
+                            value={group.label}
+                            onChange={(e) =>
+                              setEquipmentGroups((gs) =>
+                                gs.map((g, i) => (i === gi ? { ...g, label: e.target.value } : g)),
+                              )
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0"
+                            aria-label="Supprimer ce groupe"
+                            onClick={() =>
+                              setEquipmentGroups((gs) => gs.filter((_, i) => i !== gi))
+                            }
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <TextListEditor
+                          items={group.items}
+                          placeholder="Élément"
+                          addLabel="Ajouter un élément"
+                          onChange={(items) =>
+                            setEquipmentGroups((gs) =>
+                              gs.map((g, i) => (i === gi ? { ...g, items } : g)),
+                            )
+                          }
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setEquipmentGroups((gs) => [...gs, { label: "", items: [""] }])
                       }
+                    >
+                      <Plus className="mr-1.5 h-3.5 w-3.5" />
+                      Ajouter un groupe
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label>Ce qui est inclus</Label>
+                  <div className="mt-2">
+                    <TextListEditor
+                      items={includedItems}
+                      onChange={setIncludedItems}
+                      placeholder="Inclus"
                     />
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEquipmentGroups((gs) => [...gs, { label: "", items: [""] }])}
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  Ajouter un groupe
-                </Button>
+                </div>
+                <div>
+                  <Label>Ce qui n'est pas inclus</Label>
+                  <div className="mt-2">
+                    <TextListEditor
+                      items={excludedItems}
+                      onChange={setExcludedItems}
+                      placeholder="Exclu"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <Label>Ce qui est inclus</Label>
-              <div className="mt-2">
-                <TextListEditor
-                  items={includedItems}
-                  onChange={setIncludedItems}
-                  placeholder="Inclus"
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Ce qui n'est pas inclus</Label>
-              <div className="mt-2">
-                <TextListEditor
-                  items={excludedItems}
-                  onChange={setExcludedItems}
-                  placeholder="Exclu"
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </div>
       <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <Card className="overflow-hidden p-0">
+          <div className="bg-primary/5 p-5">
+            <p className="tracked text-[10px] text-muted-foreground">TOTAL DU DEVIS</p>
+            <p className="mt-1 text-3xl tabular-nums" style={{ fontFamily: "Fraunces, serif" }}>
+              {formatMoney(totals.total, currency)}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+              {totals.perPerson != null && (
+                <>
+                  <span className="text-muted-foreground">Par personne</span>
+                  <span className="text-right tabular-nums">
+                    {formatMoney(totals.perPerson, currency)}
+                  </span>
+                </>
+              )}
+              <span className="text-muted-foreground">Acompte {depositPct || 0} %</span>
+              <span className="text-right tabular-nums">
+                {formatMoney(totals.deposit, currency)}
+              </span>
+              <span className="text-muted-foreground">Solde</span>
+              <span className="text-right tabular-nums">
+                {formatMoney(totals.balance, currency)}
+              </span>
+              {totals.hasOptions && (
+                <>
+                  <span className="text-muted-foreground">Avec options</span>
+                  <span className="text-right tabular-nums">
+                    {formatMoney(totals.totalWithOptions, currency)}
+                  </span>
+                </>
+              )}
+              {totals.estimatedMargin != null && (
+                <>
+                  <span className="text-muted-foreground">Marge estimée</span>
+                  <span className="text-right font-medium tabular-nums text-emerald-700">
+                    {formatMoney(totals.estimatedMargin, currency)}
+                    {totals.marginCoverage < 0.99 && (
+                      <span className="ml-1 font-normal text-muted-foreground">
+                        ({Math.round(totals.marginCoverage * 100)} % du total)
+                      </span>
+                    )}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+          {quoteId && (
+            <div className="flex items-center gap-2 border-t border-border/60 px-5 py-2.5 text-xs">
+              {saving ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  <span className="text-muted-foreground">Enregistrement…</span>
+                </>
+              ) : autosaveIssue && dirty ? (
+                <span className="text-amber-700">Non enregistré : {autosaveIssue}</span>
+              ) : dirty ? (
+                <span className="text-muted-foreground">Modifications en cours…</span>
+              ) : (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  <span className="text-muted-foreground">
+                    {savedAt ? "Enregistré automatiquement" : "À jour"}
+                  </span>
+                </>
+              )}
+              <span className="ml-auto text-[10px] text-muted-foreground/70">⌘S</span>
+            </div>
+          )}
+        </Card>
         <Card className="p-5">
           <p className="tracked mb-2 text-[10px] text-muted-foreground">NUMÉRO DU DEVIS</p>
           <Input
@@ -921,7 +1259,9 @@ export function QuoteForm({
                 </SelectTrigger>
                 <SelectContent>
                   {PDF_LANGUAGES.map((l) => (
-                    <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                    <SelectItem key={l.value} value={l.value}>
+                      {l.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -948,9 +1288,9 @@ export function QuoteForm({
               />
             </div>
           </div>
-          <Button className="btn-primary mt-5 w-full" onClick={save} disabled={saving}>
+          <Button className="btn-primary mt-5 w-full" onClick={() => void save()} disabled={saving}>
             <Save className="mr-2 h-3.5 w-3.5" />
-            {saving ? "Enregistrement…" : "Enregistrer"}
+            {saving ? "Enregistrement…" : quoteId ? "Enregistrer maintenant" : "Créer le devis"}
           </Button>
           <Button
             variant="outline"
