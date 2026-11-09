@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,7 +16,8 @@ import {
   Users,
   Waypoints,
 } from "lucide-react";
-import { needsStaff, type DispatchItem } from "@/lib/ops/dispatch-rules";
+import { SOURCE_LABEL, needsStaff, type DispatchItem } from "@/lib/ops/dispatch-rules";
+import { TimeEditor } from "@/components/ops/time-editor";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
@@ -169,6 +170,30 @@ function CockpitPage() {
       return ((rows ?? []) as DispatchItem[]).filter(needsStaff).length;
     },
   });
+  const qc = useQueryClient();
+  const field48 = useQuery({
+    queryKey: ["cockpit-field48"],
+    enabled: canOperate,
+    refetchInterval: 300_000,
+    queryFn: async () => {
+      const from = new Date().toLocaleDateString("fr-CA", { timeZone: TZ });
+      const to = new Date(Date.now() + 2 * 86400_000).toLocaleDateString("fr-CA", { timeZone: TZ });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: rows, error: e } = await (supabase as any).rpc("dispatch_list", { p_from: from, p_to: to });
+      if (e) throw new Error(e.message);
+      return ((rows ?? []) as DispatchItem[]).filter((i) => i.confirmed || i.done);
+    },
+  });
+  const team = useQuery({
+    queryKey: ["dispatch-team"],
+    enabled: canOperate,
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: rows } = await (supabase as any).rpc("dispatch_team");
+      return (rows ?? []) as { user_id: string; name: string }[];
+    },
+  });
+  const teamNames = new Map((team.data ?? []).map((p) => [p.user_id, p.name.split(" ")[0]]));
   const pendingUsers = useQuery({
     queryKey: ["pending-users-count"],
     enabled: canManage,
@@ -254,29 +279,56 @@ function CockpitPage() {
 
       {data && (
         <div className="space-y-6">
-          {/* 1. Sur le terrain : tours dans les 48 h */}
-          {data.tours.length > 0 && (
+          {/* 1. Sur le terrain : toutes les sorties des 48 h (GetYourGuide, site, voyages, manuel) */}
+          {(field48.data ?? []).length > 0 && (
             <Card className="border-primary/40 p-5">
               <div className="mb-3 flex items-center gap-2">
                 <CalendarClock className="h-4 w-4 text-primary" />
                 <h2 className="text-sm font-semibold">Sur le terrain — 48 prochaines heures</h2>
+                <Link to="/dispatch" className="ml-auto text-[12.5px] font-medium text-muted-foreground hover:text-foreground">
+                  Dispatch
+                </Link>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
-                {data.tours.map((b) => (
-                  <Link
-                    key={b.id}
-                    to={b.client_id ? "/clients/$id" : "/distribution"}
-                    params={b.client_id ? { id: b.client_id } : undefined}
-                    className="rounded-md border border-border/60 p-3 hover:bg-muted/40"
-                  >
-                    <p className="text-sm font-semibold">{when(b.start_at)}</p>
-                    <p className="text-sm">{b.activity_title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {b.participants} pers. · {b.lead_name}
-                      {b.lead_language ? ` · ${b.lead_language}` : ""} ·{" "}
-                      {fmtMoney(b.price, b.currency ?? "BRL")} · GetYourGuide
+                {(field48.data ?? []).map((i) => (
+                  <div key={`${i.source}:${i.source_id}:${i.item_index}`} className="rounded-lg border border-border p-3">
+                    <p className="flex items-center gap-2 text-sm font-semibold">
+                      <span className="capitalize">
+                        {new Date(`${i.day}T12:00:00Z`).toLocaleDateString("fr-FR", {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                          timeZone: "UTC",
+                        })}
+                      </span>
+                      <TimeEditor
+                        source={i.source}
+                        id={i.source_id}
+                        index={i.item_index}
+                        day={i.day}
+                        label={i.time_label}
+                        canEdit={canOperate}
+                        onSaved={() => void qc.invalidateQueries({ queryKey: ["cockpit-field48"] })}
+                      />
                     </p>
-                  </Link>
+                    <p className="mt-0.5 truncate text-sm">{i.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {[
+                        i.pax ? `${i.pax} pers.` : null,
+                        i.client_name,
+                        SOURCE_LABEL[i.source] ?? i.source,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                    <p className={`mt-1 text-xs font-medium ${needsStaff(i) ? "text-destructive" : "text-foreground/70"}`}>
+                      {i.assignee_id
+                        ? `Guide : ${teamNames.get(i.assignee_id) ?? "assigné"}`
+                        : i.partner_id
+                          ? "Prestataire externe"
+                          : "Sans guide"}
+                    </p>
+                  </div>
                 ))}
               </div>
             </Card>

@@ -286,7 +286,22 @@ export type TemperatureInput = {
   quotes: Pick<DemandeQuote, "status" | "sent_at">[];
   /** Dernière activité : création de la demande ou dernier contact (voir lastActivityOf). */
   lastActivityAt: string | null;
+  /** Budget déclaré (« Plus de 3 000 € »…), facultatif. */
+  budget?: string | null;
 };
+
+/** Seuil bas d'un budget déclaré, en euros : « 1 000 € à 2 000 € » → 1000, « Moins de 500 € » → 0. */
+export function budgetFloor(budget: string | null | undefined): number | null {
+  if (!budget) return null;
+  if (/moins de/i.test(budget)) return 0;
+  const nums = [...budget.replace(/[\u00a0\u202f ]/g, "").matchAll(/\d+/g)].map((m) => Number(m[0]));
+  return nums.length ? Math.min(...nums) : null;
+}
+
+/** Gros potentiel : budget déclaré d'au moins 2 000 € ou groupe d'au moins 5 personnes. */
+const BIG_BUDGET = 2000;
+const BIG_GROUP = 5;
+const FRESH_DAYS = 7;
 
 /**
  * Température d'une demande, évaluée dans cet ordre :
@@ -346,6 +361,20 @@ export function scoreDemande(
     };
   }
   if (travelSoon && party) return { temperature: "chaud", reasons };
+
+  // Demande récente à gros potentiel : à traiter en priorité, même si le voyage est loin.
+  const floorEur = budgetFloor(input.budget);
+  const big = (floorEur != null && floorEur >= BIG_BUDGET) || (party != null && party >= BIG_GROUP);
+  const lastAct = time(input.lastActivityAt);
+  if (big && !Number.isNaN(lastAct) && nowT - lastAct <= FRESH_DAYS * DAY) {
+    return {
+      temperature: "chaud",
+      reasons: [
+        floorEur != null && floorEur >= BIG_BUDGET ? `Budget ${input.budget}` : `Groupe de ${party} pers.`,
+        ...reasons,
+      ],
+    };
+  }
 
   const last = time(input.lastActivityAt);
   if (!Number.isNaN(last)) {
@@ -517,8 +546,11 @@ export function buildDemandes(
       : firstValue(newestFirst.filter((l) => l.travel_start).map((l) => l.travel_end));
     const partySize = firstValue([prospect?.party_size, ...newestFirst.map((l) => l.party_size)]);
     const pendingQuote = quotes.find((q) => q.status === "sent") ?? null;
+    const budget = firstValue(
+      newestFirst.map((l) => l.budget?.trim()).filter((b) => b && !/ne sais pas/i.test(b)),
+    );
     const { temperature, reasons } = scoreDemande(
-      { stage, travelStart, travelEnd, partySize, quotes, lastActivityAt },
+      { stage, travelStart, travelEnd, partySize, quotes, lastActivityAt, budget },
       now,
     );
     const lead = prospect ? null : (leads[0] ?? null);
@@ -547,12 +579,7 @@ export function buildDemandes(
         ...newestFirst.flatMap((l) => l.activities ?? []),
       ]),
       message: firstValue([...leads.map((l) => l.message?.trim()), prospect?.message?.trim()]),
-      budget: firstValue(
-        [...leads]
-          .reverse()
-          .map((l) => l.budget?.trim())
-          .filter((b) => b && !/ne sais pas/i.test(b)),
-      ),
+      budget,
       createdAt,
       lastActivityAt,
       clientId: firstValue([prospect?.client_id, ...quotes.map((q) => q.client_id)]),
