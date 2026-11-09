@@ -46,7 +46,7 @@ export type PricingRow = {
   commissionPct: number | null;
   published: boolean;
   /** Billets : secteurs (prix par secteur). */
-  variants?: { id: string; label: string; price: number | null }[];
+  variants?: { id: string; label: string; price: number | null; cost?: number | null }[];
 };
 
 export function pricingSummary(rows: PricingRow[]) {
