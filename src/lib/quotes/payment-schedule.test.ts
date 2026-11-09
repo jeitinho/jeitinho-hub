@@ -48,3 +48,21 @@ test("soldé ; remboursement déduit ; autre devise non additionnée", () => {
     "solde",
   );
 });
+
+test("paiement seulement dans une autre devise → à vérifier, pas « acompte attendu »", () => {
+  const s = paymentSchedule(
+    { total_amount: 280, currency: "BRL", deposit_pct: 30, accepted_at: "2026-07-15", balance_due_on: null, period_start: "2026-07-18" },
+    [{ amount: 50, currency: "EUR", kind: "total", paid_at: "2026-07-16" }],
+    "2026-11-09",
+  );
+  assert.equal(s.state, "autre_devise");
+});
+
+test("prestation passée sans paiement → prioritaire", () => {
+  const s = paymentSchedule(
+    { total_amount: 420, currency: "BRL", deposit_pct: 30, accepted_at: "2026-07-18", balance_due_on: null, period_start: "2026-07-23", period_end: null },
+    [],
+    "2026-11-09",
+  );
+  assert.equal(s.state, "prestation_passee");
+});
