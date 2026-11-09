@@ -25,6 +25,8 @@ export type DispatchItem = {
   done: boolean;
   ref: string | null;
   trip_id: string | null;
+  checkin?: "present" | "no_show" | null;
+  notes?: string | null;
 };
 
 export const SOURCE_LABEL: Record<string, string> = {

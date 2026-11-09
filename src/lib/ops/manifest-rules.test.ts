@@ -80,3 +80,24 @@ test("liens et dates", () => {
   assert.equal(whatsappLink("abc"), null);
   assert.equal(shiftDay("2026-12-31", 1), "2027-01-01");
 });
+
+import { fromDispatch } from "./manifest-rules";
+
+test("liste unifiée → manifeste : site et voyage, pointage, heure inconnue", () => {
+  const base = {
+    item_index: 0, day: "2026-11-11", pax: 2, client_name: "A", client_phone: null, language: null,
+    meeting_point: null, assignee_id: null, partner_id: null, done: false, ref: null, trip_id: null, notes: null,
+  };
+  const rows = fromDispatch([
+    { ...base, source: "voyage", source_id: "v", time_label: "Soir", sort_at: "2026-11-11T22:00:00Z", title: "Baile", confirmed: false, checkin: null },
+    { ...base, source: "gyg", source_id: "g", time_label: "00h00", sort_at: "2026-11-11T03:00:00Z", title: "Pão", confirmed: true, checkin: "present" },
+    { ...base, source: "site", source_id: "s", item_index: 1, time_label: "10h00", sort_at: "2026-11-11T13:00:00Z", title: "Rocinha", confirmed: true, checkin: "no_show" },
+  ]);
+  assert.deepEqual(rows.map((r) => r.title), ["Pão", "Rocinha", "Baile"]);
+  assert.equal(rows[0].time, "?");
+  assert.equal(rows[0].done, true);
+  assert.equal(rows[1].noShow, true);
+  assert.equal(rows[1].index, 1);
+  assert.equal(rows[2].kind, "activity");
+  assert.equal(rows[2].tentative, true);
+});

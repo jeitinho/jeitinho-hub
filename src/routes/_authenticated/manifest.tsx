@@ -28,15 +28,14 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { getLang, t } from "@/lib/i18n";
 import {
-  buildManifest,
+  fromDispatch,
   manifestSummary,
   mapsLink,
   shiftDay,
   whatsappLink,
-  type ManifestActivity,
-  type ManifestBooking,
   type ManifestItem,
 } from "@/lib/ops/manifest-rules";
+import type { DispatchItem } from "@/lib/ops/dispatch-rules";
 
 export const Route = createFileRoute("/_authenticated/manifest")({
   component: ManifestPage,
@@ -71,64 +70,18 @@ function ManifestPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["manifest", day],
     queryFn: async () => {
-      // Fenêtre large en UTC puis filtrage à l'heure de Rio (une sortie à 22h Rio tombe le lendemain en UTC).
-      const from = `${shiftDay(day, -1)}T00:00:00Z`;
-      const to = `${shiftDay(day, 2)}T00:00:00Z`;
-      const [bookingsR, activitiesR, membersR] = await Promise.all([
-        db
-          .from("ota_bookings")
-          .select(
-            "id,platform,booking_ref,activity_title,start_at,participants,participants_detail,lead_name,lead_phone,lead_language,status,guide_id,checkin_status,notes,listing:ota_listings(meeting_point)",
-          )
-          .gte("start_at", from)
-          .lt("start_at", to),
-        canOperate
-          ? db
-              .from("trip_activities")
-              .select(
-                "id,trip_id,title,day,slot,display_time,scheduled_start,status,kind,trip:trips(title,reference,party_size,guide_id,status,client:clients(full_name,phone))",
-              )
-              .eq("day", day)
-              .neq("kind", "note")
-          : Promise.resolve({ data: [], error: null }),
-        canOperate
-          ? db
-              .from("partner_members")
-              .select("user_id,display_name")
-              .eq("active", true)
-              .order("sort_order")
-          : Promise.resolve({ data: [], error: null }),
+      // Liste unifiée : GetYourGuide, paniers payés du site, prestations des voyages, saisies manuelles.
+      const [listR, teamR] = await Promise.all([
+        db.rpc("dispatch_list", { p_from: day, p_to: day }),
+        canOperate ? db.rpc("dispatch_team") : Promise.resolve({ data: [], error: null }),
       ]);
-      if (bookingsR.error) throw new Error(bookingsR.error.message);
-      if (activitiesR.error) throw new Error(activitiesR.error.message);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const bookings: ManifestBooking[] = (bookingsR.data ?? []).map((b: any) => ({
-        ...b,
-        meeting_point: b.listing?.meeting_point ?? null,
-      }));
-      const activities: ManifestActivity[] = (activitiesR.data ?? [])
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((a: any) => a.trip && a.trip.status !== "cancelled")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((a: any) => ({
-          id: a.id,
-          trip_id: a.trip_id,
-          trip_title: a.trip.title,
-          trip_reference: a.trip.reference,
-          title: a.title,
-          day: a.day,
-          slot: a.slot,
-          display_time: a.display_time,
-          scheduled_start: a.scheduled_start,
-          status: a.status,
-          party_size: a.trip.party_size,
-          client_name: a.trip.client?.full_name ?? null,
-          client_phone: a.trip.client?.phone ?? null,
-          guide_id: a.trip.guide_id,
-        }));
+      if (listR.error) throw new Error(listR.error.message);
       return {
-        items: buildManifest(day, bookings, activities),
-        members: (membersR.data ?? []) as { user_id: string; display_name: string }[],
+        items: fromDispatch((listR.data ?? []) as DispatchItem[]),
+        members: ((teamR.data ?? []) as { user_id: string; name: string }[]).map((m) => ({
+          user_id: m.user_id,
+          display_name: m.name,
+        })),
       };
     },
   });
@@ -160,32 +113,26 @@ function ManifestPage() {
   };
   const checkin = (i: ManifestItem, status: "present" | "no_show" | null) =>
     run(i.key, { done: status === "present", noShow: status === "no_show" }, () =>
-      db
-        .from("ota_bookings")
-        .update({
-          checkin_status: status,
-          checked_in_at: status ? new Date().toISOString() : null,
-          checked_in_by: status ? user?.id : null,
-        })
-        .eq("id", i.id),
+      db.rpc("dispatch_checkin", {
+        p_source: i.dsource === "voyage" || i.dsource === "site" ? i.dsource : "ota",
+        p_id: i.id,
+        p_index: i.index ?? 0,
+        p_status: status,
+      }),
     );
-  const markDone = (i: ManifestItem, done: boolean) =>
-    run(i.key, { done }, () =>
-      db
-        .from("trip_activities")
-        .update({
-          status: done ? "completed" : "confirmed",
-          completed_at: done ? new Date().toISOString() : null,
-        })
-        .eq("id", i.id),
-    );
+  const markDone = (i: ManifestItem, done: boolean) => checkin(i, done ? "present" : null);
   const assign = (i: ManifestItem, guideId: string | null) =>
-    run(i.key, { guideId }, async () => {
-      if (i.kind === "booking")
-        return db.from("ota_bookings").update({ guide_id: guideId }).eq("id", i.id);
-      const row = (await db.from("trip_activities").select("trip_id").eq("id", i.id).single()).data;
-      return db.from("trips").update({ guide_id: guideId }).eq("id", row?.trip_id);
-    });
+    run(i.key, { guideId }, () =>
+      db.rpc("dispatch_assign", {
+        p_source: i.dsource === "voyage" || i.dsource === "site" ? i.dsource : "ota",
+        p_id: i.id,
+        p_index: i.index ?? 0,
+        p_assignee: guideId,
+        p_partner: null,
+        p_set_assignee: true,
+        p_set_partner: false,
+      }),
+    );
 
   return (
     <PageShell
@@ -254,7 +201,7 @@ function ManifestPage() {
       </div>
 
       <div className="mb-4">
-        <h2 className="text-2xl" style={{ fontFamily: "Fraunces, serif" }}>
+        <h2 className="text-2xl">
           {dayTitle(day)}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -311,6 +258,7 @@ function ManifestPage() {
                         <p className="truncate text-xs text-muted-foreground">
                           {i.subtitle}
                           {i.cancelled && ` · ${t("Annulée")}`}
+                          {i.tentative && ` · ${t("voyage en préparation")}`}
                         </p>
                       </div>
                       <Badge variant="outline" className="text-[11px] capitalize">

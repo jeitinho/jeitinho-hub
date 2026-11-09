@@ -13,7 +13,9 @@ import {
   PartyPopper,
   Store,
   Users,
+  Waypoints,
 } from "lucide-react";
+import { needsStaff, type DispatchItem } from "@/lib/ops/dispatch-rules";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/page-shell";
 import { Card } from "@/components/ui/card";
@@ -114,6 +116,20 @@ function CockpitPage() {
     queryFn: fetchCockpit,
     enabled: canOperate,
     refetchInterval: 120_000,
+  });
+  // Sorties confirmées des 14 prochains jours sans personne ni prestataire (dispatch).
+  const toStaff = useQuery({
+    queryKey: ["cockpit-to-staff"],
+    enabled: canOperate,
+    refetchInterval: 300_000,
+    queryFn: async () => {
+      const from = new Date().toLocaleDateString("fr-CA", { timeZone: TZ });
+      const to = new Date(Date.now() + 14 * 86400_000).toLocaleDateString("fr-CA", { timeZone: TZ });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: rows, error: e } = await (supabase as any).rpc("dispatch_list", { p_from: from, p_to: to });
+      if (e) throw new Error(e.message);
+      return ((rows ?? []) as DispatchItem[]).filter(needsStaff).length;
+    },
   });
   const pendingUsers = useQuery({
     queryKey: ["pending-users-count"],
@@ -252,6 +268,14 @@ function CockpitPage() {
                 label="Nouvelles demandes clients"
                 value={data.newRequests}
                 error={data.errors.newRequests}
+                tone="alert"
+              />
+              <Tile
+                to="/dispatch"
+                icon={Waypoints}
+                label="Sorties sans guide (14 jours)"
+                value={toStaff.data ?? 0}
+                error={toStaff.error ? (toStaff.error as Error).message : undefined}
                 tone="alert"
               />
               <Tile

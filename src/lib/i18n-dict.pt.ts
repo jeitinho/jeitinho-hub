@@ -1,5 +1,6 @@
 /* Généré à partir des libellés français du hub — portugais (Brésil). Clé = texte français exact. */
 export const PT_DICT: Record<string, string> = {
+ "Sorties sans guide (14 jours)": "Saídas sem guia (14 dias)",
  "+ Ajouter": "+ Adicionar",
  "+2 j": "+2 d",
  "14 jours": "14 dias",
