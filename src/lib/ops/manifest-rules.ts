@@ -1,3 +1,4 @@
+import type { DispatchItem } from "./dispatch-rules";
 /**
  * Manifeste du jour (sur le modèle FareHarbor / Bókun / Rezdy) : toutes les sorties d'une date,
  * réservations plateformes et prestations des voyages sur mesure, dans une seule liste triée.
@@ -58,6 +59,10 @@ export type ManifestItem = {
   cancelled: boolean;
   source: string;
   notes: string | null;
+  /** Source et rang dans la liste unifiée (pour pointer / assigner via le dispatch). */
+  dsource?: string;
+  index?: number;
+  tentative?: boolean;
 };
 
 const SLOT_LABEL: Record<string, string> = {
@@ -157,6 +162,42 @@ export function buildManifest(
     });
   }
   return items.sort((x, y) => x.sortKey.localeCompare(y.sortKey) || x.title.localeCompare(y.title));
+}
+
+const SOURCE_NAME: Record<string, string> = {
+  gyg: "GetYourGuide",
+  site: "Site",
+  voyage: "Voyage",
+  manuel: "Manuel",
+};
+
+/** Convertit la liste unifiée du dispatch (une journée) en lignes de manifeste. */
+export function fromDispatch(rows: DispatchItem[]): ManifestItem[] {
+  return rows
+    .map<ManifestItem>((r) => ({
+      key: `${r.source}:${r.source_id}:${r.item_index}`,
+      kind: r.source === "voyage" ? "activity" : "booking",
+      id: r.source_id,
+      time: r.time_label === "00h00" ? "?" : r.time_label,
+      sortKey: r.sort_at,
+      title: r.title,
+      subtitle: [SOURCE_NAME[r.source] ?? r.source, r.ref].filter(Boolean).join(" · "),
+      pax: r.pax,
+      contactName: r.client_name,
+      contactPhone: r.client_phone,
+      language: r.language,
+      meetingPoint: r.meeting_point,
+      guideId: r.assignee_id,
+      done: r.checkin === "present",
+      noShow: r.checkin === "no_show",
+      cancelled: false,
+      source: SOURCE_NAME[r.source] ?? r.source,
+      notes: r.notes ?? null,
+      dsource: r.source,
+      index: r.item_index,
+      tentative: !r.confirmed && !r.done,
+    }))
+    .sort((x, y) => x.sortKey.localeCompare(y.sortKey) || x.title.localeCompare(y.title));
 }
 
 export function manifestSummary(items: ManifestItem[]) {

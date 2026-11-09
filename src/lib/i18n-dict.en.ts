@@ -1,5 +1,6 @@
 /* Généré à partir des libellés français du hub — anglais. Clé = texte français exact. */
 export const EN_DICT: Record<string, string> = {
+ "Sorties sans guide (14 jours)": "Outings without a guide (14 days)",
  "+ Ajouter": "+ Add",
  "+2 j": "+2 d",
  "14 jours": "14 days",
