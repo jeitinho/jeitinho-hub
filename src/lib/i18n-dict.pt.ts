@@ -1,5 +1,8 @@
 /* Généré à partir des libellés français du hub — portugais (Brésil). Clé = texte français exact. */
 export const PT_DICT: Record<string, string> = {
+ "Offre": "Oferta",
+ "Créer": "Criar",
+ "Demandes clients": "Pedidos de clientes",
  "Sorties sans guide (14 jours)": "Saídas sem guia (14 dias)",
  "+ Ajouter": "+ Adicionar",
  "+2 j": "+2 d",

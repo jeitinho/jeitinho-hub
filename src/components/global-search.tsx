@@ -61,8 +61,13 @@ export function GlobalSearch({ roles = [] }: { roles?: AppRole[] }) {
         setOpen((v) => !v);
       }
     };
+    const onOpen = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("hub:open-search", onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("hub:open-search", onOpen);
+    };
   }, []);
 
   useEffect(() => {
