@@ -21,6 +21,7 @@ export function registerQuotePdfFonts() {
       { src: `${FONTSOURCE}/fraunces@latest/latin-400-normal.ttf`, fontWeight: 400 },
       { src: `${FONTSOURCE}/fraunces@latest/latin-500-normal.ttf`, fontWeight: 500 },
       { src: `${FONTSOURCE}/fraunces@latest/latin-600-normal.ttf`, fontWeight: 600 },
+      { src: `${FONTSOURCE}/fraunces@latest/latin-400-italic.ttf`, fontWeight: 400, fontStyle: "italic" },
     ],
   });
 
