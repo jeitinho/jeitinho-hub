@@ -33,3 +33,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Patchs/bundles git temporaires
+*.patch
+*.bundle
