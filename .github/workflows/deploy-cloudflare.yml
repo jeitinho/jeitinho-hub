@@ -1,8 +1,9 @@
 name: Deploy Cloudflare Worker
 
+# Déploiement de secours, manuel uniquement. La production est déployée par
+# Cloudflare Workers Builds (intégration Git). Ce workflow échouait à chaque
+# push (93/93) faute de secret CLOUDFLARE_API_TOKEN dans le repo.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
