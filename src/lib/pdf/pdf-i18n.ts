@@ -412,6 +412,8 @@ export const PLANNING_I18N: Record<PdfLanguage, {
   docTitle: (client: string) => string;
   period: (start: string | null, end: string | null) => string;
   weather: string;
+  /** Under the title: what the document holds. */
+  subtitle: string;
   legendActivity: string;
   legendTransfer: string;
   legendEvening: string;
@@ -428,9 +430,10 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Planning ${c}`,
     period: (a, b) => (a && b ? `Du ${a} au ${b}` : a ? `À partir du ${a}` : b ? `Jusqu'au ${b}` : ""),
     weather: "Pré-planning adaptable à tout moment. Les activités peuvent être modifiées ou inversées selon la météo.",
+    subtitle: 'Toutes les activités, horaires et sorties',
     legendActivity: "Activité / visite", legendTransfer: "Déplacement", legendEvening: "Soirée", legendFree: "Libre",
     freeDay: "Journée libre", offered: "Offert", nightTitle: "NUIT · SORTIES",
-    slots: { matin: "Matin", midi: "Midi", apres_midi: "Après-midi", soir: "Soir", nuit: "Nuit" },
+    slots: { matin: "Matin", midi: "Midi", apres_midi: "Après-midi", soir: "Soirée", nuit: "Nuit" },
     defaultTitleWeek: "Une semaine à Rio", defaultTitleStay: "Votre séjour à Rio",
   },
   en: {
@@ -438,6 +441,7 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Itinerary ${c}`,
     period: (a, b) => (a && b ? `From ${a} to ${b}` : a ? `From ${a}` : b ? `Until ${b}` : ""),
     weather: "Provisional plan, adjustable at any time. Activities may be changed or swapped depending on the weather.",
+    subtitle: 'All activities, times and nights out',
     legendActivity: "Activity / visit", legendTransfer: "Transfer", legendEvening: "Evening", legendFree: "Free time",
     freeDay: "Free day", offered: "Complimentary", nightTitle: "NIGHT · GOING OUT",
     slots: { matin: "Morning", midi: "Lunch", apres_midi: "Afternoon", soir: "Evening", nuit: "Night" },
@@ -448,6 +452,7 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Roteiro ${c}`,
     period: (a, b) => (a && b ? `De ${a} a ${b}` : a ? `A partir de ${a}` : b ? `Até ${b}` : ""),
     weather: "Pré-roteiro ajustável a qualquer momento. As atividades podem ser alteradas ou invertidas conforme o clima.",
+    subtitle: 'Todas as atividades, horários e saídas',
     legendActivity: "Atividade / visita", legendTransfer: "Deslocamento", legendEvening: "Noite", legendFree: "Livre",
     freeDay: "Dia livre", offered: "Cortesia", nightTitle: "NOITE · SAÍDAS",
     slots: { matin: "Manhã", midi: "Almoço", apres_midi: "Tarde", soir: "Noite", nuit: "Madrugada" },
@@ -458,6 +463,7 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Programa ${c}`,
     period: (a, b) => (a && b ? `Del ${a} al ${b}` : a ? `A partir del ${a}` : b ? `Hasta el ${b}` : ""),
     weather: "Programa provisional, adaptable en cualquier momento. Las actividades pueden cambiarse o intercambiarse según el tiempo.",
+    subtitle: 'Todas las actividades, horarios y salidas',
     legendActivity: "Actividad / visita", legendTransfer: "Traslado", legendEvening: "Noche", legendFree: "Libre",
     freeDay: "Día libre", offered: "De regalo", nightTitle: "NOCHE · SALIDAS",
     slots: { matin: "Mañana", midi: "Mediodía", apres_midi: "Tarde", soir: "Noche", nuit: "Madrugada" },
@@ -468,6 +474,7 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Programma ${c}`,
     period: (a, b) => (a && b ? `Dal ${a} al ${b}` : a ? `Dal ${a}` : b ? `Fino al ${b}` : ""),
     weather: "Programma provvisorio, modificabile in qualsiasi momento. Le attività possono essere cambiate o invertite in base al meteo.",
+    subtitle: 'Tutte le attività, gli orari e le uscite',
     legendActivity: "Attività / visita", legendTransfer: "Spostamento", legendEvening: "Serata", legendFree: "Libero",
     freeDay: "Giornata libera", offered: "Omaggio", nightTitle: "NOTTE · USCITE",
     slots: { matin: "Mattina", midi: "Pranzo", apres_midi: "Pomeriggio", soir: "Sera", nuit: "Notte" },
@@ -478,6 +485,7 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Reiseprogramm ${c}`,
     period: (a, b) => (a && b ? `${a} bis ${b}` : a ? `Ab ${a}` : b ? `Bis ${b}` : ""),
     weather: "Vorläufiges Programm, jederzeit anpassbar. Aktivitäten können je nach Wetter geändert oder getauscht werden.",
+    subtitle: 'Alle Aktivitäten, Uhrzeiten und Ausgehabende',
     legendActivity: "Aktivität / Besichtigung", legendTransfer: "Transfer", legendEvening: "Abend", legendFree: "Frei",
     freeDay: "Freier Tag", offered: "Inklusive", nightTitle: "NACHT · AUSGEHEN",
     slots: { matin: "Vormittag", midi: "Mittag", apres_midi: "Nachmittag", soir: "Abend", nuit: "Nacht" },
@@ -488,6 +496,7 @@ export const PLANNING_I18N: Record<PdfLanguage, {
     docTitle: (c) => `Программа ${c}`,
     period: (a, b) => (a && b ? `С ${a} по ${b}` : a ? `С ${a}` : b ? `До ${b}` : ""),
     weather: "Предварительная программа, её можно изменить в любой момент. Активности могут меняться местами в зависимости от погоды.",
+    subtitle: 'Все активности, время и выходы',
     legendActivity: "Активность / экскурсия", legendTransfer: "Переезд", legendEvening: "Вечер", legendFree: "Свободно",
     freeDay: "Свободный день", offered: "В подарок", nightTitle: "НОЧЬ · ВЫХОДЫ",
     slots: { matin: "Утро", midi: "Обед", apres_midi: "День", soir: "Вечер", nuit: "Ночь" },
@@ -507,4 +516,22 @@ export function pdfWeekday(value: string, lang: PdfLanguage): string {
   const date = new Date(`${value.slice(0, 10)}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleDateString(PDF_LOCALE_MAP[lang], { weekday: "short", timeZone: "UTC" }).toUpperCase();
+}
+
+/** Day card header: "VEN. 25 SEPT.", "FRI, SEP 25"… */
+export function pdfDayLabel(value: string, lang: PdfLanguage): string {
+  const date = new Date(`${value.slice(0, 10)}T12:00:00Z`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date
+    .toLocaleDateString(PDF_LOCALE_MAP[lang], { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })
+    .toUpperCase();
+}
+
+/** Compact period on the planning: "25.09 – 02.10.2026" (same in every language). */
+export function pdfCompactPeriod(start: string | null, end: string | null): string {
+  const dm = (v: string) => `${v.slice(8, 10)}.${v.slice(5, 7)}`;
+  if (start && end) return `${dm(start)}${start.slice(0, 4) === end.slice(0, 4) ? "" : `.${start.slice(0, 4)}`} – ${dm(end)}.${end.slice(0, 4)}`;
+  if (start) return `${dm(start)}.${start.slice(0, 4)}`;
+  if (end) return `${dm(end)}.${end.slice(0, 4)}`;
+  return "";
 }

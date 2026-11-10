@@ -142,6 +142,7 @@ export function TripSummaryTab({
         )
         .map((a) => ({
           slot: a.slot ?? null,
+          slotSpan: a.slot_span ?? 1,
           title: a.title,
           displayTime: a.display_time,
           category: a.category,
@@ -150,17 +151,18 @@ export function TripSummaryTab({
         }));
       return { date, lines };
     });
-    const nightEntries = activities
-      .filter(
-        (a) =>
-          a.kind === "activity" &&
-          a.category === "soiree" &&
-          a.day &&
-          a.day >= printStart &&
-          a.day <= printEnd,
-      )
-      .sort((x, y) => (x.day! < y.day! ? -1 : 1))
-      .map((a) => ({ date: a.day as string, title: a.title }));
+    // Bandeau « Nuit · sorties » : ce qui est prévu la nuit (ou classé soirée),
+    // une colonne par jour, comme sur le planning Asim.
+    const nightByDay = new Map<string, string[]>();
+    for (const a of activities) {
+      if (!a.day || a.day < printStart || a.day > printEnd) continue;
+      if (a.kind !== "activity" && a.kind !== "free") continue;
+      if (a.slot !== "nuit" && !(a.kind === "activity" && a.category === "soiree")) continue;
+      nightByDay.set(a.day, [...(nightByDay.get(a.day) ?? []), a.title]);
+    }
+    const nightEntries = [...nightByDay.entries()]
+      .sort(([x], [y]) => (x < y ? -1 : 1))
+      .map(([date, titles]) => ({ date, title: titles.join(" / ") }));
     try {
       await downloadPlanningPdf({
         language: planningLanguage,
