@@ -2326,48 +2326,6 @@ export type Database = {
           },
         ]
       }
-      manual_sections_backup_20260819: {
-        Row: {
-          blocks: Json | null
-          chapter_slug: string | null
-          created_at: string | null
-          id: string | null
-          kicker: string | null
-          position: number | null
-          search_text: string | null
-          slug: string | null
-          subtitle: string | null
-          title: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          blocks?: Json | null
-          chapter_slug?: string | null
-          created_at?: string | null
-          id?: string | null
-          kicker?: string | null
-          position?: number | null
-          search_text?: string | null
-          slug?: string | null
-          subtitle?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          blocks?: Json | null
-          chapter_slug?: string | null
-          created_at?: string | null
-          id?: string | null
-          kicker?: string | null
-          position?: number | null
-          search_text?: string | null
-          slug?: string | null
-          subtitle?: string | null
-          title?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       manual_sessions: {
         Row: {
           code_id: string
