@@ -38,14 +38,19 @@ export function registerQuotePdfFonts() {
   // Fraunces and the Inter files above are Latin-only. Russian PDFs need Cyrillic
   // glyphs: PDF_SANS / PDF_SERIF list this family as a fallback, used only for
   // characters the first family lacks, so Latin-script documents are unchanged.
+  //
+  // react-pdf resolves EVERY family of a stack for each style used, and throws
+  // ("Could not resolve font for InterCyrillic … italic") when one has no face
+  // for that style. So the fallback must answer every weight × style the PDFs
+  // use: italic requests reuse the upright files (Cyrillic italic is never
+  // needed in practice; the Latin text keeps Fraunces' real italic).
+  const cyr = (w: number) => `${FONTSOURCE}/inter@latest/cyrillic-${w}-normal.ttf`;
   Font.register({
     family: "InterCyrillic",
-    fonts: [
-      { src: `${FONTSOURCE}/inter@latest/cyrillic-400-normal.ttf`, fontWeight: 400 },
-      { src: `${FONTSOURCE}/inter@latest/cyrillic-500-normal.ttf`, fontWeight: 500 },
-      { src: `${FONTSOURCE}/inter@latest/cyrillic-600-normal.ttf`, fontWeight: 600 },
-      { src: `${FONTSOURCE}/inter@latest/cyrillic-700-normal.ttf`, fontWeight: 700 },
-    ],
+    fonts: [400, 500, 600, 700].flatMap((w) => [
+      { src: cyr(w), fontWeight: w },
+      { src: cyr(w), fontWeight: w, fontStyle: "italic" as const },
+    ]),
   });
 
   // Default hyphenation breaks words mid-syllable in odd places; we'd rather

@@ -12,12 +12,25 @@ const PopoverAnchor = PopoverPrimitive.Anchor;
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
->(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
+>(({ className, align = "center", sideOffset = 4, onWheel, onTouchMove, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
       ref={ref}
       align={align}
       sideOffset={sideOffset}
+      // The popover is portaled to <body>, outside any open Sheet/Dialog. Their
+      // scroll lock (react-remove-scroll, listening on document) then cancels
+      // touch/wheel scroll on the popover — on mobile the list (catalogue
+      // picker, comboboxes) stays frozen. Stopping propagation here keeps the
+      // event from reaching that document listener, so the list scrolls again.
+      onWheel={(e) => {
+        e.stopPropagation();
+        onWheel?.(e);
+      }}
+      onTouchMove={(e) => {
+        e.stopPropagation();
+        onTouchMove?.(e);
+      }}
       className={cn(
         "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-popover-content-transform-origin)",
         className,
