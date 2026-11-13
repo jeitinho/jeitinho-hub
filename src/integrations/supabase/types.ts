@@ -3096,6 +3096,7 @@ export type Database = {
           last_seen_at: string | null
           short_name: string | null
           status: Database["public"]["Enums"]["account_status"]
+          ui_lang: string
           updated_at: string
         }
         Insert: {
@@ -3108,6 +3109,7 @@ export type Database = {
           last_seen_at?: string | null
           short_name?: string | null
           status?: Database["public"]["Enums"]["account_status"]
+          ui_lang?: string
           updated_at?: string
         }
         Update: {
@@ -3120,6 +3122,7 @@ export type Database = {
           last_seen_at?: string | null
           short_name?: string | null
           status?: Database["public"]["Enums"]["account_status"]
+          ui_lang?: string
           updated_at?: string
         }
         Relationships: []
@@ -5698,10 +5701,15 @@ export type Database = {
       }
       partner_ledger_start: { Args: never; Returns: string }
       person_key: { Args: { _user_id: string }; Returns: string }
+      public_form_guard: {
+        Args: { p_email: string; p_form: string; p_phone: string }
+        Returns: string
+      }
       push_editorial_reminders: { Args: never; Returns: number }
       push_next_whatsapp_post: { Args: never; Returns: string }
       push_operators: { Args: never; Returns: string[] }
       push_public_key: { Args: never; Returns: string }
+      push_tr: { Args: { p_lang: string; p_text: string }; Returns: string }
       push_unanswered_leads: { Args: never; Returns: number }
       push_wake: { Args: never; Returns: undefined }
       quote_followup_draft: {
@@ -5720,6 +5728,7 @@ export type Database = {
         Args: { p_quote_id: string }
         Returns: undefined
       }
+      quotes_expire_and_warn: { Args: never; Returns: number }
       safe_date: { Args: { p: string }; Returns: string }
       sell_ticket_quote: {
         Args: {
@@ -5758,6 +5767,7 @@ export type Database = {
       ticketing_snapshot: { Args: { p_event: string }; Returns: undefined }
       ticketing_sync: { Args: never; Returns: undefined }
       trip_client_language: { Args: { p_quote_id: string }; Returns: string }
+      trips_auto_status: { Args: never; Returns: number }
       urlencode: { Args: { t: string }; Returns: string }
       whatsapp_apply_action: {
         Args: {

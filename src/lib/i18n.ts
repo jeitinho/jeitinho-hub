@@ -32,6 +32,15 @@ export function getLang(): HubLang {
   }
 }
 
+/** Vrai si l'utilisateur a déjà choisi une langue sur cet appareil. */
+export function hasStoredLang(): boolean {
+  try {
+    return typeof window !== "undefined" && window.localStorage.getItem(KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function setLang(lang: HubLang) {
   try {
     window.localStorage.setItem(KEY, lang);
