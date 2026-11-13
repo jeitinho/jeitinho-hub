@@ -1,3 +1,4 @@
+import { changeHubLang } from "@/lib/hub-lang-sync";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -58,7 +59,7 @@ import {
 import { JeitinhoLogo } from "./jeitinho-logo";
 import { useAuth, canAccessModule, displayName, profileKind } from "@/hooks/use-auth";
 import { NAV_LABELS, navLabel } from "@/lib/nav-labels";
-import { HUB_LANGS, getLang, setLang, t } from "@/lib/i18n";
+import { HUB_LANGS, getLang, t } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSidebarBadges } from "@/lib/ops/cockpit";
 
@@ -345,7 +346,7 @@ export function AppSidebar() {
             <button
               key={l.value}
               type="button"
-              onClick={() => l.value !== getLang() && setLang(l.value)}
+              onClick={() => void changeHubLang(l.value)}
               aria-pressed={getLang() === l.value}
               title={l.label}
               className={`rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold transition-colors ${

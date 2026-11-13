@@ -8,6 +8,7 @@ import { GlobalSearch } from "@/components/global-search";
 import { MobileNav } from "@/components/mobile-nav";
 import { useEffect } from "react";
 import { startDomTranslation } from "@/lib/i18n";
+import { syncLangWithProfile } from "@/lib/hub-lang-sync";
 import { PwaSetup } from "@/components/pwa-setup";
 import { ConfirmHost } from "@/components/confirm-dialog";
 
@@ -29,6 +30,9 @@ function AuthenticatedLayout() {
   const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
   const allowed = loading || !(seg in MODULE_ACCESS) || canAccessModule(seg, roles);
   useEffect(() => startDomTranslation(), []);
+  useEffect(() => {
+    void syncLangWithProfile();
+  }, []);
 
   if (!loading && status && status !== "active") {
     return <PendingValidationScreen rejected={isRejected} />;
