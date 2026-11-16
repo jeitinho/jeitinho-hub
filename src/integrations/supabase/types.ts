@@ -5617,6 +5617,7 @@ export type Database = {
       crm_generate_payment_reminders: { Args: never; Returns: number }
       crm_generate_quote_followups: { Args: never; Returns: number }
       crm_generate_trip_messages: { Args: never; Returns: number }
+      current_client_id: { Args: never; Returns: string }
       dispatch_assign: {
         Args: {
           p_assignee: string
@@ -5721,6 +5722,7 @@ export type Database = {
         Args: { d?: string; with_kits?: boolean }
         Returns: string
       }
+      link_my_client_account: { Args: never; Returns: string }
       morning_brief_text: { Args: never; Returns: string }
       my_guide_trips: {
         Args: never
