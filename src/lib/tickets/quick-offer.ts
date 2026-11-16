@@ -19,6 +19,8 @@ export type SectorDraft = {
   capacity: number | null;
   /** Coût d'achat d'un billet de ce secteur. */
   supplier_cost?: number | null;
+  /** Prestation JEITINHO (accompagnement), facturée à part du billet — foot uniquement. */
+  prestation_fee?: number | null;
 };
 
 export function emptySectors(labels: string[]): SectorDraft[] {

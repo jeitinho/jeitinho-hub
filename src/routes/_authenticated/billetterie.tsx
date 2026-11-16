@@ -57,7 +57,7 @@ function Ticketing() {
         (supabase as any).from("ticket_offers").select("*").order("event_date").order("title"),
         (supabase as any)
           .from("ticket_offer_variants")
-          .select("ticket_offer_id,public_price,currency")
+          .select("ticket_offer_id,public_price,currency,prestation_fee")
           .eq("is_active", true),
       ]);
       if (ticketsRes.error) throw ticketsRes.error;
@@ -70,7 +70,8 @@ function Ticketing() {
           { public_price: v.public_price, currency: v.currency },
         ]);
         if (v.public_price === null) continue;
-        const price = Number(v.public_price);
+        // Dès = ce que paie le client : prix du billet + prestation JEITINHO si distincte (foot).
+        const price = Number(v.public_price) + Number(v.prestation_fee ?? 0);
         const current = cheapestByTicket.get(v.ticket_offer_id);
         if (current === undefined || price < current)
           cheapestByTicket.set(v.ticket_offer_id, price);

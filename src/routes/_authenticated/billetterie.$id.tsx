@@ -201,7 +201,7 @@ function EditTicket() {
             }
           }}
         />
-        <TicketOfferVariantsEditor ticketOfferId={id} />
+        <TicketOfferVariantsEditor ticketOfferId={id} showPrestationFee={data.category === "Foot"} />
       </div>
     </PageShell>
   );

@@ -3732,6 +3732,30 @@ export type Database = {
         }
         Relationships: []
       }
+      reveillon_night_seats: {
+        Row: {
+          capacity: number
+          id: number
+          sales_cutoff: string
+          sold: number
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          id?: number
+          sales_cutoff?: string
+          sold?: number
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          id?: number
+          sales_cutoff?: string
+          sold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       roles: {
         Row: {
           code: string
@@ -4226,6 +4250,7 @@ export type Database = {
           id: string
           is_active: boolean
           label: string
+          prestation_fee: number | null
           public_price: number | null
           sort_order: number
           supplier_cost: number | null
@@ -4239,6 +4264,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           label: string
+          prestation_fee?: number | null
           public_price?: number | null
           sort_order?: number
           supplier_cost?: number | null
@@ -4252,6 +4278,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           label?: string
+          prestation_fee?: number | null
           public_price?: number | null
           sort_order?: number
           supplier_cost?: number | null
@@ -5729,6 +5756,18 @@ export type Database = {
         Returns: undefined
       }
       quotes_expire_and_warn: { Args: never; Returns: number }
+      release_reveillon_seats: { Args: { p_qty: number }; Returns: undefined }
+      reserve_reveillon_seats: { Args: { p_qty: number }; Returns: boolean }
+      reveillon_seats_status: {
+        Args: never
+        Returns: {
+          capacity: number
+          remaining: number
+          sales_cutoff: string
+          sales_open: boolean
+          sold: number
+        }[]
+      }
       safe_date: { Args: { p: string }; Returns: string }
       sell_ticket_quote: {
         Args: {
@@ -5768,6 +5807,7 @@ export type Database = {
       ticketing_sync: { Args: never; Returns: undefined }
       trip_client_language: { Args: { p_quote_id: string }; Returns: string }
       trips_auto_status: { Args: never; Returns: number }
+      unpublish_past_ticket_offers: { Args: never; Returns: undefined }
       urlencode: { Args: { t: string }; Returns: string }
       whatsapp_apply_action: {
         Args: {

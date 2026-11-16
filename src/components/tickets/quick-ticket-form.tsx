@@ -87,7 +87,7 @@ export function QuickTicketForm({ kind }: { kind: QuickKind }) {
   // long as the sector list hasn't been edited by hand.
   useEffect(() => {
     if (kind !== "foot" || touchedSectors) return;
-    setSectors(previous?.sectors ?? [{ label: "", price: null, capacity: null }]);
+    setSectors(previous?.sectors ?? [{ label: "", price: null, capacity: null, prestation_fee: null }]);
   }, [kind, previous, touchedSectors]);
 
   const title = kind === "foot" ? matchTitle(home, away) : sambodromoTitle(night, date);
@@ -136,6 +136,7 @@ export function QuickTicketForm({ kind }: { kind: QuickKind }) {
           label: s.label,
           public_price: s.price,
           supplier_cost: s.supplier_cost ?? null,
+          prestation_fee: kind === "foot" ? s.prestation_fee ?? null : null,
           capacity: s.capacity,
           currency: "EUR",
           is_active: true,
@@ -237,6 +238,8 @@ export function QuickTicketForm({ kind }: { kind: QuickKind }) {
                 {kind === "foot" && previous
                   ? `Secteurs repris de « ${previous.title} ». Sans prix : affiché sur demande.`
                   : "Sans prix : le secteur s'affiche sur demande et ne se vend pas en ligne."}
+                {kind === "foot" &&
+                  " « Prestation » est la prestation JEITINHO (accompagnement), facturée à part du billet — jamais fusionnée avec son prix."}
               </p>
             </div>
             <Button
@@ -245,7 +248,7 @@ export function QuickTicketForm({ kind }: { kind: QuickKind }) {
               size="sm"
               onClick={() => {
                 setTouchedSectors(true);
-                setSectors((p) => [...p, { label: "", price: null, capacity: null }]);
+                setSectors((p) => [...p, { label: "", price: null, capacity: null, prestation_fee: null }]);
               }}
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -253,23 +256,42 @@ export function QuickTicketForm({ kind }: { kind: QuickKind }) {
             </Button>
           </div>
           <div className="space-y-2">
-            <div className="hidden grid-cols-[1fr_96px_96px_80px_32px] gap-2 text-[11px] text-muted-foreground sm:grid">
+            <div
+              className={`hidden gap-2 text-[11px] text-muted-foreground sm:grid ${
+                kind === "foot" ? "grid-cols-[1fr_96px_96px_96px_80px_32px]" : "grid-cols-[1fr_96px_96px_80px_32px]"
+              }`}
+            >
               <span>Secteur</span>
-              <span>Prix</span>
+              <span>Prix billet</span>
+              {kind === "foot" && <span>Prestation</span>}
               <span>Coût</span>
               <span>Places</span>
               <span />
             </div>
             {sectors.map((s, i) => (
-              <div key={i} className="grid grid-cols-[1fr_96px_96px_80px_32px] items-center gap-2">
+              <div
+                key={i}
+                className={`grid items-center gap-2 ${
+                  kind === "foot" ? "grid-cols-[1fr_96px_96px_96px_80px_32px]" : "grid-cols-[1fr_96px_96px_80px_32px]"
+                }`}
+              >
                 <Input value={s.label} onChange={(e) => patch(i, { label: e.target.value })} placeholder="Norte, Setor 9…" />
                 <Input
                   inputMode="decimal"
                   value={s.price ?? ""}
                   onChange={(e) => patch(i, { price: num(e.target.value) })}
                   placeholder="—"
-                  aria-label={`Prix ${s.label}`}
+                  aria-label={`Prix billet ${s.label}`}
                 />
+                {kind === "foot" && (
+                  <Input
+                    inputMode="decimal"
+                    value={s.prestation_fee ?? ""}
+                    onChange={(e) => patch(i, { prestation_fee: num(e.target.value) })}
+                    placeholder="—"
+                    aria-label={`Prestation ${s.label}`}
+                  />
+                )}
                 <Input
                   inputMode="decimal"
                   value={s.supplier_cost ?? ""}

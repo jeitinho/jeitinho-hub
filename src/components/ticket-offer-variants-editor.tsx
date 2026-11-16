@@ -19,6 +19,7 @@ type VariantRow = {
   label: string;
   public_price: number | null;
   supplier_cost: number | null;
+  prestation_fee: number | null;
   currency: string;
   capacity: number | null;
   is_active: boolean;
@@ -30,6 +31,7 @@ type VariantDb = {
   label: string;
   public_price: number | null;
   supplier_cost: number | null;
+  prestation_fee: number | null;
   currency: string;
   capacity: number | null;
   is_active: boolean;
@@ -37,20 +39,20 @@ type VariantDb = {
 };
 
 function toRow(v: VariantDb): VariantRow {
-  return { id: v.id, label: v.label, public_price: v.public_price, supplier_cost: v.supplier_cost ?? null, currency: v.currency, capacity: v.capacity, is_active: v.is_active, sort_order: v.sort_order };
+  return { id: v.id, label: v.label, public_price: v.public_price, supplier_cost: v.supplier_cost ?? null, prestation_fee: v.prestation_fee ?? null, currency: v.currency, capacity: v.capacity, is_active: v.is_active, sort_order: v.sort_order };
 }
 
 // label stays free text on purpose — Maracanã ("Norte", "Maracanã Mais") and
 // Carnaval ("Setor 9 — Arquibancada") don't share a taxonomy shape, so a
 // fixed enum would force one event type's vocabulary onto the other.
 function emptyRow(sortOrder: number): VariantRow {
-  return { id: null, label: "", public_price: null, supplier_cost: null, currency: "EUR", capacity: null, is_active: true, sort_order: sortOrder };
+  return { id: null, label: "", public_price: null, supplier_cost: null, prestation_fee: null, currency: "EUR", capacity: null, is_active: true, sort_order: sortOrder };
 }
 
 // CRUD for a ticket's sector/price variants, scoped to one ticket_offer_id.
 // Only rendered once the parent ticket exists (billetterie.$id.tsx) — a
 // not-yet-created ticket has no id to attach variants to.
-export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: string }) {
+export function TicketOfferVariantsEditor({ ticketOfferId, showPrestationFee = false }: { ticketOfferId: string; showPrestationFee?: boolean }) {
   const qc = useQueryClient();
   const [rows, setRows] = useState<VariantRow[]>([]);
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
@@ -87,7 +89,7 @@ export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: st
     try {
       await Promise.all(deletedIds.map(id => deleteTicketOfferVariant(id)));
       await Promise.all(rows.map((r, i) => {
-        const values = { label: r.label.trim(), public_price: r.public_price, supplier_cost: r.supplier_cost, currency: r.currency || "EUR", capacity: r.capacity, is_active: r.is_active, sort_order: i, ticket_offer_id: ticketOfferId };
+        const values = { label: r.label.trim(), public_price: r.public_price, supplier_cost: r.supplier_cost, prestation_fee: r.prestation_fee, currency: r.currency || "EUR", capacity: r.capacity, is_active: r.is_active, sort_order: i, ticket_offer_id: ticketOfferId };
         return r.id ? updateTicketOfferVariant(r.id, values) : createTicketOfferVariant(values);
       }));
       toast.success("Secteurs enregistrés.");
@@ -104,7 +106,10 @@ export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: st
       <div className="flex items-center justify-between">
         <div>
           <p className="tracked text-xs text-muted-foreground">Secteurs / variantes de prix</p>
-          <p className="mt-1 text-xs text-muted-foreground">Un billet peut se vendre à plusieurs prix selon le secteur. Prix et coût par billet. Sans prix, le secteur reste sur demande et ne se vend pas en ligne.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Un billet peut se vendre à plusieurs prix selon le secteur. Prix et coût par billet. Sans prix, le secteur reste sur demande et ne se vend pas en ligne.
+            {showPrestationFee && " « Prestation » est la prestation JEITINHO (accompagnement), facturée en ligne distincte du prix du billet."}
+          </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={addRow}><Plus className="mr-2 h-3.5 w-3.5" />Ajouter un secteur</Button>
       </div>
@@ -118,9 +123,12 @@ export function TicketOfferVariantsEditor({ ticketOfferId }: { ticketOfferId: st
       ) : (
         <div className="space-y-3">
           {rows.map((r, i) => (
-            <div key={r.id ?? `new-${i}`} className="grid gap-2 sm:grid-cols-[1fr_100px_100px_70px_80px_auto_auto_auto] sm:items-end">
+            <div key={r.id ?? `new-${i}`} className={`grid gap-2 sm:items-end ${showPrestationFee ? "sm:grid-cols-[1fr_100px_100px_100px_70px_80px_auto_auto_auto]" : "sm:grid-cols-[1fr_100px_100px_70px_80px_auto_auto_auto]"}`}>
               <div>{i === 0 && <Label className="mb-1.5 block text-xs">Libellé</Label>}<Input value={r.label} onChange={e => update(i, { label: e.target.value })} placeholder="Norte, Frisa 12 A…" maxLength={120} /></div>
-              <div>{i === 0 && <Label className="mb-1.5 block text-xs">Prix public</Label>}<Input type="number" min="0" step="0.01" value={r.public_price ?? ""} onChange={e => update(i, { public_price: e.target.value ? Number(e.target.value) : null })} placeholder="—" /></div>
+              <div>{i === 0 && <Label className="mb-1.5 block text-xs">Prix billet</Label>}<Input type="number" min="0" step="0.01" value={r.public_price ?? ""} onChange={e => update(i, { public_price: e.target.value ? Number(e.target.value) : null })} placeholder="—" /></div>
+              {showPrestationFee && (
+                <div>{i === 0 && <Label className="mb-1.5 block text-xs">Prestation</Label>}<Input type="number" min="0" step="0.01" value={r.prestation_fee ?? ""} onChange={e => update(i, { prestation_fee: e.target.value ? Number(e.target.value) : null })} placeholder="—" /></div>
+              )}
               <div>{i === 0 && <Label className="mb-1.5 block text-xs">Coût</Label>}<Input type="number" min="0" step="0.01" value={r.supplier_cost ?? ""} onChange={e => update(i, { supplier_cost: e.target.value ? Number(e.target.value) : null })} placeholder="—" /></div>
               <div>{i === 0 && <Label className="mb-1.5 block text-xs">Devise</Label>}<Input value={r.currency} onChange={e => update(i, { currency: e.target.value.toUpperCase() })} maxLength={3} /></div>
               <div>{i === 0 && <Label className="mb-1.5 block text-xs">Places</Label>}<Input type="number" min="0" step="1" value={r.capacity ?? ""} onChange={e => update(i, { capacity: e.target.value ? Number(e.target.value) : null })} placeholder="—" /></div>
