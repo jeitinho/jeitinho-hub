@@ -11,6 +11,7 @@ export const NAV_LABELS: Record<string, string> = {
   "a-valider": "À envoyer",
   calendrier: "Calendrier",
   crm: "Demandes clients",
+  "boite-reception": "Boîte de réception",
   clients: "Clients",
   devis: "Devis & factures",
   voyages: "Voyages",

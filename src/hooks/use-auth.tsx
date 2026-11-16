@@ -107,6 +107,7 @@ export const MODULE_ACCESS: Record<string, AppRole[]> = {
     "associe",
   ],
   crm: ["admin", "manager", "associe"],
+  "boite-reception": ["admin", "manager", "associe"],
   clients: ["admin", "manager", "associe"],
   voyages: ["admin", "manager", "associe"],
   devis: ["admin", "manager", "associe"],

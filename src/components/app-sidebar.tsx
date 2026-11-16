@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import {
   Sun,
+  Inbox,
   Users,
   UserRound,
   Plane,
@@ -90,6 +91,7 @@ const GROUPS: { id: string; label: string; items: Item[] }[] = [
     label: "Ventes",
     items: [
       { url: "/crm", icon: Users, module: "crm" },
+      { url: "/boite-reception", icon: Inbox, module: "boite-reception" },
       { url: "/devis", icon: FileText, module: "devis" },
       { url: "/clients", icon: UserRound, module: "clients" },
     ],

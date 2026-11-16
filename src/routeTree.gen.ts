@@ -21,6 +21,7 @@ import { Route as AuthenticatedAssociesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAudienceRouteImport } from './routes/_authenticated/audience'
 import { Route as AuthenticatedBilletterieRouteImport } from './routes/_authenticated/billetterie'
 import { Route as AuthenticatedBlogRouteImport } from './routes/_authenticated/blog'
+import { Route as AuthenticatedBoiteReceptionRouteImport } from './routes/_authenticated/boite-reception'
 import { Route as AuthenticatedCalendrierRouteImport } from './routes/_authenticated/calendrier'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedContenusRouteImport } from './routes/_authenticated/contenus'
@@ -138,6 +139,12 @@ const AuthenticatedBlogRoute = AuthenticatedBlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBoiteReceptionRoute =
+  AuthenticatedBoiteReceptionRouteImport.update({
+    id: '/boite-reception',
+    path: '/boite-reception',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCalendrierRoute = AuthenticatedCalendrierRouteImport.update({
   id: '/calendrier',
   path: '/calendrier',
@@ -445,6 +452,7 @@ export interface FileRoutesByFullPath {
   '/audience': typeof AuthenticatedAudienceRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
+  '/boite-reception': typeof AuthenticatedBoiteReceptionRoute
   '/calendrier': typeof AuthenticatedCalendrierRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/contenus': typeof AuthenticatedContenusRoute
@@ -514,6 +522,7 @@ export interface FileRoutesByTo {
   '/audience': typeof AuthenticatedAudienceRoute
   '/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/blog': typeof AuthenticatedBlogRouteWithChildren
+  '/boite-reception': typeof AuthenticatedBoiteReceptionRoute
   '/calendrier': typeof AuthenticatedCalendrierRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/contenus': typeof AuthenticatedContenusRoute
@@ -585,6 +594,7 @@ export interface FileRoutesById {
   '/_authenticated/audience': typeof AuthenticatedAudienceRoute
   '/_authenticated/billetterie': typeof AuthenticatedBilletterieRouteWithChildren
   '/_authenticated/blog': typeof AuthenticatedBlogRouteWithChildren
+  '/_authenticated/boite-reception': typeof AuthenticatedBoiteReceptionRoute
   '/_authenticated/calendrier': typeof AuthenticatedCalendrierRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/contenus': typeof AuthenticatedContenusRoute
@@ -656,6 +666,7 @@ export interface FileRouteTypes {
     | '/audience'
     | '/billetterie'
     | '/blog'
+    | '/boite-reception'
     | '/calendrier'
     | '/clients'
     | '/contenus'
@@ -725,6 +736,7 @@ export interface FileRouteTypes {
     | '/audience'
     | '/billetterie'
     | '/blog'
+    | '/boite-reception'
     | '/calendrier'
     | '/clients'
     | '/contenus'
@@ -795,6 +807,7 @@ export interface FileRouteTypes {
     | '/_authenticated/audience'
     | '/_authenticated/billetterie'
     | '/_authenticated/blog'
+    | '/_authenticated/boite-reception'
     | '/_authenticated/calendrier'
     | '/_authenticated/clients'
     | '/_authenticated/contenus'
@@ -962,6 +975,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof AuthenticatedBlogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/boite-reception': {
+      id: '/_authenticated/boite-reception'
+      path: '/boite-reception'
+      fullPath: '/boite-reception'
+      preLoaderRoute: typeof AuthenticatedBoiteReceptionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendrier': {
@@ -1508,6 +1528,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAudienceRoute: typeof AuthenticatedAudienceRoute
   AuthenticatedBilletterieRoute: typeof AuthenticatedBilletterieRouteWithChildren
   AuthenticatedBlogRoute: typeof AuthenticatedBlogRouteWithChildren
+  AuthenticatedBoiteReceptionRoute: typeof AuthenticatedBoiteReceptionRoute
   AuthenticatedCalendrierRoute: typeof AuthenticatedCalendrierRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedContenusRoute: typeof AuthenticatedContenusRoute
@@ -1539,6 +1560,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAudienceRoute: AuthenticatedAudienceRoute,
   AuthenticatedBilletterieRoute: AuthenticatedBilletterieRouteWithChildren,
   AuthenticatedBlogRoute: AuthenticatedBlogRouteWithChildren,
+  AuthenticatedBoiteReceptionRoute: AuthenticatedBoiteReceptionRoute,
   AuthenticatedCalendrierRoute: AuthenticatedCalendrierRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedContenusRoute: AuthenticatedContenusRoute,
