@@ -551,6 +551,7 @@ export type Database = {
       clients: {
         Row: {
           assigned_to: string | null
+          auth_user_id: string | null
           billing_address: string | null
           company_name: string | null
           created_at: string
@@ -571,6 +572,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          auth_user_id?: string | null
           billing_address?: string | null
           company_name?: string | null
           created_at?: string
@@ -591,6 +593,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          auth_user_id?: string | null
           billing_address?: string | null
           company_name?: string | null
           created_at?: string
@@ -1787,10 +1790,12 @@ export type Database = {
           location: string | null
           max_group_size: number | null
           min_age: number | null
+          moment: string | null
           neighborhood: string | null
           partner_id: string | null
           price_from: number | null
           price_model: string
+          privatisable: boolean
           requires_driver: boolean
           seo_description: string | null
           seo_title: string | null
@@ -1799,9 +1804,12 @@ export type Database = {
           supplier_cost: number | null
           supplier_net: number | null
           tags: string[]
+          theme: string | null
           title: string
           updated_at: string
+          variant_of: string | null
           videos: Json
+          with_who: string[] | null
         }
         Insert: {
           category?: string | null
@@ -1828,10 +1836,12 @@ export type Database = {
           location?: string | null
           max_group_size?: number | null
           min_age?: number | null
+          moment?: string | null
           neighborhood?: string | null
           partner_id?: string | null
           price_from?: number | null
           price_model?: string
+          privatisable?: boolean
           requires_driver?: boolean
           seo_description?: string | null
           seo_title?: string | null
@@ -1840,9 +1850,12 @@ export type Database = {
           supplier_cost?: number | null
           supplier_net?: number | null
           tags?: string[]
+          theme?: string | null
           title: string
           updated_at?: string
+          variant_of?: string | null
           videos?: Json
+          with_who?: string[] | null
         }
         Update: {
           category?: string | null
@@ -1869,10 +1882,12 @@ export type Database = {
           location?: string | null
           max_group_size?: number | null
           min_age?: number | null
+          moment?: string | null
           neighborhood?: string | null
           partner_id?: string | null
           price_from?: number | null
           price_model?: string
+          privatisable?: boolean
           requires_driver?: boolean
           seo_description?: string | null
           seo_title?: string | null
@@ -1881,9 +1896,12 @@ export type Database = {
           supplier_cost?: number | null
           supplier_net?: number | null
           tags?: string[]
+          theme?: string | null
           title?: string
           updated_at?: string
+          variant_of?: string | null
           videos?: Json
+          with_who?: string[] | null
         }
         Relationships: [
           {
@@ -1891,6 +1909,13 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experiences_variant_of_fkey"
+            columns: ["variant_of"]
+            isOneToOne: false
+            referencedRelation: "experiences"
             referencedColumns: ["id"]
           },
         ]
@@ -5447,6 +5472,20 @@ export type Database = {
           starts_at?: string | null
           status?: string | null
           venue?: string | null
+        }
+        Relationships: []
+      }
+      demandes_unifiees: {
+        Row: {
+          email: string | null
+          id: string | null
+          lien: string | null
+          message: string | null
+          nom: string | null
+          received_at: string | null
+          source: string | null
+          statut: string | null
+          telephone: string | null
         }
         Relationships: []
       }
