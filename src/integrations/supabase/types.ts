@@ -4011,6 +4011,7 @@ export type Database = {
           created_by: string | null
           currency: string
           description: string | null
+          famille: string | null
           fixed_cost: number | null
           group_slug: string | null
           id: string
@@ -4037,6 +4038,7 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string | null
+          famille?: string | null
           fixed_cost?: number | null
           group_slug?: string | null
           id?: string
@@ -4063,6 +4065,7 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string | null
+          famille?: string | null
           fixed_cost?: number | null
           group_slug?: string | null
           id?: string

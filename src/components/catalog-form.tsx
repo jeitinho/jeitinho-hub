@@ -198,10 +198,15 @@ export function CatalogForm({
                 </div>
                 <div className="space-y-2">
                   <Label>Modèle de prix</Label>
-                  <Input
-                    value={v.price_model}
-                    onChange={(e) => set("price_model", e.target.value)}
-                  />
+                  <Select value={v.price_model} onValueChange={(x) => set("price_model", x)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="per_person">Par personne</SelectItem>
+                      <SelectItem value="fixed">Forfait groupe</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
