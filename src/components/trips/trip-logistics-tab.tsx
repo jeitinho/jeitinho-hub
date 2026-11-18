@@ -1,14 +1,93 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plane, Plus, Trash2, Home, Smartphone, Car } from "lucide-react";
+import { Plane, Plus, Trash2, Home, Smartphone, Car, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+
+type ClientLogistics = {
+  arrival_flight_number: string | null;
+  arrival_at: string | null;
+  departure_flight_number: string | null;
+  departure_at: string | null;
+  accommodation_name: string | null;
+  accommodation_address: string | null;
+  notes: string | null;
+  updated_at: string;
+};
+
+function fmtDateTime(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  });
+}
+
+/**
+ * Lecture seule : ce que le client a lui-même transmis depuis son espace
+ * (trip_client_logistics). L'équipe transcrit manuellement ce qui est
+ * utile dans la logistique/le planning ci-dessous — cette carte ne se
+ * synchronise jamais automatiquement avec trip_logistics.
+ */
+function ClientSubmittedCard({ tripId }: { tripId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["trip-client-logistics", tripId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("trip_client_logistics")
+        .select("*")
+        .eq("trip_id", tripId)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data as ClientLogistics | null;
+    },
+  });
+  if (isLoading || !data) return null;
+
+  const rows: [string, string | null][] = [
+    ["Vol arrivée", data.arrival_flight_number ? `${data.arrival_flight_number} — ${fmtDateTime(data.arrival_at)}` : null],
+    ["Vol départ", data.departure_flight_number ? `${data.departure_flight_number} — ${fmtDateTime(data.departure_at)}` : null],
+    ["Logement", [data.accommodation_name, data.accommodation_address].filter(Boolean).join(" · ") || null],
+  ];
+  if (!rows.some(([, v]) => v) && !data.notes) return null;
+
+  return (
+    <Card className="space-y-3 border-primary/30 bg-primary/5 p-5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <UserRound className="h-4 w-4 text-primary" />
+          <h2 className="font-semibold">Transmis par le client</h2>
+        </div>
+        <Badge variant="outline">Mis à jour le {fmtDateTime(data.updated_at)}</Badge>
+      </div>
+      <div className="grid gap-2 text-sm sm:grid-cols-3">
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <p className="text-xs text-muted-foreground">{label}</p>
+            <p>{value ?? "—"}</p>
+          </div>
+        ))}
+      </div>
+      {data.notes && (
+        <div>
+          <p className="text-xs text-muted-foreground">Demandes particulières / jours spéciaux</p>
+          <p className="whitespace-pre-wrap text-sm">{data.notes}</p>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 type Logistics = {
   trip_id: string;
@@ -413,6 +492,7 @@ function AccommodationsCard({ tripId }: { tripId: string }) {
 export function TripLogisticsTab({ tripId }: { tripId: string }) {
   return (
     <div className="space-y-6">
+      <ClientSubmittedCard tripId={tripId} />
       <LogisticsCard tripId={tripId} />
       <AccommodationsCard tripId={tripId} />
       <TransfersCard tripId={tripId} />

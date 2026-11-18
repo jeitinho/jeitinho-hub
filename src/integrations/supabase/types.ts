@@ -4789,6 +4789,56 @@ export type Database = {
           },
         ]
       }
+      trip_client_logistics: {
+        Row: {
+          accommodation_address: string | null
+          accommodation_name: string | null
+          arrival_at: string | null
+          arrival_flight_number: string | null
+          created_at: string
+          departure_at: string | null
+          departure_flight_number: string | null
+          id: string
+          notes: string | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          accommodation_address?: string | null
+          accommodation_name?: string | null
+          arrival_at?: string | null
+          arrival_flight_number?: string | null
+          created_at?: string
+          departure_at?: string | null
+          departure_flight_number?: string | null
+          id?: string
+          notes?: string | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          accommodation_address?: string | null
+          accommodation_name?: string | null
+          arrival_at?: string | null
+          arrival_flight_number?: string | null
+          created_at?: string
+          departure_at?: string | null
+          departure_flight_number?: string | null
+          id?: string
+          notes?: string | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_client_logistics_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: true
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_logistics: {
         Row: {
           arrival_airport: string | null
@@ -5852,6 +5902,10 @@ export type Database = {
       trip_client_language: { Args: { p_quote_id: string }; Returns: string }
       trips_auto_status: { Args: never; Returns: number }
       unpublish_past_ticket_offers: { Args: never; Returns: undefined }
+      upsert_my_client_account: {
+        Args: { p_first_name: string; p_phone: string }
+        Returns: string
+      }
       urlencode: { Args: { t: string }; Returns: string }
       whatsapp_apply_action: {
         Args: {
